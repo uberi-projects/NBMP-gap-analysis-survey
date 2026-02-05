@@ -52,23 +52,6 @@
             color: #6b7280;
         }
 
-        .download-btn {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .download-btn:hover {
-            background: #1d4ed8;
-        }
-
         .progress-bar {
             width: 100%;
             height: 8px;
@@ -318,9 +301,6 @@
                 Section <span id="currentSection">1</span> of <span id="totalSections">10</span>: <span
                     id="sectionName">Introduction</span>
             </div>
-            <button class="download-btn" onclick="downloadCSV()">
-                <span>⬇</span> Download CSV
-            </button>
         </div>
 
         <div class="progress-bar">
@@ -739,8 +719,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Would you be interested in publishing your data on the GBIF online repository (gbif.org), if
-                        you were given support by UB-ERI to do so to increase the visibility, traceability, and impact
+                    <label>Would you be interested in publishing your data on the GBIF online repository (gbif.org),
+                        if
+                        you were given support by UB-ERI to do so to increase the visibility, traceability, and
+                        impact
                         of your work?</label>
                     <div class="radio-group">
                         <label class="radio-option">
@@ -787,144 +769,289 @@
                 </div>
 
 
-                <script>
-                    /* -----------------------------
-                       Section navigation & progress
-                    ------------------------------ */
-                    let currentSection = 0;
-                    const sections = document.querySelectorAll(".section");
-                    const totalSections = sections.length;
+                <div class="form-group">
+                    <label>Do you publish papers on your data?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="publishPapers" value="Yes">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="publishPapers" value="No">
+                            <span>No</span>
+                        </label>
+                    </div>
+                </div>
 
-                    document.getElementById("totalSections").textContent = totalSections;
+                <div class="form-group">
+                    <label>Do you share data results in a public data dashboard?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="publicDashboard" value="Yes">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="publicDashboard" value="No">
+                            <span>No</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
 
-                    function showSection(index) {
-                        sections.forEach((s, i) => {
-                            s.classList.toggle("active", i === index);
+            <!-- Section 8: National Working Groups -->
+            <div class="section" data-section="8">
+                <h2>National Working Groups</h2>
+
+                <div class="form-group">
+                    <label>Is your organization involved in any national working groups related to biodiversity in
+                        Belize (e.g., Sea Turtle Working Group, NCRMN, Jaguar Working Group)? If yes, list each
+                        working group.</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="workingGroupsInvolved" value="Yes"
+                                onchange="toggleWorkingGroups()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="workingGroupsInvolved" value="No"
+                                onchange="toggleWorkingGroups()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                    <div id="workingGroupsList" class="conditional" style="display: none;">
+                        <textarea name="workingGroupsListText" rows="3"
+                            placeholder="List each working group..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Is your organization leading any of the national working groups related to biodiversity in
+                        Belize? If so, state which ones.</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="workingGroupsLeading" value="Yes"
+                                onchange="toggleWorkingGroupsLeading()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="workingGroupsLeading" value="No"
+                                onchange="toggleWorkingGroupsLeading()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                    <div id="workingGroupsLeadingList" class="conditional" style="display: none;">
+                        <textarea name="workingGroupsLeadingListText" rows="3"
+                            placeholder="State which ones..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 9: Significance & Interest -->
+            <div class="section" data-section="9">
+                <h2>Significance & Interest</h2>
+
+                <div class="form-group">
+                    <label>Which species do you consider of cultural significance in Belize?</label>
+                    <textarea name="culturalSpecies" rows="3" placeholder="List species..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Which species do you consider of economic significance in Belize?</label>
+                    <textarea name="economicSpecies" rows="3" placeholder="List species..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Have communities that you work with expressed concern for specific species (e.g., because
+                        of dwindling numbers, or persistence as a pest)? If so, state the communities, species, and
+                        reasons for concern.</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="communityConcern" value="Yes" onchange="toggleCommunityConcern()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="communityConcern" value="No" onchange="toggleCommunityConcern()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                    <div id="communityConcernDetails" class="conditional" style="display: none;">
+                        <textarea name="communityConcernDetailsText" rows="4"
+                            placeholder="State the communities, species, and reasons for concern..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>If any, which potential species/taxa would your organization be interested in monitoring or
+                        studying in the future? Why?</label>
+                    <textarea name="futureMonitoring" rows="4"
+                        placeholder="List species/taxa and reasons..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Which important areas in Belize do you think are lacking in biodiversity monitoring?</label>
+                    <textarea name="lackingAreas" rows="3" placeholder="List areas..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Which important species/taxa in Belize do you think are lacking biodiversity
+                        monitoring?</label>
+                    <textarea name="lackingSpecies" rows="3" placeholder="List species/taxa..."></textarea>
+                </div>
+            </div>
+
+            <script>
+                /* -----------------------------
+                   Section navigation & progress
+                ------------------------------ */
+                let currentSection = 0;
+                const sections = document.querySelectorAll(".section");
+                const totalSections = sections.length;
+
+                document.getElementById("totalSections").textContent = totalSections;
+
+                function showSection(index) {
+                    sections.forEach((s, i) => {
+                        s.classList.toggle("active", i === index);
+                    });
+
+                    document.getElementById("currentSection").textContent = index + 1;
+                    document.getElementById("sectionName").textContent =
+                        sections[index].querySelector("h2")?.textContent || "Introduction";
+
+                    const progress = ((index + 1) / sections.length) * 100;
+                    document.getElementById("progressFill").style.width = `${progress}%`;
+
+                    document.getElementById("prevBtn").disabled = index === 0;
+                    document.getElementById("nextBtn").textContent =
+                        index === sections.length - 1 ? "Finish" : "Next";
+                }
+
+                function nextSection() {
+                    if (currentSection < sections.length - 1) {
+                        currentSection++;
+                        showSection(currentSection);
+                    } else {
+                        document.getElementById("surveyForm").requestSubmit();
+                    }
+                }
+
+                function prevSection() {
+                    if (currentSection > 0) {
+                        currentSection--;
+                        showSection(currentSection);
+                    }
+                }
+
+                /* -----------------------------
+                   Conditional logic
+                ------------------------------ */
+                function toggleMonitoringQuestions() {
+                    const yes = document.querySelector('input[name="doesMonitoring"][value="Yes"]').checked;
+                    document.getElementById("monitoringAreasSection").style.display = yes ? "block" : "none";
+                }
+
+                function toggleCollaboration() {
+                    const yes = document.querySelector('input[name="collaboration"][value="Yes"]').checked;
+                    document.getElementById("collaborationOrgs").style.display = yes ? "block" : "none";
+                }
+
+                function toggleShareData() {
+                    const yes = document.querySelector('input[name="shareData"][value="Yes"]').checked;
+                    document.getElementById("shareDataWho").style.display = yes ? "block" : "none";
+                }
+
+                function toggleOnlineRepos() {
+                    const yes = document.querySelector('input[name="onlineRepos"][value="Yes"]').checked;
+                    document.getElementById("onlineReposWhich").style.display = yes ? "block" : "none";
+                }
+
+                function toggleWorkingGroups() {
+                    const yes = document.querySelector('input[name="workingGroupsInvolved"][value="Yes"]').checked;
+                    document.getElementById("workingGroupsList").style.display = yes ? "block" : "none";
+                }
+
+                function toggleWorkingGroupsLeading() {
+                    const yes = document.querySelector('input[name="workingGroupsLeading"][value="Yes"]').checked;
+                    document.getElementById("workingGroupsLeadingList").style.display = yes ? "block" : "none";
+                }
+
+                function toggleCommunityConcern() {
+                    const yes = document.querySelector('input[name="communityConcern"][value="Yes"]').checked;
+                    document.getElementById("communityConcernDetails").style.display = yes ? "block" : "none";
+                }
+
+                function toggleMammalsOptions() {
+                    const mammals = document.querySelector('input[name="monitoringAreas"][value="Mammals"]').checked;
+                    const container = document.getElementById("mammalsOptions");
+                    if (!container) return;
+                    container.hidden = !mammals;
+
+                    if (!mammals) {
+                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                            cb.checked = false;
                         });
-
-                        document.getElementById("currentSection").textContent = index + 1;
-                        document.getElementById("sectionName").textContent =
-                            sections[index].querySelector("h2")?.textContent || "Introduction";
-
-                        const progress = ((index + 1) / sections.length) * 100;
-                        document.getElementById("progressFill").style.width = `${progress}%`;
-
-                        document.getElementById("prevBtn").disabled = index === 0;
-                        document.getElementById("nextBtn").textContent =
-                            index === sections.length - 1 ? "Finish" : "Next";
                     }
+                }
 
-                    function nextSection() {
-                        if (currentSection < sections.length - 1) {
-                            currentSection++;
-                            showSection(currentSection);
-                        } else {
-                            document.getElementById("surveyForm").requestSubmit();
-                        }
+                function toggleFishOptions() {
+                    const fish = document.querySelector('input[name="monitoringAreas"][value="Fish"]').checked;
+                    const container = document.getElementById("fishOptions");
+                    if (!container) return;
+                    container.hidden = !fish;
+
+                    if (!fish) {
+                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                            cb.checked = false;
+                        });
                     }
+                }
 
-                    function prevSection() {
-                        if (currentSection > 0) {
-                            currentSection--;
-                            showSection(currentSection);
-                        }
+                function toggleInvertebratesOptions() {
+                    const inv = document.querySelector('input[name="monitoringAreas"][value="Invertebrates"]').checked;
+                    const container = document.getElementById("invertebratesOptions");
+                    if (!container) return;
+                    container.hidden = !inv;
+
+                    if (!inv) {
+                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                            cb.checked = false;
+                        });
                     }
+                }
 
-                    /* -----------------------------
-                       Conditional logic
-                    ------------------------------ */
-                    function toggleMonitoringQuestions() {
-                        const yes = document.querySelector('input[name="doesMonitoring"][value="Yes"]').checked;
-                        document.getElementById("monitoringAreasSection").style.display = yes ? "block" : "none";
+                function toggleReptilesOptions() {
+                    const rep = document.querySelector('input[name="monitoringAreas"][value="Reptiles"]').checked;
+                    const container = document.getElementById("reptilesOptions");
+                    if (!container) return;
+                    container.hidden = !rep;
+
+                    if (!rep) {
+                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                            cb.checked = false;
+                        });
                     }
+                }
 
-                    function toggleCollaboration() {
-                        const yes = document.querySelector('input[name="collaboration"][value="Yes"]').checked;
-                        document.getElementById("collaborationOrgs").style.display = yes ? "block" : "none";
+                function togglePlantsOptions() {
+                    const plants = document.querySelector('input[name="monitoringAreas"][value="Plants"]').checked;
+                    const container = document.getElementById("plantsOptions");
+                    if (!container) return;
+                    container.hidden = !plants;
+
+                    if (!plants) {
+                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                            cb.checked = false;
+                        });
                     }
+                }
 
-                    function toggleShareData() {
-                        const yes = document.querySelector('input[name="shareData"][value="Yes"]').checked;
-                        document.getElementById("shareDataWho").style.display = yes ? "block" : "none";
-                    }
-
-                    function toggleOnlineRepos() {
-                        const yes = document.querySelector('input[name="onlineRepos"][value="Yes"]').checked;
-                        document.getElementById("onlineReposWhich").style.display = yes ? "block" : "none";
-                    }
-
-                    function toggleMammalsOptions() {
-                        const mammals = document.querySelector('input[name="monitoringAreas"][value="Mammals"]').checked;
-                        const container = document.getElementById("mammalsOptions");
-                        if (!container) return;
-                        container.hidden = !mammals;
-
-                        if (!mammals) {
-                            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                                cb.checked = false;
-                            });
-                        }
-                    }
-
-                    function toggleFishOptions() {
-                        const fish = document.querySelector('input[name="monitoringAreas"][value="Fish"]').checked;
-                        const container = document.getElementById("fishOptions");
-                        if (!container) return;
-                        container.hidden = !fish;
-
-                        if (!fish) {
-                            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                                cb.checked = false;
-                            });
-                        }
-                    }
-
-                    function toggleInvertebratesOptions() {
-                        const inv = document.querySelector('input[name="monitoringAreas"][value="Invertebrates"]').checked;
-                        const container = document.getElementById("invertebratesOptions");
-                        if (!container) return;
-                        container.hidden = !inv;
-
-                        if (!inv) {
-                            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                                cb.checked = false;
-                            });
-                        }
-                    }
-
-                    function toggleReptilesOptions() {
-                        const rep = document.querySelector('input[name="monitoringAreas"][value="Reptiles"]').checked;
-                        const container = document.getElementById("reptilesOptions");
-                        if (!container) return;
-                        container.hidden = !rep;
-
-                        if (!rep) {
-                            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                                cb.checked = false;
-                            });
-                        }
-                    }
-
-                    function togglePlantsOptions() {
-                        const plants = document.querySelector('input[name="monitoringAreas"][value="Plants"]').checked;
-                        const container = document.getElementById("plantsOptions");
-                        if (!container) return;
-                        container.hidden = !plants;
-
-                        if (!plants) {
-                            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                                cb.checked = false;
-                            });
-                        }
-                    }
-
-                    /* -----------------------------
-                       Dynamic table rows
-                    ------------------------------ */
-                    let ltRow = 1;
-                    function addLongTermRow() {
-                        const row = document.createElement("tr");
-                        row.innerHTML = `
+                /* -----------------------------
+                   Dynamic table rows
+                ------------------------------ */
+                let ltRow = 1;
+                function addLongTermRow() {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
         <td><input type="text" name="ltSpecies_${ltRow}"></td>
         <td><input type="text" name="ltSites_${ltRow}"></td>
         <td><input type="text" name="ltYears_${ltRow}"></td>
@@ -932,87 +1059,56 @@
         <td><input type="text" name="ltOngoing_${ltRow}"></td>
         <td><span class="remove-btn" onclick="this.closest('tr').remove()">Remove</span></td>
     `;
-                        document.getElementById("longTermBody").appendChild(row);
-                        ltRow++;
-                    }
+                    document.getElementById("longTermBody").appendChild(row);
+                    ltRow++;
+                }
 
-                    let rrRow = 1;
-                    function addRecentResearchRow() {
-                        const row = document.createElement("tr");
-                        row.innerHTML = `
+                let rrRow = 1;
+                function addRecentResearchRow() {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
         <td><input type="text" name="rrSpecies_${rrRow}"></td>
         <td><input type="text" name="rrSites_${rrRow}"></td>
         <td><input type="text" name="rrYears_${rrRow}"></td>
         <td><input type="text" name="rrMethods_${rrRow}"></td>
         <td><span class="remove-btn" onclick="this.closest('tr').remove()">Remove</span></td>
     `;
-                        document.getElementById("recentResearchBody").appendChild(row);
-                        rrRow++;
-                    }
+                    document.getElementById("recentResearchBody").appendChild(row);
+                    rrRow++;
+                }
 
-                    /* -----------------------------
-                       CSV export
-                    ------------------------------ */
-                    function downloadCSV() {
-                        const password = prompt("Please enter the password to download the CSV:");
-
-                        if (password !== "UB123") {
-                            alert("Incorrect password. CSV download cancelled.");
-                            return;
-                        }
-
-                        const form = document.getElementById("surveyForm");
-                        const data = new FormData(form);
-                        const rows = [];
-
-                        for (let [key, value] of data.entries()) {
-                            rows.push([key, value]);
-                        }
-
-                        let csv = "Question,Response\n";
-                        rows.forEach(r => {
-                            csv += `"${r[0]}","${r[1].replace(/"/g, '""')}"\n`;
-                        });
-
-                        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-                        const link = document.createElement("a");
-                        link.href = URL.createObjectURL(blob);
-                        link.download = "UB-ERI_Gap_Analysis_Survey.csv";
-                        link.click();
-                    }
-
-                    /* -----------------------------
-                       Init
-                    ------------------------------ */
-                    showSection(currentSection);
+                /* -----------------------------
+                   Init
+                ------------------------------ */
+                showSection(currentSection);
 
 
-                    /* -----------------------------
-   Submit → Thank you page
+                /* -----------------------------
+Submit → Thank you page
 ------------------------------ */
-                    document.getElementById("surveyForm").addEventListener("submit", async function (e) {
-                        e.preventDefault();
+                document.getElementById("surveyForm").addEventListener("submit", async function (e) {
+                    e.preventDefault();
 
-                        const nextBtn = document.getElementById("nextBtn");
-                        const prevBtn = document.getElementById("prevBtn");
-                        const originalNextText = nextBtn.textContent;
-                        nextBtn.disabled = true;
-                        prevBtn.disabled = true;
-                        nextBtn.textContent = "Submitting...";
+                    const nextBtn = document.getElementById("nextBtn");
+                    const prevBtn = document.getElementById("prevBtn");
+                    const originalNextText = nextBtn.textContent;
+                    nextBtn.disabled = true;
+                    prevBtn.disabled = true;
+                    nextBtn.textContent = "Submitting...";
 
-                        const success = await submitToGoogleSheet();
+                    const success = await submitToGoogleSheet();
 
-                        if (!success) {
-                            alert("There was an error saving your response. Please try again.");
-                            nextBtn.disabled = false;
-                            prevBtn.disabled = false;
-                            nextBtn.textContent = originalNextText;
-                            return;
-                        }
+                    if (!success) {
+                        alert("There was an error saving your response. Please try again.");
+                        nextBtn.disabled = false;
+                        prevBtn.disabled = false;
+                        nextBtn.textContent = originalNextText;
+                        return;
+                    }
 
-                        const thankYouWindow = window.open("", "_blank");
+                    const thankYouWindow = window.open("", "_blank");
 
-                        thankYouWindow.document.write(`
+                    thankYouWindow.document.write(`
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -1057,59 +1153,59 @@
         </html>
     `);
 
-                        thankYouWindow.document.close();
-                    });
+                    thankYouWindow.document.close();
+                });
 
-                    async function submitToGoogleSheet() {
-                        const form = document.getElementById("surveyForm");
-                        const formData = new FormData(form);
+                async function submitToGoogleSheet() {
+                    const form = document.getElementById("surveyForm");
+                    const formData = new FormData(form);
 
-                        // IMPORTANT: handle multi-value fields (checkboxes)
-                        const data = {};
-                        for (let [key, value] of formData.entries()) {
-                            if (data[key]) {
-                                data[key] += "; " + value;   // combine checkbox values
-                            } else {
-                                data[key] = value;
-                            }
+                    // IMPORTANT: handle multi-value fields (checkboxes)
+                    const data = {};
+                    for (let [key, value] of formData.entries()) {
+                        if (data[key]) {
+                            data[key] += "; " + value;   // combine checkbox values
+                        } else {
+                            data[key] = value;
                         }
+                    }
 
+                    try {
+                        const response = await fetch(
+                            "https://script.google.com/macros/s/AKfycbwO0CAGANxGtoIWInOaIn6HiEZUIUnqMUuZRIOTzcQbBoVfsSg86weZNjCWD_bE6_-Nxg/exec",
+                            {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(data)
+                            }
+                        );
+
+                        return response.ok;
+                    } catch (err) {
+                        console.error("Submit failed:", err);
+
+                        // Retry with no-cors (common workaround for Apps Script CORS from file://)
                         try {
-                            const response = await fetch(
-                                "https://script.google.com/macros/s/AKfycbwO0CAGANxGtoIWInOaIn6HiEZUIUnqMUuZRIOTzcQbBoVfsSg86weZNjCWD_bE6_-Nxg/exec",
+                            await fetch(
+                                "https://script.google.com/macros/s/AKfycbx62RysZB3Bt8T7-XEPL1BM0mJqH68gLneAtXMJoV3UBNRXuDnHqVCfrsn6VYhItYv-2g/exec",
                                 {
                                     method: "POST",
+                                    mode: "no-cors",
                                     headers: { "Content-Type": "application/json" },
                                     body: JSON.stringify(data)
                                 }
                             );
-
-                            return response.ok;
-                        } catch (err) {
-                            console.error("Submit failed:", err);
-
-                            // Retry with no-cors (common workaround for Apps Script CORS from file://)
-                            try {
-                                await fetch(
-                                    "https://script.google.com/macros/s/AKfycbx62RysZB3Bt8T7-XEPL1BM0mJqH68gLneAtXMJoV3UBNRXuDnHqVCfrsn6VYhItYv-2g/exec",
-                                    {
-                                        method: "POST",
-                                        mode: "no-cors",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify(data)
-                                    }
-                                );
-                                return true; // can't read response in no-cors, assume sent
-                            } catch (retryErr) {
-                                console.error("Submit retry failed:", retryErr);
-                                return false;
-                            }
+                            return true; // can't read response in no-cors, assume sent
+                        } catch (retryErr) {
+                            console.error("Submit retry failed:", retryErr);
+                            return false;
                         }
                     }
+                }
 
 
 
-                </script>
+            </script>
         </form>
     </div>
 </body>
