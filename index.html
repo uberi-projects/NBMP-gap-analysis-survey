@@ -325,6 +325,22 @@
             font-size: 13px;
             margin-top: 6px;
         }
+
+        .retry-btn {
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .retry-btn:hover {
+            background: #15803d;
+        }
     </style>
 </head>
 
@@ -347,7 +363,8 @@
             <button type="button" class="nav-btn prev" id="prevBtn" onclick="prevSection()">Previous</button>
             <button type="button" class="nav-btn next" id="nextBtn" onclick="nextSection()">Next</button>
         </div>
-        <div class="error-msg" id="errorMsg">There was an error saving your response. Please try again.</div>
+        <div class="error-msg" id="errorMsg">There was an error saving your response. <button type="button"
+                class="retry-btn" onclick="document.getElementById('surveyForm').requestSubmit()">Retry</button></div>
 
         <form id="surveyForm">
             <!-- Section 0: Introduction -->
@@ -1022,7 +1039,9 @@
                     if (next < sections.length) {
                         currentSection = next;
                         showSection(currentSection);
+                        saveProgress();
                     } else {
+                        saveProgress();
                         document.getElementById("surveyForm").requestSubmit();
                     }
                 }
@@ -1035,6 +1054,7 @@
                     if (prev >= 0) {
                         currentSection = prev;
                         showSection(currentSection);
+                        saveProgress();
                     }
                 }
 
@@ -1172,10 +1192,11 @@
         <td><input type="text" name="ltYears_${ltRow}"></td>
         <td><input type="text" name="ltMethods_${ltRow}"></td>
         <td><input type="text" name="ltOngoing_${ltRow}"></td>
-        <td><span class="remove-btn" onclick="this.closest('tr').remove()">Remove</span></td>
+        <td><span class="remove-btn" onclick="this.closest('tr').remove(); scheduleAutoSave()">Remove</span></td>
     `;
                     document.getElementById("longTermBody").appendChild(row);
                     ltRow++;
+                    scheduleAutoSave();
                 }
 
                 let rrRow = 1;
@@ -1186,16 +1207,112 @@
         <td><input type="text" name="rrSites_${rrRow}"></td>
         <td><input type="text" name="rrYears_${rrRow}"></td>
         <td><input type="text" name="rrMethods_${rrRow}"></td>
-        <td><span class="remove-btn" onclick="this.closest('tr').remove()">Remove</span></td>
+        <td><span class="remove-btn" onclick="this.closest('tr').remove(); scheduleAutoSave()">Remove</span></td>
     `;
                     document.getElementById("recentResearchBody").appendChild(row);
                     rrRow++;
+                    scheduleAutoSave();
+                }
+
+                /* -----------------------------
+                   localStorage persistence
+                ------------------------------ */
+                const STORAGE_KEY = 'nbmp_survey_progress';
+                let saveTimeout;
+
+                function scheduleAutoSave() {
+                    clearTimeout(saveTimeout);
+                    saveTimeout = setTimeout(saveProgress, 300);
+                }
+
+                function saveProgress() {
+                    const form = document.getElementById('surveyForm');
+                    const state = { currentSection, ltRow, rrRow, fields: {} };
+
+                    form.querySelectorAll('input[type="text"], textarea').forEach(el => {
+                        if (el.name) state.fields[el.name] = el.value;
+                    });
+
+                    const radioNames = new Set();
+                    form.querySelectorAll('input[type="radio"]').forEach(el => radioNames.add(el.name));
+                    radioNames.forEach(name => {
+                        const checked = form.querySelector(`input[type="radio"][name="${name}"]:checked`);
+                        if (checked) state.fields[name] = checked.value;
+                    });
+
+                    const cbNames = new Set();
+                    form.querySelectorAll('input[type="checkbox"]').forEach(el => cbNames.add(el.name));
+                    cbNames.forEach(name => {
+                        const vals = [...form.querySelectorAll(`input[type="checkbox"][name="${name}"]:checked`)]
+                            .map(el => el.value);
+                        if (vals.length) state.fields[name] = vals;
+                    });
+
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                }
+
+                function restoreProgress() {
+                    let saved;
+                    try {
+                        saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                    } catch (e) {
+                        localStorage.removeItem(STORAGE_KEY);
+                        return;
+                    }
+                    if (!saved || !saved.fields) return;
+
+                    // Recreate dynamic table rows before populating values
+                    while (ltRow < saved.ltRow) addLongTermRow();
+                    while (rrRow < saved.rrRow) addRecentResearchRow();
+
+                    const form = document.getElementById('surveyForm');
+                    Object.entries(saved.fields).forEach(([name, value]) => {
+                        if (Array.isArray(value)) {
+                            value.forEach(v => {
+                                const cb = form.querySelector(`input[type="checkbox"][name="${name}"][value="${v}"]`);
+                                if (cb) cb.checked = true;
+                            });
+                        } else {
+                            const radio = form.querySelector(`input[type="radio"][name="${name}"][value="${value}"]`);
+                            if (radio) {
+                                radio.checked = true;
+                            } else {
+                                const el = form.querySelector(`[name="${name}"]`);
+                                if (el) el.value = value;
+                            }
+                        }
+                    });
+
+                    // Re-fire all conditional toggles so visibility matches restored state
+                    toggleMonitoringQuestions();
+                    toggleMammalsOptions();
+                    toggleFishOptions();
+                    toggleInvertebratesOptions();
+                    toggleReptilesOptions();
+                    togglePlantsOptions();
+                    toggleCollaboration();
+                    toggleDigitizationPortals();
+                    toggleShareData();
+                    toggleOnlineRepos();
+                    togglePublishPapers();
+                    toggleWorkingGroups();
+                    toggleWorkingGroupsLeading();
+                    toggleCommunityConcern();
+
+                    if (typeof saved.currentSection === 'number') {
+                        currentSection = saved.currentSection;
+                        showSection(currentSection);
+                    }
                 }
 
                 /* -----------------------------
                    Init
                 ------------------------------ */
                 showSection(currentSection);
+                restoreProgress();
+
+                document.getElementById('surveyForm').addEventListener('input', scheduleAutoSave);
+                document.getElementById('surveyForm').addEventListener('change', scheduleAutoSave);
 
 
                 /* -----------------------------
@@ -1203,6 +1320,7 @@ Submit → Thank you page
 ------------------------------ */
                 document.getElementById("surveyForm").addEventListener("submit", async function (e) {
                     e.preventDefault();
+                    document.getElementById("errorMsg").style.display = "none";
 
                     const nextBtn = document.getElementById("nextBtn");
                     const prevBtn = document.getElementById("prevBtn");
@@ -1220,6 +1338,8 @@ Submit → Thank you page
                         nextBtn.textContent = originalNextText;
                         return;
                     }
+
+                    localStorage.removeItem(STORAGE_KEY);
 
                     document.querySelector("h1").style.display = "none";
                     document.querySelector(".header-info").style.display = "none";
