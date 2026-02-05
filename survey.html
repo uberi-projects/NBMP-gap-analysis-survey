@@ -318,6 +318,13 @@
             font-size: 14px;
             margin-top: 15px;
         }
+
+        .validation-error {
+            display: none;
+            color: #991b1b;
+            font-size: 13px;
+            margin-top: 6px;
+        }
     </style>
 </head>
 
@@ -370,6 +377,7 @@
                 <div class="form-group">
                     <label>Organization Name *</label>
                     <input type="text" name="organizationName" placeholder="Enter your organization name">
+                    <div class="validation-error" id="validateOrgName">Please enter your organization name.</div>
                 </div>
             </div>
 
@@ -390,6 +398,7 @@
                             <span>No</span>
                         </label>
                     </div>
+                    <div class="validation-error" id="validateMonitoring">Please select an option.</div>
                 </div>
 
                 <div id="monitoringAreasSection" style="display: none;">
@@ -494,9 +503,9 @@
                 </div>
             </div>
 
-            <!-- Section 3: Ecosystems & Projects -->
+            <!-- Section 3: Ecosystems -->
             <div class="section" data-section="3">
-                <h2>Ecosystems & Research Projects</h2>
+                <h2>Ecosystems</h2>
 
                 <div class="form-group">
                     <label>Which ecosystems does your organization do monitoring in? (Select all that apply)</label>
@@ -533,6 +542,11 @@
                             Sea</label>
                     </div>
                 </div>
+            </div>
+
+            <!-- Section 4: Research Projects -->
+            <div class="section" data-section="4">
+                <h2>Research Projects</h2>
 
                 <div class="form-group">
                     <label>Long-term biodiversity monitoring projects</label>
@@ -591,8 +605,8 @@
                 </div>
             </div>
 
-            <!-- Section 4: Collaboration & Challenges -->
-            <div class="section" data-section="4">
+            <!-- Section 5: Collaboration & Challenges -->
+            <div class="section" data-section="5">
                 <h2>Collaboration & Challenges</h2>
 
                 <div class="form-group">
@@ -622,8 +636,8 @@
                 </div>
             </div>
 
-            <!-- Section 5: Technology & Skills -->
-            <div class="section" data-section="5">
+            <!-- Section 6: Technology & Skills -->
+            <div class="section" data-section="6">
                 <h2>Technology & Skills Gap</h2>
 
                 <div class="form-group">
@@ -684,8 +698,8 @@
                 </div>
             </div>
 
-            <!-- Section 6: Data Management -->
-            <div class="section" data-section="6">
+            <!-- Section 7: Data Management -->
+            <div class="section" data-section="7">
                 <h2>Data Management</h2>
 
                 <div class="form-group">
@@ -719,8 +733,8 @@
                 </div>
             </div>
 
-            <!-- Section 7: Data Sharing -->
-            <div class="section" data-section="7">
+            <!-- Section 8: Data Sharing -->
+            <div class="section" data-section="8">
                 <h2>Data Sharing</h2>
 
                 <div class="form-group">
@@ -837,8 +851,8 @@
                 </div>
             </div>
 
-            <!-- Section 8: National Working Groups -->
-            <div class="section" data-section="8">
+            <!-- Section 9: National Working Groups -->
+            <div class="section" data-section="9">
                 <h2>National Working Groups</h2>
 
                 <div class="form-group">
@@ -885,8 +899,8 @@
                 </div>
             </div>
 
-            <!-- Section 9: Significance & Interest -->
-            <div class="section" data-section="9">
+            <!-- Section 10: Significance & Interest -->
+            <div class="section" data-section="10">
                 <h2>Significance & Interest</h2>
 
                 <div class="form-group">
@@ -971,9 +985,20 @@
                 }
 
                 function nextSection() {
+                    document.querySelectorAll(".validation-error").forEach(el => el.style.display = "none");
+
+                    if (currentSection === 1 && !document.querySelector('input[name="organizationName"]').value.trim()) {
+                        document.getElementById("validateOrgName").style.display = "block";
+                        return;
+                    }
+                    if (currentSection === 2 && !document.querySelector('input[name="doesMonitoring"]:checked')) {
+                        document.getElementById("validateMonitoring").style.display = "block";
+                        return;
+                    }
+
                     let next = currentSection + 1;
-                    if (shouldSkipMonitoringSections() && next >= 3 && next <= 7) {
-                        next = 8;
+                    if (shouldSkipMonitoringSections() && next >= 3 && next <= 8) {
+                        next = 9;
                     }
                     if (next < sections.length) {
                         currentSection = next;
@@ -985,7 +1010,7 @@
 
                 function prevSection() {
                     let prev = currentSection - 1;
-                    if (shouldSkipMonitoringSections() && prev >= 3 && prev <= 7) {
+                    if (shouldSkipMonitoringSections() && prev >= 3 && prev <= 8) {
                         prev = 2;
                     }
                     if (prev >= 0) {
@@ -1227,7 +1252,7 @@ Submit → Thank you page
             <h2>Thank you!</h2>
             <p>Your response has been successfully recorded.</p>
             <p>We sincerely appreciate your time and contribution to the<br>
-            National Biodiversity Monitoring Plan for Belize.</p>
+                National Biodiversity Monitoring Plan for Belize.</p>
         </div>
     </div>
 </body>
