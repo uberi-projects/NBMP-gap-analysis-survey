@@ -289,6 +289,35 @@
             margin-left: 20px;
             margin-top: 15px;
         }
+
+        .thank-you-box {
+            display: none;
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .thank-you-box h2 {
+            color: #166534;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .thank-you-box p {
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .error-msg {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 15px;
+        }
     </style>
 </head>
 
@@ -311,6 +340,7 @@
             <button type="button" class="nav-btn prev" id="prevBtn" onclick="prevSection()">Previous</button>
             <button type="button" class="nav-btn next" id="nextBtn" onclick="nextSection()">Next</button>
         </div>
+        <div class="error-msg" id="errorMsg">There was an error saving your response. Please try again.</div>
 
         <form id="surveyForm">
             <!-- Section 0: Introduction -->
@@ -659,17 +689,26 @@
                 <h2>Data Management</h2>
 
                 <div class="form-group">
-                    <label>When your organization digitizes its biodiversity data, describe how it does so (Select all
-                        that apply)</label>
-                    <div class="checkbox-group">
-                        <label class="checkbox-option"><input type="checkbox" name="digitization"
-                                value="Excel/Google Sheets"> Excel / Google Sheets</label>
-                        <label class="checkbox-option"><input type="checkbox" name="digitization"
-                                value="Never digitizes"> My organization never digitizes its data</label>
-                        <div style="margin-top: 10px;">
-                            <label>Data portals (list):</label>
-                            <input type="text" name="digitizationPortals" placeholder="List data portals...">
-                        </div>
+                    <label>When your organization digitizes its biodiversity data, describe how it does so</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="digitization" value="Excel/Google Sheets"
+                                onchange="toggleDigitizationPortals()">
+                            <span>Excel / Google Sheets</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="digitization" value="Data portals"
+                                onchange="toggleDigitizationPortals()">
+                            <span>Data portals</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="digitization" value="Never digitizes"
+                                onchange="toggleDigitizationPortals()">
+                            <span>My organization never digitizes its data</span>
+                        </label>
+                    </div>
+                    <div id="digitizationPortalsList" class="conditional" style="display: none;">
+                        <input type="text" name="digitizationPortals" placeholder="List data portals...">
                     </div>
                 </div>
 
@@ -926,9 +965,18 @@
                         index === sections.length - 1 ? "Finish" : "Next";
                 }
 
+                function shouldSkipMonitoringSections() {
+                    const noRadio = document.querySelector('input[name="doesMonitoring"][value="No"]');
+                    return noRadio && noRadio.checked;
+                }
+
                 function nextSection() {
-                    if (currentSection < sections.length - 1) {
-                        currentSection++;
+                    let next = currentSection + 1;
+                    if (shouldSkipMonitoringSections() && next >= 3 && next <= 7) {
+                        next = 8;
+                    }
+                    if (next < sections.length) {
+                        currentSection = next;
                         showSection(currentSection);
                     } else {
                         document.getElementById("surveyForm").requestSubmit();
@@ -936,8 +984,12 @@
                 }
 
                 function prevSection() {
-                    if (currentSection > 0) {
-                        currentSection--;
+                    let prev = currentSection - 1;
+                    if (shouldSkipMonitoringSections() && prev >= 3 && prev <= 7) {
+                        prev = 2;
+                    }
+                    if (prev >= 0) {
+                        currentSection = prev;
                         showSection(currentSection);
                     }
                 }
@@ -963,6 +1015,11 @@
                 function toggleOnlineRepos() {
                     const yes = document.querySelector('input[name="onlineRepos"][value="Yes"]').checked;
                     document.getElementById("onlineReposWhich").style.display = yes ? "block" : "none";
+                }
+
+                function toggleDigitizationPortals() {
+                    const dataPortals = document.querySelector('input[name="digitization"][value="Data portals"]').checked;
+                    document.getElementById("digitizationPortalsList").style.display = dataPortals ? "block" : "none";
                 }
 
                 function toggleWorkingGroups() {
@@ -1099,61 +1156,19 @@ Submit → Thank you page
                     const success = await submitToGoogleSheet();
 
                     if (!success) {
-                        alert("There was an error saving your response. Please try again.");
+                        document.getElementById("errorMsg").style.display = "block";
                         nextBtn.disabled = false;
                         prevBtn.disabled = false;
                         nextBtn.textContent = originalNextText;
                         return;
                     }
 
-                    const thankYouWindow = window.open("", "_blank");
-
-                    thankYouWindow.document.write(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>Thank You</title>
-            <style>
-                body {
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-                    background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100vh;
-                    margin: 0;
-                }
-                .box {
-                    background: white;
-                    padding: 40px;
-                    border-radius: 12px;
-                    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-                    text-align: center;
-                    max-width: 500px;
-                }
-                h1 {
-                    color: #166534;
-                    margin-bottom: 15px;
-                }
-                p {
-                    color: #374151;
-                    line-height: 1.6;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="box">
-                <h1>Thank you!</h1>
-                <p>Your response has been successfully recorded.</p>
-                <p>We sincerely appreciate your time and contribution to the<br>
-                National Biodiversity Monitoring Plan for Belize.</p>
-            </div>
-        </body>
-        </html>
-    `);
-
-                    thankYouWindow.document.close();
+                    document.querySelector("h1").style.display = "none";
+                    document.querySelector(".header-info").style.display = "none";
+                    document.querySelector(".progress-bar").style.display = "none";
+                    document.querySelector(".navigation").style.display = "none";
+                    document.getElementById("surveyForm").style.display = "none";
+                    document.getElementById("thankYou").style.display = "block";
                 });
 
                 async function submitToGoogleSheet() {
@@ -1207,6 +1222,13 @@ Submit → Thank you page
 
             </script>
         </form>
+
+        <div class="thank-you-box" id="thankYou">
+            <h2>Thank you!</h2>
+            <p>Your response has been successfully recorded.</p>
+            <p>We sincerely appreciate your time and contribution to the<br>
+            National Biodiversity Monitoring Plan for Belize.</p>
+        </div>
     </div>
 </body>
 
