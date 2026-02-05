@@ -826,13 +826,31 @@
                     <label>Do you publish papers on your data?</label>
                     <div class="radio-group">
                         <label class="radio-option">
-                            <input type="radio" name="publishPapers" value="Yes">
+                            <input type="radio" name="publishPapers" value="Yes" onchange="togglePublishPapers()">
                             <span>Yes</span>
                         </label>
                         <label class="radio-option">
-                            <input type="radio" name="publishPapers" value="No">
+                            <input type="radio" name="publishPapers" value="No" onchange="togglePublishPapers()">
                             <span>No</span>
                         </label>
+                    </div>
+                    <div id="publishPapersFrequency" class="conditional" style="display: none;">
+                        <label>How often do you publish papers?</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="publishPapersFrequency" value="1 or more times a year">
+                                <span>1 or more times a year</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="publishPapersFrequency" value="1 or more times every 5 years">
+                                <span>1 or more times every 5 years</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="publishPapersFrequency"
+                                    value="1 or more times every 10 years">
+                                <span>1 or more times every 10 years</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -1040,6 +1058,20 @@
                 function toggleOnlineRepos() {
                     const yes = document.querySelector('input[name="onlineRepos"][value="Yes"]').checked;
                     document.getElementById("onlineReposWhich").style.display = yes ? "block" : "none";
+                }
+
+
+                function togglePublishPapers() {
+                    const yes = document.querySelector('input[name="publishPapers"][value="Yes"]').checked;
+                    const container = document.getElementById("publishPapersFrequency");
+                    if (!container) return;
+                    container.style.display = yes ? "block" : "none";
+
+                    if (!yes) {
+                        container.querySelectorAll('input[type="radio"]').forEach(radio => {
+                            radio.checked = false;
+                        });
+                    }
                 }
 
                 function toggleDigitizationPortals() {
