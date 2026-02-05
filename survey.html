@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UB-ERI Biodiversity Monitoring Gap Analysis Survey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #166534;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #166534;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-info {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .download-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #16a34a;
+            transition: width 0.3s ease;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .radio-group,
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .radio-option,
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="radio"],
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-scroll {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .nested-group {
+            margin-left: 26px;
+            margin-top: 8px;
+            padding-left: 10px;
+            border-left: 2px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nested-group[hidden] {
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #d1d5db;
+        }
+
+        th {
+            background: #f9fafb;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 8px;
+        }
+
+        td input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .add-row-btn {
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .add-row-btn:hover {
+            background: #15803d;
+        }
+
+        .remove-btn {
+            color: #dc2626;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: underline;
+        }
+
+        .remove-btn:hover {
+            color: #991b1b;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn.prev {
+            background: #4b5563;
+            color: white;
+        }
+
+        .nav-btn.prev:hover:not(:disabled) {
+            background: #374151;
+        }
+
+        .nav-btn.next {
+            background: #16a34a;
+            color: white;
+        }
+
+        .nav-btn.next:hover:not(:disabled) {
+            background: #15803d;
+        }
+
+        .nav-btn:disabled {
+            background: #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .intro-box {
+            background: #f0fdf4;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .intro-box p {
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .intro-box ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .intro-box li {
+            color: #374151;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .footer p {
+            margin-top: 5px;
+        }
+
+        .conditional {
+            margin-left: 20px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>UB-ERI Biodiversity Monitoring Gap Analysis</h1>
+
+        <div class="header-info">
+            <div class="section-info">
+                Section <span id="currentSection">1</span> of <span id="totalSections">10</span>: <span
+                    id="sectionName">Introduction</span>
+            </div>
+            <button class="download-btn" onclick="downloadCSV()">
+                <span>⬇</span> Download CSV
+            </button>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 10%"></div>
+        </div>
+
+        <div class="navigation">
+            <button type="button" class="nav-btn prev" id="prevBtn" onclick="prevSection()">Previous</button>
+            <button type="button" class="nav-btn next" id="nextBtn" onclick="nextSection()">Next</button>
+        </div>
+
+        <form id="surveyForm">
+            <!-- Section 0: Introduction -->
+            <div class="section active" data-section="0">
+                <h2>Welcome to the Gap Analysis Survey</h2>
+                <div class="intro-box">
+                    <p>This survey is being conducted as part of the Gap Analysis for the National Biodiversity
+                        Monitoring Plan (NBMP) currently being developed by the University of Belize Environmental
+                        Research Institute (UB-ERI).</p>
+                    <p>The purpose of this survey is to:</p>
+                    <ol>
+                        <li>Identify the biodiversity monitoring currently taking place in Belize and the methodologies
+                            being used</li>
+                        <li>Determine critical gaps in existing biodiversity monitoring efforts</li>
+                        <li>Highlight priority species and geographic areas of interest</li>
+                    </ol>
+                    <p><strong>Your participation is highly valuable.</strong> The information gathered will support
+                        UB-ERI in developing a comprehensive and coordinated NBMP that addresses key monitoring gaps,
+                        strengthens collaboration among stakeholders, and promotes effective biodiversity conservation
+                        across Belize.</p>
+                </div>
+            </div>
+
+            <!-- Section 1: Organization Info -->
+            <div class="section" data-section="1">
+                <h2>Organization Information</h2>
+                <div class="form-group">
+                    <label>Organization Name *</label>
+                    <input type="text" name="organizationName" placeholder="Enter your organization name">
+                </div>
+            </div>
+
+            <!-- Section 2: Monitoring Activities -->
+            <div class="section" data-section="2">
+                <h2>Biodiversity Monitoring Activities</h2>
+                <div class="form-group">
+                    <label>Does your organization do long-term biodiversity monitoring projects and/or project-based
+                        biodiversity research? *</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="doesMonitoring" value="Yes"
+                                onchange="toggleMonitoringQuestions()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="doesMonitoring" value="No" onchange="toggleMonitoringQuestions()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="monitoringAreasSection" style="display: none;">
+                    <div class="form-group">
+                        <label>Which areas does your organization do monitoring in? (Select all that apply)</label>
+                        <div class="checkbox-scroll checkbox-group">
+                            <label class="checkbox-option"><input type="checkbox" name="monitoringAreas" value="Birds">
+                                Birds</label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="monitoringAreas" value="Mammals"
+                                    onchange="toggleMammalsOptions()">
+                                Mammals
+                            </label>
+                            <div id="mammalsOptions" class="nested-group" hidden>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Mammals - Bats"> Bats</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Mammals - Marine mammals"> Marine mammals</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Mammals - Primates"> Primates</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Mammals - Other large mammals (e.g., jaguars)"> Other large mammals
+                                    (e.g., jaguars)</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Mammals - Other medium-sized mammals (e.g., paca)"> Other medium-sized
+                                    mammals (e.g., paca)</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Mammals - Other small mammals (e.g., hispid cotton rat)"> Other small
+                                    mammals (e.g., hispid cotton rat)</label>
+                            </div>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="monitoringAreas" value="Fish"
+                                    onchange="toggleFishOptions()">
+                                Fish
+                            </label>
+                            <div id="fishOptions" class="nested-group" hidden>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Fish - Freshwater fish"> Freshwater fish</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Fish - Marine fish"> Marine fish</label>
+                            </div>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="monitoringAreas" value="Invertebrates"
+                                    onchange="toggleInvertebratesOptions()">
+                                Invertebrates
+                            </label>
+                            <div id="invertebratesOptions" class="nested-group" hidden>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Invertebrates - Freshwater Macroinvertebrate"> Freshwater
+                                    Macroinvertebrate</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Invertebrates - Agricultural Pest Insects"> Agricultural Pest Insects
+                                    (e.g., stem-borers)</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Invertebrates - Disease Vector Insects"> Disease Vector Insects
+                                    (e.g., mosquitoes, screwworms)</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Invertebrates - Butterflies"> Butterflies</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Invertebrates - Bees"> Bees</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Invertebrates - Corals"> Corals</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Invertebrates - Snails"> Snails</label>
+                            </div>
+                            <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                    value="Amphibians"> Amphibians</label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="monitoringAreas" value="Reptiles"
+                                    onchange="toggleReptilesOptions()">
+                                Reptiles
+                            </label>
+                            <div id="reptilesOptions" class="nested-group" hidden>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Reptiles - Snakes"> Snakes</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Reptiles - Crocodiles"> Crocodiles</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Turtles"> Turtles</label>
+                            </div>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="monitoringAreas" value="Plants"
+                                    onchange="togglePlantsOptions()">
+                                Plants
+                            </label>
+                            <div id="plantsOptions" class="nested-group" hidden>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Plants - Mangroves"> Mangroves</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Plants - Seaweed/Seagrass/Macroalgae">
+                                    Seaweed/Seagrass/Macroalgae</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Plants - Hardwood Trees"> Hardwood Trees</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Plants - Epiphytes"> Epiphytes</label>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <input type="text" name="monitoringAreasOther" placeholder="Other (please specify)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Ecosystems & Projects -->
+            <div class="section" data-section="3">
+                <h2>Ecosystems & Research Projects</h2>
+
+                <div class="form-group">
+                    <label>Which ecosystems does your organization do monitoring in? (Select all that apply)</label>
+                    <div class="checkbox-scroll checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems" value="Savannah">
+                            Savannah</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems" value="Pine Forest">
+                            Pine Forest</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems"
+                                value="Broad-leaved Forest"> Broad-leaved Forest</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems" value="Shrubland">
+                            Shrubland</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems" value="Wetland">
+                            Wetland</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems" value="Riparian">
+                            Riparian</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems"
+                                value="Agricultural Areas"> Agricultural Areas</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems" value="Urban">
+                            Urban</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems"
+                                value="Mangrove and littoral forest"> Mangrove and littoral forest</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems" value="Seagrass">
+                            Seagrass</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems" value="Sparse Algae">
+                            Sparse Algae</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems" value="Lagoon">
+                            Lagoon</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems" value="Coral Reef">
+                            Coral Reef</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems" value="Deep Reef"> Deep
+                            Reef</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystems" value="Open Sea"> Open
+                            Sea</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Long-term biodiversity monitoring projects</label>
+                    <div style="overflow-x: auto;">
+                        <table id="longTermTable">
+                            <thead>
+                                <tr>
+                                    <th>Species/Taxa</th>
+                                    <th>Monitored Sites</th>
+                                    <th>Year(s)</th>
+                                    <th>Methods</th>
+                                    <th>Still Ongoing?</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="longTermBody">
+                                <tr>
+                                    <td><input type="text" name="ltSpecies_0"></td>
+                                    <td><input type="text" name="ltSites_0"></td>
+                                    <td><input type="text" name="ltYears_0"></td>
+                                    <td><input type="text" name="ltMethods_0"></td>
+                                    <td><input type="text" name="ltOngoing_0" placeholder="Yes/No"></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="add-row-btn" onclick="addLongTermRow()">Add Row</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Project-based research conducted in the past 5 years</label>
+                    <div style="overflow-x: auto;">
+                        <table id="recentResearchTable">
+                            <thead>
+                                <tr>
+                                    <th>Species/Taxa</th>
+                                    <th>Monitored Sites</th>
+                                    <th>Year(s)</th>
+                                    <th>Methods</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentResearchBody">
+                                <tr>
+                                    <td><input type="text" name="rrSpecies_0"></td>
+                                    <td><input type="text" name="rrSites_0"></td>
+                                    <td><input type="text" name="rrYears_0"></td>
+                                    <td><input type="text" name="rrMethods_0"></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="add-row-btn" onclick="addRecentResearchRow()">Add Row</button>
+                </div>
+            </div>
+
+            <!-- Section 4: Collaboration & Challenges -->
+            <div class="section" data-section="4">
+                <h2>Collaboration & Challenges</h2>
+
+                <div class="form-group">
+                    <label>Are these monitoring/research activities conducted in collaboration with other
+                        organizations?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="collaboration" value="Yes" onchange="toggleCollaboration()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="collaboration" value="No" onchange="toggleCollaboration()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                    <div id="collaborationOrgs" class="conditional" style="display: none;">
+                        <label>Which organizations do you most often collaborate with?</label>
+                        <textarea name="collaborationOrgsList" rows="3"
+                            placeholder="List the organizations..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>What are the major challenges for conducting these monitoring activities? (Please provide
+                        lots of detail where possible)</label>
+                    <textarea name="challenges" rows="5" placeholder="Describe the challenges..."></textarea>
+                </div>
+            </div>
+
+            <!-- Section 5: Technology & Skills -->
+            <div class="section" data-section="5">
+                <h2>Technology & Skills Gap</h2>
+
+                <div class="form-group">
+                    <label>What data collection tools does your organization use? (Select all that apply)</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="dataTools"
+                                value="Printed Datasheets"> Printed Datasheets</label>
+                        <label class="checkbox-option"><input type="checkbox" name="dataTools" value="SMART">
+                            SMART</label>
+                        <label class="checkbox-option"><input type="checkbox" name="dataTools" value="KoboToolbox">
+                            KoboToolbox</label>
+                        <label class="checkbox-option"><input type="checkbox" name="dataTools" value="Survey123">
+                            Survey123 (ArcGIS Data Collection)</label>
+                        <div style="margin-top: 10px;">
+                            <input type="text" name="dataToolsOther" placeholder="Others (please specify)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>What technological gaps does your organization have? (Select all that apply)</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="techGaps"
+                                value="Analysis of acoustic recordings"> Analysis of acoustic recordings</label>
+                        <label class="checkbox-option"><input type="checkbox" name="techGaps"
+                                value="Acoustic recorders"> Acoustic recorders</label>
+                        <label class="checkbox-option"><input type="checkbox" name="techGaps"
+                                value="Drones for mapping"> Drones for mapping</label>
+                        <label class="checkbox-option"><input type="checkbox" name="techGaps"
+                                value="Lack of cloud storage"> Lack of cloud storage or a secure backup system</label>
+                        <div style="margin-top: 10px;">
+                            <input type="text" name="techGapsOther" placeholder="Others (please specify)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>What technical skill and training gaps does your organization have? (Select all that
+                        apply)</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="skillGaps"
+                                value="Data analysis skills"> Data analysis skills</label>
+                        <label class="checkbox-option"><input type="checkbox" name="skillGaps"
+                                value="Limited access to GIS software"> Limited access to GIS software</label>
+                        <label class="checkbox-option"><input type="checkbox" name="skillGaps"
+                                value="Limited technical support"> Limited technical support or IT personnel</label>
+                        <label class="checkbox-option"><input type="checkbox" name="skillGaps" value="High turnover">
+                            High turnover leading to repeated skill loss</label>
+                        <label class="checkbox-option"><input type="checkbox" name="skillGaps" value="Report writing">
+                            Report writing</label>
+                        <label class="checkbox-option"><input type="checkbox" name="skillGaps"
+                                value="Data collection skills"> Lack of technical skills for conducting data
+                            collection</label>
+                        <div style="margin-top: 10px;">
+                            <input type="text" name="skillGapsOther" placeholder="Others (please specify)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 6: Data Management -->
+            <div class="section" data-section="6">
+                <h2>Data Management</h2>
+
+                <div class="form-group">
+                    <label>When your organization digitizes its biodiversity data, describe how it does so (Select all
+                        that apply)</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="digitization"
+                                value="Excel/Google Sheets"> Excel / Google Sheets</label>
+                        <label class="checkbox-option"><input type="checkbox" name="digitization"
+                                value="Never digitizes"> My organization never digitizes its data</label>
+                        <div style="margin-top: 10px;">
+                            <label>Data portals (list):</label>
+                            <input type="text" name="digitizationPortals" placeholder="List data portals...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you have any data that is currently undigitized? If so, tell us about the data and whether
+                        you would like assistance in digitizing it.</label>
+                    <textarea name="undigitizedData" rows="4" placeholder="Describe any undigitized data..."></textarea>
+                </div>
+            </div>
+
+            <!-- Section 7: Data Sharing -->
+            <div class="section" data-section="7">
+                <h2>Data Sharing</h2>
+
+                <div class="form-group">
+                    <label>Do you share your biodiversity data outside your organization?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="shareData" value="Yes" onchange="toggleShareData()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="shareData" value="No" onchange="toggleShareData()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                    <div id="shareDataWho" class="conditional" style="display: none;">
+                        <input type="text" name="shareDataWhom" placeholder="To whom do you share?">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you publish your data on any online repositories?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="onlineRepos" value="Yes" onchange="toggleOnlineRepos()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="onlineRepos" value="No" onchange="toggleOnlineRepos()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                    <div id="onlineReposWhich" class="conditional" style="display: none;">
+                        <input type="text" name="onlineReposWhichOnes" placeholder="Which ones?">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Would you be interested in publishing your data on the GBIF online repository (gbif.org), if
+                        you were given support by UB-ERI to do so to increase the visibility, traceability, and impact
+                        of your work?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="gbifInterest" value="Yes">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="gbifInterest" value="No">
+                            <span>No</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="gbifInterest" value="Maybe">
+                            <span>Maybe</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you submit reports on your biodiversity data to the government of Belize?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="govReports" value="Yes">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="govReports" value="No">
+                            <span>No</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you publish your technical reports online (e.g., on a website)?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="publishOnline" value="Yes">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="publishOnline" value="No">
+                            <span>No</span>
+                        </label>
+                    </div>
+                </div>
+
+
+                <script>
+                    /* -----------------------------
+                       Section navigation & progress
+                    ------------------------------ */
+                    let currentSection = 0;
+                    const sections = document.querySelectorAll(".section");
+                    const totalSections = sections.length;
+
+                    document.getElementById("totalSections").textContent = totalSections;
+
+                    function showSection(index) {
+                        sections.forEach((s, i) => {
+                            s.classList.toggle("active", i === index);
+                        });
+
+                        document.getElementById("currentSection").textContent = index + 1;
+                        document.getElementById("sectionName").textContent =
+                            sections[index].querySelector("h2")?.textContent || "Introduction";
+
+                        const progress = ((index + 1) / sections.length) * 100;
+                        document.getElementById("progressFill").style.width = `${progress}%`;
+
+                        document.getElementById("prevBtn").disabled = index === 0;
+                        document.getElementById("nextBtn").textContent =
+                            index === sections.length - 1 ? "Finish" : "Next";
+                    }
+
+                    function nextSection() {
+                        if (currentSection < sections.length - 1) {
+                            currentSection++;
+                            showSection(currentSection);
+                        } else {
+                            document.getElementById("surveyForm").requestSubmit();
+                        }
+                    }
+
+                    function prevSection() {
+                        if (currentSection > 0) {
+                            currentSection--;
+                            showSection(currentSection);
+                        }
+                    }
+
+                    /* -----------------------------
+                       Conditional logic
+                    ------------------------------ */
+                    function toggleMonitoringQuestions() {
+                        const yes = document.querySelector('input[name="doesMonitoring"][value="Yes"]').checked;
+                        document.getElementById("monitoringAreasSection").style.display = yes ? "block" : "none";
+                    }
+
+                    function toggleCollaboration() {
+                        const yes = document.querySelector('input[name="collaboration"][value="Yes"]').checked;
+                        document.getElementById("collaborationOrgs").style.display = yes ? "block" : "none";
+                    }
+
+                    function toggleShareData() {
+                        const yes = document.querySelector('input[name="shareData"][value="Yes"]').checked;
+                        document.getElementById("shareDataWho").style.display = yes ? "block" : "none";
+                    }
+
+                    function toggleOnlineRepos() {
+                        const yes = document.querySelector('input[name="onlineRepos"][value="Yes"]').checked;
+                        document.getElementById("onlineReposWhich").style.display = yes ? "block" : "none";
+                    }
+
+                    function toggleMammalsOptions() {
+                        const mammals = document.querySelector('input[name="monitoringAreas"][value="Mammals"]').checked;
+                        const container = document.getElementById("mammalsOptions");
+                        if (!container) return;
+                        container.hidden = !mammals;
+
+                        if (!mammals) {
+                            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                                cb.checked = false;
+                            });
+                        }
+                    }
+
+                    function toggleFishOptions() {
+                        const fish = document.querySelector('input[name="monitoringAreas"][value="Fish"]').checked;
+                        const container = document.getElementById("fishOptions");
+                        if (!container) return;
+                        container.hidden = !fish;
+
+                        if (!fish) {
+                            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                                cb.checked = false;
+                            });
+                        }
+                    }
+
+                    function toggleInvertebratesOptions() {
+                        const inv = document.querySelector('input[name="monitoringAreas"][value="Invertebrates"]').checked;
+                        const container = document.getElementById("invertebratesOptions");
+                        if (!container) return;
+                        container.hidden = !inv;
+
+                        if (!inv) {
+                            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                                cb.checked = false;
+                            });
+                        }
+                    }
+
+                    function toggleReptilesOptions() {
+                        const rep = document.querySelector('input[name="monitoringAreas"][value="Reptiles"]').checked;
+                        const container = document.getElementById("reptilesOptions");
+                        if (!container) return;
+                        container.hidden = !rep;
+
+                        if (!rep) {
+                            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                                cb.checked = false;
+                            });
+                        }
+                    }
+
+                    function togglePlantsOptions() {
+                        const plants = document.querySelector('input[name="monitoringAreas"][value="Plants"]').checked;
+                        const container = document.getElementById("plantsOptions");
+                        if (!container) return;
+                        container.hidden = !plants;
+
+                        if (!plants) {
+                            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                                cb.checked = false;
+                            });
+                        }
+                    }
+
+                    /* -----------------------------
+                       Dynamic table rows
+                    ------------------------------ */
+                    let ltRow = 1;
+                    function addLongTermRow() {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+        <td><input type="text" name="ltSpecies_${ltRow}"></td>
+        <td><input type="text" name="ltSites_${ltRow}"></td>
+        <td><input type="text" name="ltYears_${ltRow}"></td>
+        <td><input type="text" name="ltMethods_${ltRow}"></td>
+        <td><input type="text" name="ltOngoing_${ltRow}"></td>
+        <td><span class="remove-btn" onclick="this.closest('tr').remove()">Remove</span></td>
+    `;
+                        document.getElementById("longTermBody").appendChild(row);
+                        ltRow++;
+                    }
+
+                    let rrRow = 1;
+                    function addRecentResearchRow() {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+        <td><input type="text" name="rrSpecies_${rrRow}"></td>
+        <td><input type="text" name="rrSites_${rrRow}"></td>
+        <td><input type="text" name="rrYears_${rrRow}"></td>
+        <td><input type="text" name="rrMethods_${rrRow}"></td>
+        <td><span class="remove-btn" onclick="this.closest('tr').remove()">Remove</span></td>
+    `;
+                        document.getElementById("recentResearchBody").appendChild(row);
+                        rrRow++;
+                    }
+
+                    /* -----------------------------
+                       CSV export
+                    ------------------------------ */
+                    function downloadCSV() {
+                        const password = prompt("Please enter the password to download the CSV:");
+
+                        if (password !== "UB123") {
+                            alert("Incorrect password. CSV download cancelled.");
+                            return;
+                        }
+
+                        const form = document.getElementById("surveyForm");
+                        const data = new FormData(form);
+                        const rows = [];
+
+                        for (let [key, value] of data.entries()) {
+                            rows.push([key, value]);
+                        }
+
+                        let csv = "Question,Response\n";
+                        rows.forEach(r => {
+                            csv += `"${r[0]}","${r[1].replace(/"/g, '""')}"\n`;
+                        });
+
+                        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = "UB-ERI_Gap_Analysis_Survey.csv";
+                        link.click();
+                    }
+
+                    /* -----------------------------
+                       Init
+                    ------------------------------ */
+                    showSection(currentSection);
+
+
+                    /* -----------------------------
+   Submit → Thank you page
+------------------------------ */
+                    document.getElementById("surveyForm").addEventListener("submit", async function (e) {
+                        e.preventDefault();
+
+                        const nextBtn = document.getElementById("nextBtn");
+                        const prevBtn = document.getElementById("prevBtn");
+                        const originalNextText = nextBtn.textContent;
+                        nextBtn.disabled = true;
+                        prevBtn.disabled = true;
+                        nextBtn.textContent = "Submitting...";
+
+                        const success = await submitToGoogleSheet();
+
+                        if (!success) {
+                            alert("There was an error saving your response. Please try again.");
+                            nextBtn.disabled = false;
+                            prevBtn.disabled = false;
+                            nextBtn.textContent = originalNextText;
+                            return;
+                        }
+
+                        const thankYouWindow = window.open("", "_blank");
+
+                        thankYouWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Thank You</title>
+            <style>
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+                    background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100vh;
+                    margin: 0;
+                }
+                .box {
+                    background: white;
+                    padding: 40px;
+                    border-radius: 12px;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+                    text-align: center;
+                    max-width: 500px;
+                }
+                h1 {
+                    color: #166534;
+                    margin-bottom: 15px;
+                }
+                p {
+                    color: #374151;
+                    line-height: 1.6;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="box">
+                <h1>Thank you!</h1>
+                <p>Your response has been successfully recorded.</p>
+                <p>We sincerely appreciate your time and contribution to the<br>
+                National Biodiversity Monitoring Plan for Belize.</p>
+            </div>
+        </body>
+        </html>
+    `);
+
+                        thankYouWindow.document.close();
+                    });
+
+                    async function submitToGoogleSheet() {
+                        const form = document.getElementById("surveyForm");
+                        const formData = new FormData(form);
+
+                        // IMPORTANT: handle multi-value fields (checkboxes)
+                        const data = {};
+                        for (let [key, value] of formData.entries()) {
+                            if (data[key]) {
+                                data[key] += "; " + value;   // combine checkbox values
+                            } else {
+                                data[key] = value;
+                            }
+                        }
+
+                        try {
+                            const response = await fetch(
+                                "https://script.google.com/macros/s/AKfycbwO0CAGANxGtoIWInOaIn6HiEZUIUnqMUuZRIOTzcQbBoVfsSg86weZNjCWD_bE6_-Nxg/exec",
+                                {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify(data)
+                                }
+                            );
+
+                            return response.ok;
+                        } catch (err) {
+                            console.error("Submit failed:", err);
+
+                            // Retry with no-cors (common workaround for Apps Script CORS from file://)
+                            try {
+                                await fetch(
+                                    "https://script.google.com/macros/s/AKfycbx62RysZB3Bt8T7-XEPL1BM0mJqH68gLneAtXMJoV3UBNRXuDnHqVCfrsn6VYhItYv-2g/exec",
+                                    {
+                                        method: "POST",
+                                        mode: "no-cors",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify(data)
+                                    }
+                                );
+                                return true; // can't read response in no-cors, assume sent
+                            } catch (retryErr) {
+                                console.error("Submit retry failed:", retryErr);
+                                return false;
+                            }
+                        }
+                    }
+
+
+
+                </script>
+        </form>
+    </div>
+</body>
+
+</html>
