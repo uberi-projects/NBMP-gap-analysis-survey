@@ -420,7 +420,7 @@
 
                 <div id="monitoringAreasSection" style="display: none;">
                     <div class="form-group">
-                        <label>Which areas does your organization do monitoring in? (Select all that apply)</label>
+                        <label>Which taxa does your organization do monitoring in? (Select all that apply)</label>
                         <div class="checkbox-scroll checkbox-group">
                             <label class="checkbox-option"><input type="checkbox" name="monitoringAreas" value="Birds">
                                 Birds</label>
@@ -454,35 +454,82 @@
                             <div id="fishOptions" class="nested-group" hidden>
                                 <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
                                         value="Fish - Freshwater fish"> Freshwater fish</label>
-                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
-                                        value="Fish - Marine fish"> Marine fish</label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="monitoringAreas" value="Fish - Marine fish"
+                                        onchange="toggleMarineFishOptions()">
+                                    Marine fish
+                                </label>
+                                <div id="marineFishOptions" class="nested-group" hidden>
+                                    <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                            value="Fish - Marine fish - Sharks"> Sharks</label>
+                                    <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                            value="Fish - Marine fish - Commercial fish"> Commercial fish</label>
+                                    <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                            value="Fish - Marine fish - Reef fish"> Reef fish</label>
+                                    <input type="text" name="marineFishOther" placeholder="Other (please specify)"
+                                        style="margin-top: 5px;">
+                                </div>
                             </div>
                             <label class="checkbox-option">
-                                <input type="checkbox" name="monitoringAreas" value="Invertebrates"
-                                    onchange="toggleInvertebratesOptions()">
-                                Invertebrates
+                                <input type="checkbox" name="monitoringAreas" value="Marine Invertebrates"
+                                    onchange="toggleMarineInvertebratesOptions()">
+                                Marine Invertebrates (e.g., Coral)
                             </label>
-                            <div id="invertebratesOptions" class="nested-group" hidden>
+                            <div id="marineInvertebratesOptions" class="nested-group" hidden>
                                 <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
-                                        value="Invertebrates - Freshwater Macroinvertebrate"> Freshwater
-                                    Macroinvertebrate</label>
+                                        value="Marine Invertebrates - Conch"> Conch</label>
                                 <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
-                                        value="Invertebrates - Agricultural Pest Insects"> Agricultural Pest Insects
-                                    (e.g., stem-borers)</label>
+                                        value="Marine Invertebrates - Crustaceans"> Crustaceans</label>
                                 <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
-                                        value="Invertebrates - Disease Vector Insects"> Disease Vector Insects
-                                    (e.g., mosquitoes, screwworms)</label>
+                                        value="Marine Invertebrates - Mollusks"> Mollusks</label>
                                 <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
-                                        value="Invertebrates - Butterflies"> Butterflies</label>
+                                        value="Marine Invertebrates - Crabs"> Crabs</label>
                                 <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
-                                        value="Invertebrates - Bees"> Bees</label>
+                                        value="Marine Invertebrates - Lobsters"> Lobsters</label>
                                 <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
-                                        value="Invertebrates - Corals"> Corals</label>
+                                        value="Marine Invertebrates - Corals"> Corals</label>
                                 <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
-                                        value="Invertebrates - Snails"> Snails</label>
+                                        value="Marine Invertebrates - Urchins"> Urchins</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Marine Invertebrates - Sea Cucumbers"> Sea Cucumbers</label>
+                                <input type="text" name="marineInvertebratesOther" placeholder="Other (please specify)"
+                                    style="margin-top: 5px;">
                             </div>
-                            <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
-                                    value="Amphibians"> Amphibians</label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="monitoringAreas" value="Freshwater Macroinvertebrate"
+                                    onchange="toggleFreshwaterMacroOptions()">
+                                Freshwater Macroinvertebrate
+                            </label>
+                            <div id="freshwaterMacroOptions" class="nested-group" hidden>
+                                <input type="text" name="freshwaterMacroSpecify" placeholder="Specify">
+                            </div>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="monitoringAreas" value="Terrestrial Macroinvertebrates"
+                                    onchange="toggleTerrestrialInvertebratesOptions()">
+                                Terrestrial Macroinvertebrates (e.g., Insects)
+                            </label>
+                            <div id="terrestrialInvertebratesOptions" class="nested-group" hidden>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Terrestrial Macroinvertebrates - Agricultural Pest Insects">
+                                    Agricultural Pest Insects (e.g., stem-borers)</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Terrestrial Macroinvertebrates - Disease Vector Insects">
+                                    Disease Vector Insects (e.g., mosquitoes, screwworms)</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Terrestrial Macroinvertebrates - Butterflies"> Butterflies</label>
+                                <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
+                                        value="Terrestrial Macroinvertebrates - Bees"> Bees</label>
+                                <input type="text" name="terrestrialInvertebratesOther"
+                                    placeholder="Other (please specify)" style="margin-top: 5px;">
+                            </div>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="monitoringAreas" value="Amphibians"
+                                    onchange="toggleAmphibiansOptions()">
+                                Amphibians
+                            </label>
+                            <div id="amphibiansOptions" class="nested-group" hidden>
+                                <input type="text" name="amphibiansSpecify" placeholder="Specify (please specify)">
+                            </div>
                             <label class="checkbox-option">
                                 <input type="checkbox" name="monitoringAreas" value="Reptiles"
                                     onchange="toggleReptilesOptions()">
@@ -495,6 +542,8 @@
                                         value="Reptiles - Crocodiles"> Crocodiles</label>
                                 <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
                                         value="Turtles"> Turtles</label>
+                                <input type="text" name="reptilesOther" placeholder="Other (please specify)"
+                                    style="margin-top: 5px;">
                             </div>
                             <label class="checkbox-option">
                                 <input type="checkbox" name="monitoringAreas" value="Plants"
@@ -511,9 +560,11 @@
                                         value="Plants - Hardwood Trees"> Hardwood Trees</label>
                                 <label class="checkbox-option"><input type="checkbox" name="monitoringAreas"
                                         value="Plants - Epiphytes"> Epiphytes</label>
+                                <input type="text" name="plantsOther" placeholder="Other (please specify)"
+                                    style="margin-top: 5px;">
                             </div>
                             <div style="margin-top: 10px;">
-                                <input type="text" name="monitoringAreasOther" placeholder="Other (please specify)">
+                                <input type="text" name="monitoringAreasOther" placeholder="Other">
                             </div>
                         </div>
                     </div>
@@ -670,7 +721,7 @@
                         <label class="checkbox-option"><input type="checkbox" name="dataTools" value="Survey123">
                             Survey123 (ArcGIS Data Collection)</label>
                         <div style="margin-top: 10px;">
-                            <input type="text" name="dataToolsOther" placeholder="Others (please specify)">
+                            <input type="text" name="dataToolsOther" placeholder="Others">
                         </div>
                     </div>
                 </div>
@@ -687,7 +738,7 @@
                         <label class="checkbox-option"><input type="checkbox" name="techGaps"
                                 value="Lack of cloud storage"> Lack of cloud storage or a secure backup system</label>
                         <div style="margin-top: 10px;">
-                            <input type="text" name="techGapsOther" placeholder="Others (please specify)">
+                            <input type="text" name="techGapsOther" placeholder="Others">
                         </div>
                     </div>
                 </div>
@@ -710,7 +761,7 @@
                                 value="Data collection skills"> Lack of technical skills for conducting data
                             collection</label>
                         <div style="margin-top: 10px;">
-                            <input type="text" name="skillGapsOther" placeholder="Others (please specify)">
+                            <input type="text" name="skillGapsOther" placeholder="Others">
                         </div>
                     </div>
                 </div>
@@ -1138,18 +1189,84 @@
                         container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                             cb.checked = false;
                         });
+                        container.querySelectorAll('input[type="text"]').forEach(t => {
+                            t.value = '';
+                        });
+                        const marineContainer = document.getElementById("marineFishOptions");
+                        if (marineContainer) marineContainer.hidden = true;
                     }
                 }
 
-                function toggleInvertebratesOptions() {
-                    const inv = document.querySelector('input[name="monitoringAreas"][value="Invertebrates"]').checked;
-                    const container = document.getElementById("invertebratesOptions");
+                function toggleMarineFishOptions() {
+                    const marine = document.querySelector('input[name="monitoringAreas"][value="Fish - Marine fish"]').checked;
+                    const container = document.getElementById("marineFishOptions");
                     if (!container) return;
-                    container.hidden = !inv;
+                    container.hidden = !marine;
 
-                    if (!inv) {
+                    if (!marine) {
                         container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                             cb.checked = false;
+                        });
+                        container.querySelectorAll('input[type="text"]').forEach(t => {
+                            t.value = '';
+                        });
+                    }
+                }
+
+                function toggleMarineInvertebratesOptions() {
+                    const checked = document.querySelector('input[name="monitoringAreas"][value="Marine Invertebrates"]').checked;
+                    const container = document.getElementById("marineInvertebratesOptions");
+                    if (!container) return;
+                    container.hidden = !checked;
+
+                    if (!checked) {
+                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                            cb.checked = false;
+                        });
+                        container.querySelectorAll('input[type="text"]').forEach(t => {
+                            t.value = '';
+                        });
+                    }
+                }
+
+                function toggleFreshwaterMacroOptions() {
+                    const checked = document.querySelector('input[name="monitoringAreas"][value="Freshwater Macroinvertebrate"]').checked;
+                    const container = document.getElementById("freshwaterMacroOptions");
+                    if (!container) return;
+                    container.hidden = !checked;
+
+                    if (!checked) {
+                        container.querySelectorAll('input[type="text"]').forEach(t => {
+                            t.value = '';
+                        });
+                    }
+                }
+
+                function toggleTerrestrialInvertebratesOptions() {
+                    const checked = document.querySelector('input[name="monitoringAreas"][value="Terrestrial Macroinvertebrates"]').checked;
+                    const container = document.getElementById("terrestrialInvertebratesOptions");
+                    if (!container) return;
+                    container.hidden = !checked;
+
+                    if (!checked) {
+                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                            cb.checked = false;
+                        });
+                        container.querySelectorAll('input[type="text"]').forEach(t => {
+                            t.value = '';
+                        });
+                    }
+                }
+
+                function toggleAmphibiansOptions() {
+                    const checked = document.querySelector('input[name="monitoringAreas"][value="Amphibians"]').checked;
+                    const container = document.getElementById("amphibiansOptions");
+                    if (!container) return;
+                    container.hidden = !checked;
+
+                    if (!checked) {
+                        container.querySelectorAll('input[type="text"]').forEach(t => {
+                            t.value = '';
                         });
                     }
                 }
@@ -1164,6 +1281,9 @@
                         container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                             cb.checked = false;
                         });
+                        container.querySelectorAll('input[type="text"]').forEach(t => {
+                            t.value = '';
+                        });
                     }
                 }
 
@@ -1176,6 +1296,9 @@
                     if (!plants) {
                         container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                             cb.checked = false;
+                        });
+                        container.querySelectorAll('input[type="text"]').forEach(t => {
+                            t.value = '';
                         });
                     }
                 }
@@ -1287,7 +1410,11 @@
                     toggleMonitoringQuestions();
                     toggleMammalsOptions();
                     toggleFishOptions();
-                    toggleInvertebratesOptions();
+                    toggleMarineFishOptions();
+                    toggleMarineInvertebratesOptions();
+                    toggleFreshwaterMacroOptions();
+                    toggleTerrestrialInvertebratesOptions();
+                    toggleAmphibiansOptions();
                     toggleReptilesOptions();
                     togglePlantsOptions();
                     toggleCollaboration();
