@@ -727,41 +727,103 @@
                 </div>
 
                 <div class="form-group">
-                    <label>What technological gaps does your organization have? (Select all that apply)</label>
+                    <label>What technological gaps does your organization have for research and monitoring purposes?
+                        (Select all that apply)</label>
                     <div class="checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="techGaps" value="None"> None</label>
                         <label class="checkbox-option"><input type="checkbox" name="techGaps"
-                                value="Analysis of acoustic recordings"> Analysis of acoustic recordings</label>
+                                value="Lack of smart devices"> Lack of smart devices (e.g. phones,
+                            tablets)</label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="techGaps" value="Lack of survey equipment"
+                                onchange="toggleSurveyEquipmentSpecify()">
+                            Lack of survey equipment (e.g. camera traps, lasers, acoustic recorders)
+                        </label>
+                        <div id="surveyEquipmentSpecify" class="nested-group" hidden>
+                            <input type="text" name="surveyEquipmentSpecify" placeholder="Specify (please specify)">
+                        </div>
                         <label class="checkbox-option"><input type="checkbox" name="techGaps"
-                                value="Acoustic recorders"> Acoustic recorders</label>
+                                value="Lack of drones for mapping"> Lack of drones for mapping</label>
                         <label class="checkbox-option"><input type="checkbox" name="techGaps"
-                                value="Drones for mapping"> Drones for mapping</label>
-                        <label class="checkbox-option"><input type="checkbox" name="techGaps"
-                                value="Lack of cloud storage"> Lack of cloud storage or a secure backup system</label>
+                                value="Lack of cloud storage"> Lack of cloud storage or a secure backup
+                            system</label>
                         <div style="margin-top: 10px;">
-                            <input type="text" name="techGapsOther" placeholder="Others">
+                            <input type="text" name="techGapsOther" placeholder="Others (please specify)">
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>What technical skill and training gaps does your organization have? (Select all that
+                    <label>Do you have the complementary software to operate and process data from your technological
+                        survey equipment? If so, which softwares do you use?</label>
+                    <textarea name="complementarySoftware" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Are you missing any other complementary software, equipment, and technology needed to
+                        increase
+                        success of your long-term and project-based monitoring and research project? For example, online
+                        subscriptions. If so, describe.</label>
+                    <textarea name="missingSoftwareEquipment" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>What technical skills and training gaps does your organization have? (Select all that
                         apply)</label>
                     <div class="checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="skillGaps" value="None">
+                            None</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
-                                value="Data analysis skills"> Data analysis skills</label>
+                                value="Limited data analysis skills"> Lack of / limited data analysis skills</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
                                 value="Limited access to GIS software"> Limited access to GIS software</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
                                 value="Limited technical support"> Limited technical support or IT personnel</label>
-                        <label class="checkbox-option"><input type="checkbox" name="skillGaps" value="High turnover">
-                            High turnover leading to repeated skill loss</label>
-                        <label class="checkbox-option"><input type="checkbox" name="skillGaps" value="Report writing">
-                            Report writing</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
-                                value="Data collection skills"> Lack of technical skills for conducting data
-                            collection</label>
+                                value="High staff turnover"> High staff turnover leading to repeated skill loss</label>
+                        <label class="checkbox-option"><input type="checkbox" name="skillGaps"
+                                value="Difficulty with report writing"> Difficulty with report writing</label>
+                        <label class="checkbox-option"><input type="checkbox" name="skillGaps"
+                                value="Lack of technical skills for biodiversity projects"> Lack of technical skills for
+                            developing biodiversity research and monitoring projects</label>
                         <div style="margin-top: 10px;">
-                            <input type="text" name="skillGapsOther" placeholder="Others">
+                            <input type="text" name="skillGapsOther" placeholder="Others (please specify)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>What type of training is staff continuously needing? (Select all that apply)</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="trainingNeeds" value="None">
+                            None</label>
+                        <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
+                                value="Technical training"> Technical training</label>
+                        <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
+                                value="Research and monitoring development"> Research and monitoring
+                            development</label>
+                        <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
+                                value="Equipment operation"> Equipment operation</label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="trainingNeeds" value="Software"
+                                onchange="toggleSoftwareTrainingOptions()">
+                            Software
+                        </label>
+                        <div id="softwareTrainingOptions" class="nested-group" hidden>
+                            <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
+                                    value="Software - Data processing software"> Data processing software</label>
+                            <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
+                                    value="Software - Data analysis software"> Data analysis software</label>
+                            <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
+                                    value="Software - Geospatial software"> Geospatial software</label>
+                            <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
+                                    value="Software - Equipment operation software"> Equipment operation
+                                software</label>
+                        </div>
+                        <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
+                                value="Working with data"> Working with data</label>
+                        <div style="margin-top: 10px;">
+                            <input type="text" name="trainingNeedsOther" placeholder="Other (please specify)">
                         </div>
                     </div>
                 </div>
@@ -773,21 +835,21 @@
 
                 <div class="form-group">
                     <label>When your organization digitizes its biodiversity data, describe how it does so</label>
-                    <div class="radio-group">
-                        <label class="radio-option">
-                            <input type="radio" name="digitization" value="Excel/Google Sheets"
+                    <div class="checkbox-group">
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="digitization" value="Excel/Google Sheets"
                                 onchange="toggleDigitizationPortals()">
-                            <span>Excel / Google Sheets</span>
+                            Excel / Google Sheets
                         </label>
-                        <label class="radio-option">
-                            <input type="radio" name="digitization" value="Data portals"
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="digitization" value="Data portals"
                                 onchange="toggleDigitizationPortals()">
-                            <span>Data portals</span>
+                            Data portals
                         </label>
-                        <label class="radio-option">
-                            <input type="radio" name="digitization" value="Never digitizes"
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="digitization" value="Never digitizes"
                                 onchange="toggleDigitizationPortals()">
-                            <span>My organization never digitizes its data</span>
+                            My organization never digitizes its data
                         </label>
                     </div>
                     <div id="digitizationPortalsList" class="conditional" style="display: none;">
@@ -807,62 +869,6 @@
                 <h2>Data Sharing</h2>
 
                 <div class="form-group">
-                    <label>Do you share your biodiversity data outside your organization?</label>
-                    <div class="radio-group">
-                        <label class="radio-option">
-                            <input type="radio" name="shareData" value="Yes" onchange="toggleShareData()">
-                            <span>Yes</span>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="shareData" value="No" onchange="toggleShareData()">
-                            <span>No</span>
-                        </label>
-                    </div>
-                    <div id="shareDataWho" class="conditional" style="display: none;">
-                        <input type="text" name="shareDataWhom" placeholder="To whom do you share?">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Do you publish your data on any online repositories?</label>
-                    <div class="radio-group">
-                        <label class="radio-option">
-                            <input type="radio" name="onlineRepos" value="Yes" onchange="toggleOnlineRepos()">
-                            <span>Yes</span>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="onlineRepos" value="No" onchange="toggleOnlineRepos()">
-                            <span>No</span>
-                        </label>
-                    </div>
-                    <div id="onlineReposWhich" class="conditional" style="display: none;">
-                        <input type="text" name="onlineReposWhichOnes" placeholder="Which ones?">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Would you be interested in publishing your data on the GBIF online repository (gbif.org),
-                        if
-                        you were given support by UB-ERI to do so to increase the visibility, traceability, and
-                        impact
-                        of your work?</label>
-                    <div class="radio-group">
-                        <label class="radio-option">
-                            <input type="radio" name="gbifInterest" value="Yes">
-                            <span>Yes</span>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="gbifInterest" value="No">
-                            <span>No</span>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="gbifInterest" value="Maybe">
-                            <span>Maybe</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="form-group">
                     <label>Do you submit reports on your biodiversity data to the government of Belize?</label>
                     <div class="radio-group">
                         <label class="radio-option">
@@ -872,6 +878,10 @@
                         <label class="radio-option">
                             <input type="radio" name="govReports" value="No">
                             <span>No</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="govReports" value="We do not do reporting">
+                            <span>We do not do reporting</span>
                         </label>
                     </div>
                 </div>
@@ -887,12 +897,15 @@
                             <input type="radio" name="publishOnline" value="No">
                             <span>No</span>
                         </label>
+                        <label class="radio-option">
+                            <input type="radio" name="publishOnline" value="We do not do reporting">
+                            <span>We do not do reporting</span>
+                        </label>
                     </div>
                 </div>
 
-
                 <div class="form-group">
-                    <label>Do you publish papers on your data?</label>
+                    <label>Do you publish peer-reviewed papers on your data?</label>
                     <div class="radio-group">
                         <label class="radio-option">
                             <input type="radio" name="publishPapers" value="Yes" onchange="togglePublishPapers()">
@@ -924,7 +937,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Do you share data results in a public data dashboard?</label>
+                    <label>Do you share biodiversity data results in a public data dashboard?</label>
                     <div class="radio-group">
                         <label class="radio-option">
                             <input type="radio" name="publicDashboard" value="Yes">
@@ -936,11 +949,65 @@
                         </label>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label>Do you share your biodiversity datasets outside your organization?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="shareData" value="Yes" onchange="toggleShareData()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="shareData" value="No" onchange="toggleShareData()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                    <div id="shareDataWho" class="conditional" style="display: none;">
+                        <input type="text" name="shareDataWhom" placeholder="To who?">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you publish your biodiversity datasets on any online repositories?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="onlineRepos" value="Yes" onchange="toggleOnlineRepos()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="onlineRepos" value="No" onchange="toggleOnlineRepos()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                    <div id="onlineReposWhich" class="conditional" style="display: none;">
+                        <input type="text" name="onlineReposWhichOnes" placeholder="Which ones?">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Would you be interested in publishing your data on the GBIF online repository (gbif.org),
+                        if you were given support by UB-ERI to do so to increase the visibility, traceability, and
+                        impact of your work?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="gbifInterest" value="Yes">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="gbifInterest" value="No">
+                            <span>No</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="gbifInterest" value="Maybe">
+                            <span>Maybe</span>
+                        </label>
+                    </div>
+                </div>
             </div>
 
-            <!-- Section 9: National Working Groups -->
+            <!-- Section 9: National Biodiversity Coordination -->
             <div class="section" data-section="9">
-                <h2>National Working Groups</h2>
+                <h2>National Biodiversity Coordination</h2>
 
                 <div class="form-group">
                     <label>Is your organization involved in any national working groups related to biodiversity in
@@ -984,6 +1051,24 @@
                             placeholder="State which ones..."></textarea>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label>Is your organization involved in any species or ecosystem task force? If yes, please
+                        list.</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="taskForceInvolved" value="Yes" onchange="toggleTaskForce()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="taskForceInvolved" value="No" onchange="toggleTaskForce()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                    <div id="taskForceList" class="conditional" style="display: none;">
+                        <textarea name="taskForceListText" rows="3" placeholder="Please list..."></textarea>
+                    </div>
+                </div>
             </div>
 
             <!-- Section 10: Significance & Interest -->
@@ -1002,8 +1087,7 @@
 
                 <div class="form-group">
                     <label>Have communities that you work with expressed concern for specific species (e.g., because
-                        of dwindling numbers, or persistence as a pest)? If so, state the communities, species, and
-                        reasons for concern.</label>
+                        of dwindling numbers, or persistence as a pest)?</label>
                     <div class="radio-group">
                         <label class="radio-option">
                             <input type="radio" name="communityConcern" value="Yes" onchange="toggleCommunityConcern()">
@@ -1015,8 +1099,29 @@
                         </label>
                     </div>
                     <div id="communityConcernDetails" class="conditional" style="display: none;">
-                        <textarea name="communityConcernDetailsText" rows="4"
-                            placeholder="State the communities, species, and reasons for concern..."></textarea>
+                        <div style="overflow-x: auto;">
+                            <table id="communityConcernTable">
+                                <thead>
+                                    <tr>
+                                        <th>Community</th>
+                                        <th>District</th>
+                                        <th>Species</th>
+                                        <th>Reason of Concern</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="communityConcernBody">
+                                    <tr>
+                                        <td><input type="text" name="ccCommunity_0"></td>
+                                        <td><input type="text" name="ccDistrict_0"></td>
+                                        <td><input type="text" name="ccSpecies_0"></td>
+                                        <td><input type="text" name="ccReason_0"></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <button type="button" class="add-row-btn" onclick="addCommunityConcernRow()">Add Row</button>
                     </div>
                 </div>
 
@@ -1147,7 +1252,7 @@
                 }
 
                 function toggleDigitizationPortals() {
-                    const dataPortals = document.querySelector('input[name="digitization"][value="Data portals"]').checked;
+                    const dataPortals = document.querySelector('input[type="checkbox"][name="digitization"][value="Data portals"]').checked;
                     document.getElementById("digitizationPortalsList").style.display = dataPortals ? "block" : "none";
                 }
 
@@ -1159,6 +1264,11 @@
                 function toggleWorkingGroupsLeading() {
                     const yes = document.querySelector('input[name="workingGroupsLeading"][value="Yes"]').checked;
                     document.getElementById("workingGroupsLeadingList").style.display = yes ? "block" : "none";
+                }
+
+                function toggleTaskForce() {
+                    const yes = document.querySelector('input[name="taskForceInvolved"][value="Yes"]').checked;
+                    document.getElementById("taskForceList").style.display = yes ? "block" : "none";
                 }
 
                 function toggleCommunityConcern() {
@@ -1303,6 +1413,32 @@
                     }
                 }
 
+                function toggleSurveyEquipmentSpecify() {
+                    const checked = document.querySelector('input[name="techGaps"][value="Lack of survey equipment"]').checked;
+                    const container = document.getElementById("surveyEquipmentSpecify");
+                    if (!container) return;
+                    container.hidden = !checked;
+
+                    if (!checked) {
+                        container.querySelectorAll('input[type="text"]').forEach(t => {
+                            t.value = '';
+                        });
+                    }
+                }
+
+                function toggleSoftwareTrainingOptions() {
+                    const checked = document.querySelector('input[name="trainingNeeds"][value="Software"]').checked;
+                    const container = document.getElementById("softwareTrainingOptions");
+                    if (!container) return;
+                    container.hidden = !checked;
+
+                    if (!checked) {
+                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                            cb.checked = false;
+                        });
+                    }
+                }
+
                 /* -----------------------------
                    Dynamic table rows
                 ------------------------------ */
@@ -1319,6 +1455,21 @@
     `;
                     document.getElementById("longTermBody").appendChild(row);
                     ltRow++;
+                    scheduleAutoSave();
+                }
+
+                let ccRow = 1;
+                function addCommunityConcernRow() {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+        <td><input type="text" name="ccCommunity_${ccRow}"></td>
+        <td><input type="text" name="ccDistrict_${ccRow}"></td>
+        <td><input type="text" name="ccSpecies_${ccRow}"></td>
+        <td><input type="text" name="ccReason_${ccRow}"></td>
+        <td><span class="remove-btn" onclick="this.closest('tr').remove(); scheduleAutoSave()">Remove</span></td>
+    `;
+                    document.getElementById("communityConcernBody").appendChild(row);
+                    ccRow++;
                     scheduleAutoSave();
                 }
 
@@ -1350,7 +1501,7 @@
 
                 function saveProgress() {
                     const form = document.getElementById('surveyForm');
-                    const state = { currentSection, ltRow, rrRow, fields: {} };
+                    const state = { currentSection, ltRow, rrRow, ccRow, fields: {} };
 
                     form.querySelectorAll('input[type="text"], textarea').forEach(el => {
                         if (el.name) state.fields[el.name] = el.value;
@@ -1387,6 +1538,7 @@
                     // Recreate dynamic table rows before populating values
                     while (ltRow < saved.ltRow) addLongTermRow();
                     while (rrRow < saved.rrRow) addRecentResearchRow();
+                    while (ccRow < saved.ccRow) addCommunityConcernRow();
 
                     const form = document.getElementById('surveyForm');
                     Object.entries(saved.fields).forEach(([name, value]) => {
@@ -1417,6 +1569,8 @@
                     toggleAmphibiansOptions();
                     toggleReptilesOptions();
                     togglePlantsOptions();
+                    toggleSurveyEquipmentSpecify();
+                    toggleSoftwareTrainingOptions();
                     toggleCollaboration();
                     toggleDigitizationPortals();
                     toggleShareData();
@@ -1424,6 +1578,7 @@
                     togglePublishPapers();
                     toggleWorkingGroups();
                     toggleWorkingGroupsLeading();
+                    toggleTaskForce();
                     toggleCommunityConcern();
 
                     if (typeof saved.currentSection === 'number') {
