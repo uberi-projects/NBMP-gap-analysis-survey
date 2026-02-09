@@ -517,7 +517,7 @@
                                 Amphibians
                             </label>
                             <div id="amphibiansOptions" class="nested-group" hidden>
-                                <input type="text" name="amphibiansSpecify" placeholder="Specify (please specify)">
+                                <input type="text" name="amphibiansSpecify" placeholder="Specify">
                             </div>
                             <label class="checkbox-option">
                                 <input type="checkbox" name="monitoringAreas" value="Reptiles"
@@ -730,7 +730,7 @@
                             Lack of survey equipment (e.g. camera traps, lasers, acoustic recorders)
                         </label>
                         <div id="surveyEquipmentSpecify" class="nested-group" hidden>
-                            <input type="text" name="surveyEquipmentSpecify" placeholder="Specify (please specify)">
+                            <input type="text" name="surveyEquipmentSpecify" placeholder="Specify">
                         </div>
                         <label class="checkbox-option"><input type="checkbox" name="techGaps"
                                 value="Lack of drones for mapping"> Lack of drones for mapping</label>
@@ -970,7 +970,7 @@
                         </label>
                     </div>
                     <div id="onlineReposWhich" class="conditional" style="display: none;">
-                        <input type="text" name="onlineReposWhichOnes" placeholder="Which ones?">
+                        <input type="text" name="onlineReposWhichOnes" placeholder="Which repositories?">
                     </div>
                 </div>
 
@@ -1001,7 +1001,8 @@
 
                 <div class="form-group">
                     <label>23. Is your organization involved in any national working groups related to biodiversity in
-                        Belize (e.g., Sea Turtle Working Group, NCRMN, Jaguar Working Group)? If yes, list each
+                        Belize (e.g., National Coral Reef Monitoring Network, Sea Turtle
+                        Working Group, Jaguar Working Group)? If yes, list each
                         working group.</label>
                     <div class="radio-group">
                         <label class="radio-option">
@@ -1044,7 +1045,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label>25. Is your organization involved in any species or ecosystem task force? If yes, please
+                    <label>25. Is your organization involved in any species or ecosystem task force (e.g., Manatee Task
+                        Force)? If yes, please
                         list.</label>
                     <div class="radio-group">
                         <label class="radio-option">
@@ -1136,11 +1138,11 @@
                     <label>30. Which species/taxa in Belize do you think need more biodiversity monitoring, because
                         of:</label>
                     <div class="conditional">
-                        <label>A. Lack of or gap in monitoring:</label>
+                        <label>Lack of or gap in monitoring:</label>
                         <textarea name="speciesMonitoringGap" rows="2" placeholder="Your response..."></textarea>
                     </div>
                     <div class="conditional">
-                        <label>B. Importance of the species/taxa (please explain):</label>
+                        <label>Importance of the species/taxa (please explain):</label>
                         <textarea name="speciesMonitoringImportance" rows="2" placeholder="Your response..."></textarea>
                     </div>
                 </div>
@@ -1159,543 +1161,6 @@
                 </div>
             </div>
 
-            <script>
-                /* -----------------------------
-                   Section navigation & progress
-                ------------------------------ */
-                let currentSection = 0;
-                const sections = document.querySelectorAll(".section");
-                const totalSections = sections.length;
-
-                document.getElementById("totalSections").textContent = totalSections;
-
-                function showSection(index) {
-                    sections.forEach((s, i) => {
-                        s.classList.toggle("active", i === index);
-                    });
-
-                    document.getElementById("currentSection").textContent = index + 1;
-                    document.getElementById("sectionName").textContent =
-                        sections[index].querySelector("h2")?.textContent || "Introduction";
-
-                    const progress = ((index + 1) / sections.length) * 100;
-                    document.getElementById("progressFill").style.width = `${progress}%`;
-
-                    document.getElementById("prevBtn").disabled = index === 0;
-                    document.getElementById("nextBtn").textContent =
-                        index === sections.length - 1 ? "Finish" : "Next";
-                }
-
-                function shouldSkipMonitoringSections() {
-                    const noRadio = document.querySelector('input[name="doesMonitoring"][value="No"]');
-                    return noRadio && noRadio.checked;
-                }
-
-                function nextSection() {
-                    document.querySelectorAll(".validation-error").forEach(el => el.style.display = "none");
-
-                    if (currentSection === 1 && !document.querySelector('input[name="organizationName"]').value.trim()) {
-                        document.getElementById("validateOrgName").style.display = "block";
-                        return;
-                    }
-                    if (currentSection === 2 && !document.querySelector('input[name="doesMonitoring"]:checked')) {
-                        document.getElementById("validateMonitoring").style.display = "block";
-                        return;
-                    }
-
-                    let next = currentSection + 1;
-                    if (shouldSkipMonitoringSections() && next >= 3 && next <= 8) {
-                        next = 9;
-                    }
-                    if (next < sections.length) {
-                        currentSection = next;
-                        showSection(currentSection);
-                        saveProgress();
-                    } else {
-                        saveProgress();
-                        document.getElementById("surveyForm").requestSubmit();
-                    }
-                }
-
-                function prevSection() {
-                    let prev = currentSection - 1;
-                    if (shouldSkipMonitoringSections() && prev >= 3 && prev <= 8) {
-                        prev = 2;
-                    }
-                    if (prev >= 0) {
-                        currentSection = prev;
-                        showSection(currentSection);
-                        saveProgress();
-                    }
-                }
-
-                /* -----------------------------
-                   Conditional logic
-                ------------------------------ */
-                function toggleMonitoringQuestions() {
-                    const yes = document.querySelector('input[name="doesMonitoring"][value="Yes"]').checked;
-                    document.getElementById("monitoringAreasSection").style.display = yes ? "block" : "none";
-                }
-
-                function toggleCollaboration() {
-                    const yes = document.querySelector('input[name="collaboration"][value="Yes"]').checked;
-                    document.getElementById("collaborationOrgs").style.display = yes ? "block" : "none";
-                }
-
-                function toggleShareData() {
-                    const yes = document.querySelector('input[name="shareData"][value="Yes"]').checked;
-                    document.getElementById("shareDataWho").style.display = yes ? "block" : "none";
-                }
-
-                function toggleOnlineRepos() {
-                    const yes = document.querySelector('input[name="onlineRepos"][value="Yes"]').checked;
-                    document.getElementById("onlineReposWhich").style.display = yes ? "block" : "none";
-                }
-
-
-                function togglePublishPapers() {
-                    const yes = document.querySelector('input[name="publishPapers"][value="Yes"]').checked;
-                    const container = document.getElementById("publishPapersFrequency");
-                    if (!container) return;
-                    container.style.display = yes ? "block" : "none";
-
-                    if (!yes) {
-                        container.querySelectorAll('input[type="radio"]').forEach(radio => {
-                            radio.checked = false;
-                        });
-                    }
-                }
-
-                function toggleDigitizationPortals() {
-                    const dataPortals = document.querySelector('input[type="checkbox"][name="digitization"][value="Data portals"]').checked;
-                    document.getElementById("digitizationPortalsList").style.display = dataPortals ? "block" : "none";
-                }
-
-                function toggleWorkingGroups() {
-                    const yes = document.querySelector('input[name="workingGroupsInvolved"][value="Yes"]').checked;
-                    document.getElementById("workingGroupsList").style.display = yes ? "block" : "none";
-                }
-
-                function toggleWorkingGroupsLeading() {
-                    const yes = document.querySelector('input[name="workingGroupsLeading"][value="Yes"]').checked;
-                    document.getElementById("workingGroupsLeadingList").style.display = yes ? "block" : "none";
-                }
-
-                function toggleTaskForce() {
-                    const yes = document.querySelector('input[name="taskForceInvolved"][value="Yes"]').checked;
-                    document.getElementById("taskForceList").style.display = yes ? "block" : "none";
-                }
-
-                function toggleCommunityConcern() {
-                    const yes = document.querySelector('input[name="communityConcern"][value="Yes"]').checked;
-                    document.getElementById("communityConcernDetails").style.display = yes ? "block" : "none";
-                }
-
-                function toggleMammalsOptions() {
-                    const mammals = document.querySelector('input[name="monitoringAreas"][value="Mammals"]').checked;
-                    const container = document.getElementById("mammalsOptions");
-                    if (!container) return;
-                    container.hidden = !mammals;
-
-                    if (!mammals) {
-                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                            cb.checked = false;
-                        });
-                    }
-                }
-
-                function toggleFishOptions() {
-                    const fish = document.querySelector('input[name="monitoringAreas"][value="Fish"]').checked;
-                    const container = document.getElementById("fishOptions");
-                    if (!container) return;
-                    container.hidden = !fish;
-
-                    if (!fish) {
-                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                            cb.checked = false;
-                        });
-                        container.querySelectorAll('input[type="text"]').forEach(t => {
-                            t.value = '';
-                        });
-                        const marineContainer = document.getElementById("marineFishOptions");
-                        if (marineContainer) marineContainer.hidden = true;
-                    }
-                }
-
-                function toggleMarineFishOptions() {
-                    const marine = document.querySelector('input[name="monitoringAreas"][value="Fish - Marine fish"]').checked;
-                    const container = document.getElementById("marineFishOptions");
-                    if (!container) return;
-                    container.hidden = !marine;
-
-                    if (!marine) {
-                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                            cb.checked = false;
-                        });
-                        container.querySelectorAll('input[type="text"]').forEach(t => {
-                            t.value = '';
-                        });
-                    }
-                }
-
-                function toggleMarineInvertebratesOptions() {
-                    const checked = document.querySelector('input[name="monitoringAreas"][value="Marine Invertebrates"]').checked;
-                    const container = document.getElementById("marineInvertebratesOptions");
-                    if (!container) return;
-                    container.hidden = !checked;
-
-                    if (!checked) {
-                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                            cb.checked = false;
-                        });
-                        container.querySelectorAll('input[type="text"]').forEach(t => {
-                            t.value = '';
-                        });
-                    }
-                }
-
-                function toggleFreshwaterMacroOptions() {
-                    const checked = document.querySelector('input[name="monitoringAreas"][value="Freshwater Macroinvertebrate"]').checked;
-                    const container = document.getElementById("freshwaterMacroOptions");
-                    if (!container) return;
-                    container.hidden = !checked;
-
-                    if (!checked) {
-                        container.querySelectorAll('input[type="text"]').forEach(t => {
-                            t.value = '';
-                        });
-                    }
-                }
-
-                function toggleTerrestrialInvertebratesOptions() {
-                    const checked = document.querySelector('input[name="monitoringAreas"][value="Terrestrial Macroinvertebrates"]').checked;
-                    const container = document.getElementById("terrestrialInvertebratesOptions");
-                    if (!container) return;
-                    container.hidden = !checked;
-
-                    if (!checked) {
-                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                            cb.checked = false;
-                        });
-                        container.querySelectorAll('input[type="text"]').forEach(t => {
-                            t.value = '';
-                        });
-                    }
-                }
-
-                function toggleAmphibiansOptions() {
-                    const checked = document.querySelector('input[name="monitoringAreas"][value="Amphibians"]').checked;
-                    const container = document.getElementById("amphibiansOptions");
-                    if (!container) return;
-                    container.hidden = !checked;
-
-                    if (!checked) {
-                        container.querySelectorAll('input[type="text"]').forEach(t => {
-                            t.value = '';
-                        });
-                    }
-                }
-
-                function toggleReptilesOptions() {
-                    const rep = document.querySelector('input[name="monitoringAreas"][value="Reptiles"]').checked;
-                    const container = document.getElementById("reptilesOptions");
-                    if (!container) return;
-                    container.hidden = !rep;
-
-                    if (!rep) {
-                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                            cb.checked = false;
-                        });
-                        container.querySelectorAll('input[type="text"]').forEach(t => {
-                            t.value = '';
-                        });
-                    }
-                }
-
-                function togglePlantsOptions() {
-                    const plants = document.querySelector('input[name="monitoringAreas"][value="Plants"]').checked;
-                    const container = document.getElementById("plantsOptions");
-                    if (!container) return;
-                    container.hidden = !plants;
-
-                    if (!plants) {
-                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                            cb.checked = false;
-                        });
-                        container.querySelectorAll('input[type="text"]').forEach(t => {
-                            t.value = '';
-                        });
-                    }
-                }
-
-                function toggleSurveyEquipmentSpecify() {
-                    const checked = document.querySelector('input[name="techGaps"][value="Lack of survey equipment"]').checked;
-                    const container = document.getElementById("surveyEquipmentSpecify");
-                    if (!container) return;
-                    container.hidden = !checked;
-
-                    if (!checked) {
-                        container.querySelectorAll('input[type="text"]').forEach(t => {
-                            t.value = '';
-                        });
-                    }
-                }
-
-                function toggleSoftwareTrainingOptions() {
-                    const checked = document.querySelector('input[name="trainingNeeds"][value="Software"]').checked;
-                    const container = document.getElementById("softwareTrainingOptions");
-                    if (!container) return;
-                    container.hidden = !checked;
-
-                    if (!checked) {
-                        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                            cb.checked = false;
-                        });
-                    }
-                }
-
-                /* -----------------------------
-                   Dynamic table rows
-                ------------------------------ */
-                let ltRow = 1;
-                function addLongTermRow() {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-        <td><input type="text" name="ltSpecies_${ltRow}"></td>
-        <td><input type="text" name="ltSites_${ltRow}"></td>
-        <td><input type="text" name="ltYears_${ltRow}"></td>
-        <td><input type="text" name="ltMethods_${ltRow}"></td>
-        <td><input type="text" name="ltOngoing_${ltRow}"></td>
-        <td><span class="remove-btn" onclick="this.closest('tr').remove(); scheduleAutoSave()">Remove</span></td>
-    `;
-                    document.getElementById("longTermBody").appendChild(row);
-                    ltRow++;
-                    scheduleAutoSave();
-                }
-
-                let ccRow = 1;
-                function addCommunityConcernRow() {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-        <td><input type="text" name="ccCommunity_${ccRow}"></td>
-        <td><input type="text" name="ccDistrict_${ccRow}"></td>
-        <td><input type="text" name="ccSpecies_${ccRow}"></td>
-        <td><input type="text" name="ccReason_${ccRow}"></td>
-        <td><span class="remove-btn" onclick="this.closest('tr').remove(); scheduleAutoSave()">Remove</span></td>
-    `;
-                    document.getElementById("communityConcernBody").appendChild(row);
-                    ccRow++;
-                    scheduleAutoSave();
-                }
-
-                let rrRow = 1;
-                function addRecentResearchRow() {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-        <td><input type="text" name="rrSpecies_${rrRow}"></td>
-        <td><input type="text" name="rrSites_${rrRow}"></td>
-        <td><input type="text" name="rrYears_${rrRow}"></td>
-        <td><input type="text" name="rrMethods_${rrRow}"></td>
-        <td><span class="remove-btn" onclick="this.closest('tr').remove(); scheduleAutoSave()">Remove</span></td>
-    `;
-                    document.getElementById("recentResearchBody").appendChild(row);
-                    rrRow++;
-                    scheduleAutoSave();
-                }
-
-                /* -----------------------------
-                   localStorage persistence
-                ------------------------------ */
-                const STORAGE_KEY = 'nbmp_survey_progress';
-                let saveTimeout;
-
-                function scheduleAutoSave() {
-                    clearTimeout(saveTimeout);
-                    saveTimeout = setTimeout(saveProgress, 300);
-                }
-
-                function saveProgress() {
-                    const form = document.getElementById('surveyForm');
-                    const state = { currentSection, ltRow, rrRow, ccRow, fields: {} };
-
-                    form.querySelectorAll('input[type="text"], textarea').forEach(el => {
-                        if (el.name) state.fields[el.name] = el.value;
-                    });
-
-                    const radioNames = new Set();
-                    form.querySelectorAll('input[type="radio"]').forEach(el => radioNames.add(el.name));
-                    radioNames.forEach(name => {
-                        const checked = form.querySelector(`input[type="radio"][name="${name}"]:checked`);
-                        if (checked) state.fields[name] = checked.value;
-                    });
-
-                    const cbNames = new Set();
-                    form.querySelectorAll('input[type="checkbox"]').forEach(el => cbNames.add(el.name));
-                    cbNames.forEach(name => {
-                        const vals = [...form.querySelectorAll(`input[type="checkbox"][name="${name}"]:checked`)]
-                            .map(el => el.value);
-                        if (vals.length) state.fields[name] = vals;
-                    });
-
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-                }
-
-                function restoreProgress() {
-                    let saved;
-                    try {
-                        saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-                    } catch (e) {
-                        localStorage.removeItem(STORAGE_KEY);
-                        return;
-                    }
-                    if (!saved || !saved.fields) return;
-
-                    // Recreate dynamic table rows before populating values
-                    while (ltRow < saved.ltRow) addLongTermRow();
-                    while (rrRow < saved.rrRow) addRecentResearchRow();
-                    while (ccRow < saved.ccRow) addCommunityConcernRow();
-
-                    const form = document.getElementById('surveyForm');
-                    Object.entries(saved.fields).forEach(([name, value]) => {
-                        if (Array.isArray(value)) {
-                            value.forEach(v => {
-                                const cb = form.querySelector(`input[type="checkbox"][name="${name}"][value="${v}"]`);
-                                if (cb) cb.checked = true;
-                            });
-                        } else {
-                            const radio = form.querySelector(`input[type="radio"][name="${name}"][value="${value}"]`);
-                            if (radio) {
-                                radio.checked = true;
-                            } else {
-                                const el = form.querySelector(`[name="${name}"]`);
-                                if (el) el.value = value;
-                            }
-                        }
-                    });
-
-                    // Re-fire all conditional toggles so visibility matches restored state
-                    toggleMonitoringQuestions();
-                    toggleMammalsOptions();
-                    toggleFishOptions();
-                    toggleMarineFishOptions();
-                    toggleMarineInvertebratesOptions();
-                    toggleFreshwaterMacroOptions();
-                    toggleTerrestrialInvertebratesOptions();
-                    toggleAmphibiansOptions();
-                    toggleReptilesOptions();
-                    togglePlantsOptions();
-                    toggleSurveyEquipmentSpecify();
-                    toggleSoftwareTrainingOptions();
-                    toggleCollaboration();
-                    toggleDigitizationPortals();
-                    toggleShareData();
-                    toggleOnlineRepos();
-                    togglePublishPapers();
-                    toggleWorkingGroups();
-                    toggleWorkingGroupsLeading();
-                    toggleTaskForce();
-                    toggleCommunityConcern();
-
-                    if (typeof saved.currentSection === 'number') {
-                        currentSection = saved.currentSection;
-                        showSection(currentSection);
-                    }
-                }
-
-                /* -----------------------------
-                   Init
-                ------------------------------ */
-                showSection(currentSection);
-                restoreProgress();
-
-                document.getElementById('surveyForm').addEventListener('input', scheduleAutoSave);
-                document.getElementById('surveyForm').addEventListener('change', scheduleAutoSave);
-
-
-                /* -----------------------------
-Submit → Thank you page
------------------------------- */
-                document.getElementById("surveyForm").addEventListener("submit", async function (e) {
-                    e.preventDefault();
-                    document.getElementById("errorMsg").style.display = "none";
-
-                    const nextBtn = document.getElementById("nextBtn");
-                    const prevBtn = document.getElementById("prevBtn");
-                    const originalNextText = nextBtn.textContent;
-                    nextBtn.disabled = true;
-                    prevBtn.disabled = true;
-                    nextBtn.textContent = "Submitting...";
-
-                    const success = await submitToGoogleSheet();
-
-                    if (!success) {
-                        document.getElementById("errorMsg").style.display = "block";
-                        nextBtn.disabled = false;
-                        prevBtn.disabled = false;
-                        nextBtn.textContent = originalNextText;
-                        return;
-                    }
-
-                    localStorage.removeItem(STORAGE_KEY);
-
-                    document.querySelector("h1").style.display = "none";
-                    document.querySelector(".header-info").style.display = "none";
-                    document.querySelector(".progress-bar").style.display = "none";
-                    document.querySelector(".navigation").style.display = "none";
-                    document.getElementById("surveyForm").style.display = "none";
-                    document.getElementById("thankYou").style.display = "block";
-                });
-
-                async function submitToGoogleSheet() {
-                    const form = document.getElementById("surveyForm");
-                    const formData = new FormData(form);
-
-                    // IMPORTANT: handle multi-value fields (checkboxes)
-                    const data = {};
-                    for (let [key, value] of formData.entries()) {
-                        if (data[key]) {
-                            data[key] += "; " + value;   // combine checkbox values
-                        } else {
-                            data[key] = value;
-                        }
-                    }
-
-                    try {
-                        const response = await fetch(
-                            "https://script.google.com/macros/s/AKfycbwO0CAGANxGtoIWInOaIn6HiEZUIUnqMUuZRIOTzcQbBoVfsSg86weZNjCWD_bE6_-Nxg/exec",
-                            {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify(data)
-                            }
-                        );
-
-                        return response.ok;
-                    } catch (err) {
-                        console.error("Submit failed:", err);
-
-                        // Retry with no-cors (common workaround for Apps Script CORS from file://)
-                        try {
-                            await fetch(
-                                "https://script.google.com/macros/s/AKfycbx62RysZB3Bt8T7-XEPL1BM0mJqH68gLneAtXMJoV3UBNRXuDnHqVCfrsn6VYhItYv-2g/exec",
-                                {
-                                    method: "POST",
-                                    mode: "no-cors",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify(data)
-                                }
-                            );
-                            return true; // can't read response in no-cors, assume sent
-                        } catch (retryErr) {
-                            console.error("Submit retry failed:", retryErr);
-                            return false;
-                        }
-                    }
-                }
-
-
-
-            </script>
         </form>
 
         <div class="progress-bar">
@@ -1716,6 +1181,541 @@ Submit → Thank you page
                 National Biodiversity Monitoring Plan for Belize.</p>
         </div>
     </div>
+
+    <script>
+        /* -----------------------------
+           Section navigation & progress
+        ------------------------------ */
+        let currentSection = 0;
+        const sections = document.querySelectorAll(".section");
+        const totalSections = sections.length;
+
+        document.getElementById("totalSections").textContent = totalSections;
+
+        function showSection(index) {
+            sections.forEach((s, i) => {
+                s.classList.toggle("active", i === index);
+            });
+
+            document.getElementById("currentSection").textContent = index + 1;
+            document.getElementById("sectionName").textContent =
+                sections[index].querySelector("h2")?.textContent || "Introduction";
+
+            const progress = ((index + 1) / sections.length) * 100;
+            document.getElementById("progressFill").style.width = `${progress}%`;
+
+            document.getElementById("prevBtn").disabled = index === 0;
+            document.getElementById("nextBtn").textContent =
+                index === sections.length - 1 ? "Finish" : "Next";
+        }
+
+        function shouldSkipMonitoringSections() {
+            const noRadio = document.querySelector('input[name="doesMonitoring"][value="No"]');
+            return noRadio && noRadio.checked;
+        }
+
+        function nextSection() {
+            document.querySelectorAll(".validation-error").forEach(el => el.style.display = "none");
+
+            if (currentSection === 1 && !document.querySelector('input[name="organizationName"]').value.trim()) {
+                document.getElementById("validateOrgName").style.display = "block";
+                return;
+            }
+            if (currentSection === 2 && !document.querySelector('input[name="doesMonitoring"]:checked')) {
+                document.getElementById("validateMonitoring").style.display = "block";
+                return;
+            }
+
+            let next = currentSection + 1;
+            if (shouldSkipMonitoringSections() && next >= 3 && next <= 8) {
+                next = 9;
+            }
+            if (next < sections.length) {
+                currentSection = next;
+                showSection(currentSection);
+                saveProgress();
+            } else {
+                saveProgress();
+                document.getElementById("surveyForm").requestSubmit();
+            }
+        }
+
+        function prevSection() {
+            let prev = currentSection - 1;
+            if (shouldSkipMonitoringSections() && prev >= 3 && prev <= 8) {
+                prev = 2;
+            }
+            if (prev >= 0) {
+                currentSection = prev;
+                showSection(currentSection);
+                saveProgress();
+            }
+        }
+
+        /* -----------------------------
+           Conditional logic
+        ------------------------------ */
+        function toggleMonitoringQuestions() {
+            const yes = document.querySelector('input[name="doesMonitoring"][value="Yes"]').checked;
+            document.getElementById("monitoringAreasSection").style.display = yes ? "block" : "none";
+        }
+
+        function toggleCollaboration() {
+            const yes = document.querySelector('input[name="collaboration"][value="Yes"]').checked;
+            document.getElementById("collaborationOrgs").style.display = yes ? "block" : "none";
+        }
+
+        function toggleShareData() {
+            const yes = document.querySelector('input[name="shareData"][value="Yes"]').checked;
+            document.getElementById("shareDataWho").style.display = yes ? "block" : "none";
+        }
+
+        function toggleOnlineRepos() {
+            const yes = document.querySelector('input[name="onlineRepos"][value="Yes"]').checked;
+            document.getElementById("onlineReposWhich").style.display = yes ? "block" : "none";
+        }
+
+
+        function togglePublishPapers() {
+            const yes = document.querySelector('input[name="publishPapers"][value="Yes"]').checked;
+            const container = document.getElementById("publishPapersFrequency");
+            if (!container) return;
+            container.style.display = yes ? "block" : "none";
+
+            if (!yes) {
+                container.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    radio.checked = false;
+                });
+            }
+        }
+
+        function toggleDigitizationPortals() {
+            const dataPortals = document.querySelector('input[type="checkbox"][name="digitization"][value="Data portals"]').checked;
+            document.getElementById("digitizationPortalsList").style.display = dataPortals ? "block" : "none";
+        }
+
+        function toggleWorkingGroups() {
+            const yes = document.querySelector('input[name="workingGroupsInvolved"][value="Yes"]').checked;
+            document.getElementById("workingGroupsList").style.display = yes ? "block" : "none";
+        }
+
+        function toggleWorkingGroupsLeading() {
+            const yes = document.querySelector('input[name="workingGroupsLeading"][value="Yes"]').checked;
+            document.getElementById("workingGroupsLeadingList").style.display = yes ? "block" : "none";
+        }
+
+        function toggleTaskForce() {
+            const yes = document.querySelector('input[name="taskForceInvolved"][value="Yes"]').checked;
+            document.getElementById("taskForceList").style.display = yes ? "block" : "none";
+        }
+
+        function toggleCommunityConcern() {
+            const yes = document.querySelector('input[name="communityConcern"][value="Yes"]').checked;
+            document.getElementById("communityConcernDetails").style.display = yes ? "block" : "none";
+        }
+
+        function toggleMammalsOptions() {
+            const mammals = document.querySelector('input[name="monitoringAreas"][value="Mammals"]').checked;
+            const container = document.getElementById("mammalsOptions");
+            if (!container) return;
+            container.hidden = !mammals;
+
+            if (!mammals) {
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+            }
+        }
+
+        function toggleFishOptions() {
+            const fish = document.querySelector('input[name="monitoringAreas"][value="Fish"]').checked;
+            const container = document.getElementById("fishOptions");
+            if (!container) return;
+            container.hidden = !fish;
+
+            if (!fish) {
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+                const marineContainer = document.getElementById("marineFishOptions");
+                if (marineContainer) marineContainer.hidden = true;
+            }
+        }
+
+        function toggleMarineFishOptions() {
+            const marine = document.querySelector('input[name="monitoringAreas"][value="Fish - Marine fish"]').checked;
+            const container = document.getElementById("marineFishOptions");
+            if (!container) return;
+            container.hidden = !marine;
+
+            if (!marine) {
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
+        function toggleMarineInvertebratesOptions() {
+            const checked = document.querySelector('input[name="monitoringAreas"][value="Marine Invertebrates"]').checked;
+            const container = document.getElementById("marineInvertebratesOptions");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
+        function toggleFreshwaterMacroOptions() {
+            const checked = document.querySelector('input[name="monitoringAreas"][value="Freshwater Macroinvertebrate"]').checked;
+            const container = document.getElementById("freshwaterMacroOptions");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
+        function toggleTerrestrialInvertebratesOptions() {
+            const checked = document.querySelector('input[name="monitoringAreas"][value="Terrestrial Macroinvertebrates"]').checked;
+            const container = document.getElementById("terrestrialInvertebratesOptions");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
+        function toggleAmphibiansOptions() {
+            const checked = document.querySelector('input[name="monitoringAreas"][value="Amphibians"]').checked;
+            const container = document.getElementById("amphibiansOptions");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
+        function toggleReptilesOptions() {
+            const rep = document.querySelector('input[name="monitoringAreas"][value="Reptiles"]').checked;
+            const container = document.getElementById("reptilesOptions");
+            if (!container) return;
+            container.hidden = !rep;
+
+            if (!rep) {
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
+        function togglePlantsOptions() {
+            const plants = document.querySelector('input[name="monitoringAreas"][value="Plants"]').checked;
+            const container = document.getElementById("plantsOptions");
+            if (!container) return;
+            container.hidden = !plants;
+
+            if (!plants) {
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
+        function toggleSurveyEquipmentSpecify() {
+            const checked = document.querySelector('input[name="techGaps"][value="Lack of survey equipment"]').checked;
+            const container = document.getElementById("surveyEquipmentSpecify");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
+        function toggleSoftwareTrainingOptions() {
+            const checked = document.querySelector('input[name="trainingNeeds"][value="Software"]').checked;
+            const container = document.getElementById("softwareTrainingOptions");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+            }
+        }
+
+        /* -----------------------------
+           Dynamic table rows
+        ------------------------------ */
+        let ltRow = 1;
+        function addLongTermRow() {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+        <td><input type="text" name="ltSpecies_${ltRow}"></td>
+        <td><input type="text" name="ltSites_${ltRow}"></td>
+        <td><input type="text" name="ltYears_${ltRow}"></td>
+        <td><input type="text" name="ltMethods_${ltRow}"></td>
+        <td><input type="text" name="ltOngoing_${ltRow}"></td>
+        <td><span class="remove-btn" onclick="this.closest('tr').remove(); scheduleAutoSave()">Remove</span></td>
+    `;
+            document.getElementById("longTermBody").appendChild(row);
+            ltRow++;
+            scheduleAutoSave();
+        }
+
+        let ccRow = 1;
+        function addCommunityConcernRow() {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+        <td><input type="text" name="ccCommunity_${ccRow}"></td>
+        <td><input type="text" name="ccDistrict_${ccRow}"></td>
+        <td><input type="text" name="ccSpecies_${ccRow}"></td>
+        <td><input type="text" name="ccReason_${ccRow}"></td>
+        <td><span class="remove-btn" onclick="this.closest('tr').remove(); scheduleAutoSave()">Remove</span></td>
+    `;
+            document.getElementById("communityConcernBody").appendChild(row);
+            ccRow++;
+            scheduleAutoSave();
+        }
+
+        let rrRow = 1;
+        function addRecentResearchRow() {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+        <td><input type="text" name="rrSpecies_${rrRow}"></td>
+        <td><input type="text" name="rrSites_${rrRow}"></td>
+        <td><input type="text" name="rrYears_${rrRow}"></td>
+        <td><input type="text" name="rrMethods_${rrRow}"></td>
+        <td><span class="remove-btn" onclick="this.closest('tr').remove(); scheduleAutoSave()">Remove</span></td>
+    `;
+            document.getElementById("recentResearchBody").appendChild(row);
+            rrRow++;
+            scheduleAutoSave();
+        }
+
+        /* -----------------------------
+           localStorage persistence
+        ------------------------------ */
+        const STORAGE_KEY = 'nbmp_survey_progress';
+        let saveTimeout;
+
+        function scheduleAutoSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(saveProgress, 300);
+        }
+
+        function saveProgress() {
+            const form = document.getElementById('surveyForm');
+            const state = { currentSection, ltRow, rrRow, ccRow, fields: {} };
+
+            form.querySelectorAll('input[type="text"], textarea').forEach(el => {
+                if (el.name) state.fields[el.name] = el.value;
+            });
+
+            const radioNames = new Set();
+            form.querySelectorAll('input[type="radio"]').forEach(el => radioNames.add(el.name));
+            radioNames.forEach(name => {
+                const checked = form.querySelector(`input[type="radio"][name="${name}"]:checked`);
+                if (checked) state.fields[name] = checked.value;
+            });
+
+            const cbNames = new Set();
+            form.querySelectorAll('input[type="checkbox"]').forEach(el => cbNames.add(el.name));
+            cbNames.forEach(name => {
+                const vals = [...form.querySelectorAll(`input[type="checkbox"][name="${name}"]:checked`)]
+                    .map(el => el.value);
+                if (vals.length) state.fields[name] = vals;
+            });
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function restoreProgress() {
+            let saved;
+            try {
+                saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            } catch (e) {
+                localStorage.removeItem(STORAGE_KEY);
+                return;
+            }
+            if (!saved || !saved.fields) return;
+
+            // Recreate dynamic table rows before populating values
+            while (ltRow < saved.ltRow) addLongTermRow();
+            while (rrRow < saved.rrRow) addRecentResearchRow();
+            while (ccRow < saved.ccRow) addCommunityConcernRow();
+
+            const form = document.getElementById('surveyForm');
+            Object.entries(saved.fields).forEach(([name, value]) => {
+                if (Array.isArray(value)) {
+                    value.forEach(v => {
+                        const cb = form.querySelector(`input[type="checkbox"][name="${name}"][value="${v}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                } else {
+                    const radio = form.querySelector(`input[type="radio"][name="${name}"][value="${value}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                    } else {
+                        const el = form.querySelector(`[name="${name}"]`);
+                        if (el) el.value = value;
+                    }
+                }
+            });
+
+            // Re-fire all conditional toggles so visibility matches restored state
+            toggleMonitoringQuestions();
+            toggleMammalsOptions();
+            toggleFishOptions();
+            toggleMarineFishOptions();
+            toggleMarineInvertebratesOptions();
+            toggleFreshwaterMacroOptions();
+            toggleTerrestrialInvertebratesOptions();
+            toggleAmphibiansOptions();
+            toggleReptilesOptions();
+            togglePlantsOptions();
+            toggleSurveyEquipmentSpecify();
+            toggleSoftwareTrainingOptions();
+            toggleCollaboration();
+            toggleDigitizationPortals();
+            toggleShareData();
+            toggleOnlineRepos();
+            togglePublishPapers();
+            toggleWorkingGroups();
+            toggleWorkingGroupsLeading();
+            toggleTaskForce();
+            toggleCommunityConcern();
+
+            if (typeof saved.currentSection === 'number') {
+                currentSection = saved.currentSection;
+                showSection(currentSection);
+            }
+        }
+
+        /* -----------------------------
+           Init
+        ------------------------------ */
+        showSection(currentSection);
+        restoreProgress();
+
+        document.getElementById('surveyForm').addEventListener('input', scheduleAutoSave);
+        document.getElementById('surveyForm').addEventListener('change', scheduleAutoSave);
+
+
+        /* -----------------------------
+           Submit → Thank you page
+        ------------------------------ */
+        document.getElementById("surveyForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            document.getElementById("errorMsg").style.display = "none";
+
+            const nextBtn = document.getElementById("nextBtn");
+            const prevBtn = document.getElementById("prevBtn");
+            const originalNextText = nextBtn.textContent;
+            nextBtn.disabled = true;
+            prevBtn.disabled = true;
+            nextBtn.textContent = "Submitting...";
+
+            const success = await submitToGoogleSheet();
+
+            if (!success) {
+                document.getElementById("errorMsg").style.display = "block";
+                nextBtn.disabled = false;
+                prevBtn.disabled = false;
+                nextBtn.textContent = originalNextText;
+                return;
+            }
+
+            localStorage.removeItem(STORAGE_KEY);
+
+            document.querySelector("h1").style.display = "none";
+            document.querySelector(".header-info").style.display = "none";
+            document.querySelector(".progress-bar").style.display = "none";
+            document.querySelector(".navigation").style.display = "none";
+            document.getElementById("surveyForm").style.display = "none";
+            document.getElementById("thankYou").style.display = "block";
+        });
+
+        async function submitToGoogleSheet() {
+            const form = document.getElementById("surveyForm");
+            const formData = new FormData(form);
+
+            // IMPORTANT: handle multi-value fields (checkboxes)
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                if (data[key]) {
+                    data[key] += "; " + value;   // combine checkbox values
+                } else {
+                    data[key] = value;
+                }
+            }
+
+            try {
+                const response = await fetch(
+                    "https://script.google.com/macros/s/AKfycbx62RysZB3Bt8T7-XEPL1BM0mJqH68gLneAtXMJoV3UBNRXuDnHqVCfrsn6VYhItYv-2g/exec",
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    }
+                );
+
+                return response.ok;
+            } catch (err) {
+                console.error("Submit failed:", err);
+
+                // Retry with no-cors (common workaround for Apps Script CORS from file://)
+                try {
+                    await fetch(
+                        "https://script.google.com/macros/s/AKfycbx62RysZB3Bt8T7-XEPL1BM0mJqH68gLneAtXMJoV3UBNRXuDnHqVCfrsn6VYhItYv-2g/exec",
+                        {
+                            method: "POST",
+                            mode: "no-cors",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(data)
+                        }
+                    );
+                    return true; // can't read response in no-cors, assume sent
+                } catch (retryErr) {
+                    console.error("Submit retry failed:", retryErr);
+                    return false;
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>
