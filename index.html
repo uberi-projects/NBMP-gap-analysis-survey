@@ -355,17 +355,6 @@
             </div>
         </div>
 
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill" style="width: 10%"></div>
-        </div>
-
-        <div class="navigation">
-            <button type="button" class="nav-btn prev" id="prevBtn" onclick="prevSection()">Previous</button>
-            <button type="button" class="nav-btn next" id="nextBtn" onclick="nextSection()">Next</button>
-        </div>
-        <div class="error-msg" id="errorMsg">There was an error saving your response. <button type="button"
-                class="retry-btn" onclick="document.getElementById('surveyForm').requestSubmit()">Retry</button></div>
-
         <form id="surveyForm">
             <!-- Section 0: Introduction -->
             <div class="section active" data-section="0">
@@ -1708,6 +1697,17 @@ Submit → Thank you page
 
             </script>
         </form>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 10%"></div>
+        </div>
+
+        <div class="navigation">
+            <button type="button" class="nav-btn prev" id="prevBtn" onclick="prevSection()">Previous</button>
+            <button type="button" class="nav-btn next" id="nextBtn" onclick="nextSection()">Next</button>
+        </div>
+        <div class="error-msg" id="errorMsg">There was an error saving your response. <button type="button"
+                class="retry-btn" onclick="document.getElementById('surveyForm').requestSubmit()">Retry</button></div>
 
         <div class="thank-you-box" id="thankYou">
             <h2>Thank you!</h2>
