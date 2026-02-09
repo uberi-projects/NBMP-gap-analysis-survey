@@ -355,10 +355,10 @@
             </div>
         </div>
 
-        <form id="surveyForm">
+        <form id="surveyForm" autocomplete="off">
             <!-- Section 0: Introduction -->
             <div class="section active" data-section="0">
-                <h2>Welcome to the Gap Analysis Survey</h2>
+                <h2>Welcome</h2>
                 <div class="intro-box">
                     <p>This survey is being conducted as part of the Gap Analysis for the National Biodiversity
                         Monitoring Plan (NBMP) currently being developed by the University of Belize Environmental
@@ -1564,7 +1564,11 @@
                 if (vals.length) state.fields[name] = vals;
             });
 
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.warn('Could not save progress to localStorage:', e);
+            }
         }
 
         function restoreProgress() {
@@ -1585,15 +1589,21 @@
             const form = document.getElementById('surveyForm');
             Object.entries(saved.fields).forEach(([name, value]) => {
                 if (Array.isArray(value)) {
-                    value.forEach(v => {
-                        const cb = form.querySelector(`input[type="checkbox"][name="${name}"][value="${v}"]`);
-                        if (cb) cb.checked = true;
+                    // Restore checkboxes by iterating elements directly
+                    // (avoids CSS selector escaping issues with special characters in values)
+                    const checkboxes = form.querySelectorAll(`input[type="checkbox"][name="${name}"]`);
+                    const valueSet = new Set(value);
+                    checkboxes.forEach(cb => {
+                        if (valueSet.has(cb.value)) cb.checked = true;
                     });
                 } else {
-                    const radio = form.querySelector(`input[type="radio"][name="${name}"][value="${value}"]`);
-                    if (radio) {
-                        radio.checked = true;
-                    } else {
+                    // Restore radios by iterating elements directly (avoids CSS escaping issues)
+                    const radios = form.querySelectorAll(`input[type="radio"][name="${name}"]`);
+                    let matched = false;
+                    radios.forEach(r => {
+                        if (r.value === value) { r.checked = true; matched = true; }
+                    });
+                    if (!matched) {
                         const el = form.querySelector(`[name="${name}"]`);
                         if (el) el.value = value;
                     }
