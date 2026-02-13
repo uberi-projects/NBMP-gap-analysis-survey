@@ -669,12 +669,329 @@
                 </div>
             </div>
 
-            <!-- Section 5: Collaboration & Challenges -->
+            <!-- Section 5: Ecosystem Health -->
             <div class="section" data-section="5">
+                <h2>Ecosystem Health</h2>
+
+                <div class="form-group">
+                    <label>6. Do you collect any data about the overall health of ecosystems (e.g., coral reef
+                        health)?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="ecosystemHealthData" value="Yes"
+                                onchange="toggleEcosystemHealthData()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="ecosystemHealthData" value="No"
+                                onchange="toggleEcosystemHealthData()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                    <div id="ecosystemHealthEcosystems" class="conditional" style="display: none;">
+                        <label>Ecosystems:</label>
+                        <input type="text" name="ecosystemHealthEcosystemsList" placeholder="List ecosystems...">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>7. Do you collect any data about the restoration of degraded habitats (e.g., fire recovery in
+                        forests)?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="habitatRestoration" value="Yes">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="habitatRestoration" value="No">
+                            <span>No</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>8. Do you collect water, air, or soil quality data?</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="qualityData" value="Marine water">
+                            Marine water</label>
+                        <label class="checkbox-option"><input type="checkbox" name="qualityData" value="Freshwater">
+                            Freshwater</label>
+                        <label class="checkbox-option"><input type="checkbox" name="qualityData" value="Air">
+                            Air</label>
+                        <label class="checkbox-option"><input type="checkbox" name="qualityData" value="Soil">
+                            Soil</label>
+                        <label class="checkbox-option"><input type="checkbox" name="qualityData" value="No">
+                            No</label>
+
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>9. Do you collect any other data on pollution?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="pollutionData" value="Yes">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="pollutionData" value="No">
+                            <span>No</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>10. Do you collect data on invasive species specifically?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="invasiveSpecies" value="Yes" onchange="toggleInvasiveSpecies()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="invasiveSpecies" value="No" onchange="toggleInvasiveSpecies()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                    <div id="invasiveSpeciesList" class="conditional" style="display: none;">
+                        <label>If so, which:</label>
+                        <input type="text" name="invasiveSpeciesWhich" placeholder="List invasive species...">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>11. Do you measure any ecosystem services?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="ecosystemServices" value="Yes"
+                                onchange="toggleEcosystemServices()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="ecosystemServices" value="No"
+                                onchange="toggleEcosystemServices()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                    <div id="ecosystemServicesWhich" class="conditional" style="display: none;">
+                        <label>Which ecosystem services do you measure?</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-option"><input type="checkbox" name="ecosystemServicesTypes"
+                                    value="Access to clean water"> Access to clean water</label>
+                            <label class="checkbox-option"><input type="checkbox" name="ecosystemServicesTypes"
+                                    value="Carbon stocks"> Carbon stocks</label>
+                            <label class="checkbox-option"><input type="checkbox" name="ecosystemServicesTypes"
+                                    value="Shoreline protection"> Shoreline protection</label>
+                            <div style="margin-top: 10px;">
+                                <input type="text" name="ecosystemServicesOther" placeholder="Other">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>12. Do you look at the relationship between communities and ecosystem services? For example,
+                        how communities rely on certain ecosystem services?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="communityEcosystemServices" value="Yes">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="communityEcosystemServices" value="No">
+                            <span>No</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>13. Do you collect any data on climate resiliency in ecosystems or communities?</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="climateResiliency"
+                                value="Yes, communities"> Yes, communities</label>
+                        <label class="checkbox-option"><input type="checkbox" name="climateResiliency"
+                                value="Yes, ecosystems"> Yes, ecosystems</label>
+                        <label class="checkbox-option"><input type="checkbox" name="climateResiliency" value="No">
+                            No</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 6: Enforcement -->
+            <div class="section" data-section="6">
+                <h2>Enforcement</h2>
+
+                <div class="form-group">
+                    <label>14. Do you do any enforcement?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="doesEnforcement" value="Yes" onchange="toggleEnforcement()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="doesEnforcement" value="No" onchange="toggleEnforcement()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="enforcementSection" style="display: none;">
+                    <div class="form-group">
+                        <label>15. What kinds of enforcement do you do?</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="enforcementTypes" value="Wildlife extraction"
+                                    onchange="toggleWildlifeExtraction()">
+                                Wildlife extraction (e.g., fishing, hunting, poaching)
+                            </label>
+                            <div id="wildlifeExtractionOptions" class="nested-group" hidden>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="enforcementTypes" value="Hunting"
+                                        onchange="toggleHuntingSpecies()">
+                                    Hunting
+                                </label>
+                                <div id="huntingSpeciesInput" class="nested-group" hidden>
+                                    <input type="text" name="huntingSpecies" placeholder="Which species">
+                                </div>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="enforcementTypes" value="Taking live animals">
+                                    Taking live animals (e.g., parrots)
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="enforcementTypes" value="Freshwater fishing">
+                                    Freshwater fishing
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="enforcementTypes" value="Marine fishing (finfish)">
+                                    Marine fishing (finfish)
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="enforcementTypes" value="Conch harvesting">
+                                    Conch harvesting
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="enforcementTypes" value="Lobster harvesting">
+                                    Lobster harvesting
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="enforcementTypes" value="Sea cucumber harvesting">
+                                    Sea cucumber harvesting
+                                </label>
+                            </div>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="enforcementTypes" value="Clearing">
+                                Clearing
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="enforcementTypes" value="Logging">
+                                Logging
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="enforcementTypes" value="Polluting/dumping">
+                                Polluting/dumping
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="enforcementTypes" value="Fires">
+                                Fires
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="enforcementTypes" value="Squatters/development">
+                                Squatters/development
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>16. Do you collect patrol data using SMART, EarthRanger, or a similar tool?</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="patrolDataTools" value="Yes, SMART"
+                                    onchange="togglePatrolDataCollection()">
+                                Yes, SMART
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="patrolDataTools" value="Yes, EarthRanger"
+                                    onchange="togglePatrolDataCollection()">
+                                Yes, EarthRanger
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="patrolDataTools" value="Yes, Other"
+                                    onchange="togglePatrolDataOther(); togglePatrolDataCollection()">
+                                Yes, Other
+                            </label>
+                            <div id="patrolDataToolsOther" class="nested-group" hidden>
+                                <input type="text" name="patrolDataToolsOtherSpecify" placeholder="Specify">
+                            </div>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="patrolDataTools" value="No"
+                                    onchange="togglePatrolDataCollection()">
+                                No
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="patrolDataTypesSection" class="form-group" style="display: none;">
+                        <label>What kind of patrol data do you collect?</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="patrolDataTypes" value="Patrol hours">
+                                Patrol hours
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="patrolDataTypes" value="Number of infractions">
+                                Number of infractions
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="patrolDataTypes" value="Types of infractions">
+                                Types of infractions
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="patrolDataTypes" value="Arrests">
+                                Arrests
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 7: Mainstreaming -->
+            <div class="section" data-section="7">
+                <h2>Mainstreaming</h2>
+
+                <div class="form-group">
+                    <label>17. Do you engage with communities on biodiversity and/or ecosystem services?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="communityEngagement" value="Yes"
+                                onchange="toggleCommunityEngagement()">
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="communityEngagement" value="No"
+                                onchange="toggleCommunityEngagement()">
+                            <span>No</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="communityEngagementSection" style="display: none;">
+                    <div class="form-group">
+                        <label>18. Which communities do you engage with?</label>
+                        <textarea name="engagementCommunities" rows="3" placeholder="List communities..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>19. What kind of engagement do you most often do?</label>
+                        <textarea name="engagementTypes" rows="3" placeholder="Describe engagement types..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 8: Collaboration & Challenges -->
+            <div class="section" data-section="8">
                 <h2>Collaboration & Challenges</h2>
 
                 <div class="form-group">
-                    <label>6. Are these monitoring/research activities conducted in collaboration with other
+                    <label>20. Are these monitoring/research activities conducted in collaboration with other
                         organizations?</label>
                     <div class="radio-group">
                         <label class="radio-option">
@@ -694,18 +1011,18 @@
                 </div>
 
                 <div class="form-group">
-                    <label>7. What are the major challenges for conducting these monitoring activities? (Please provide
+                    <label>21. What are the major challenges for conducting these monitoring activities? (Please provide
                         lots of detail where possible)</label>
                     <textarea name="challenges" rows="5" placeholder="Describe the challenges..."></textarea>
                 </div>
             </div>
 
-            <!-- Section 6: Technology & Skills -->
-            <div class="section" data-section="6">
+            <!-- Section 9: Technology & Skills -->
+            <div class="section" data-section="9">
                 <h2>Technology & Skill Gaps</h2>
 
                 <div class="form-group">
-                    <label>8. What data collection tools does your organization use? (Select all that apply)</label>
+                    <label>22. What data collection tools does your organization use? (Select all that apply)</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option"><input type="checkbox" name="dataTools"
                                 value="Printed Datasheets"> Printed Datasheets</label>
@@ -722,7 +1039,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>9. What technological gaps does your organization have for research and monitoring purposes?
+                    <label>23. What technological gaps does your organization have for data collection purposes?
                         (Select all that apply)</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option"><input type="checkbox" name="techGaps" value="None"> None</label>
@@ -749,21 +1066,21 @@
                 </div>
 
                 <div class="form-group">
-                    <label>10. Do you have the complementary software to operate and process data from your
+                    <label>24. Do you have the complementary software to operate and process data from your
                         technological
                         survey equipment? If so, which softwares do you use?</label>
                     <textarea name="complementarySoftware" rows="3"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>11. Are you missing any other complementary software, equipment, and technology needed to
+                    <label>25. Are you missing any other complementary software, equipment, and technology needed to
                         increase success of your long-term and project-based monitoring and research project? For
                         example, online subscriptions. If so, describe.</label>
                     <textarea name="missingSoftwareEquipment" rows="3"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>12. What technical skills and training gaps does your organization have? (Select all that
+                    <label>26. What technical skills and training gaps does your organization have? (Select all that
                         apply)</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps" value="None">
@@ -788,7 +1105,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>13. What type of training is staff continuously needing? (Select all that apply)</label>
+                    <label>27. What type of training is staff continuously needing? (Select all that apply)</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option"><input type="checkbox" name="trainingNeeds" value="None">
                             None</label>
@@ -824,12 +1141,12 @@
                 </div>
             </div>
 
-            <!-- Section 7: Data Management -->
-            <div class="section" data-section="7">
+            <!-- Section 10: Data Management -->
+            <div class="section" data-section="10">
                 <h2>Data Management</h2>
 
                 <div class="form-group">
-                    <label>14. When your organization digitizes its biodiversity data, describe how it does so</label>
+                    <label>28. When your organization digitizes its data, describe how it does so</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option">
                             <input type="checkbox" name="digitization" value="Excel/Google Sheets"
@@ -853,18 +1170,18 @@
                 </div>
 
                 <div class="form-group">
-                    <label>15. Do you have any data that is currently undigitized? If so, tell us about the data and
+                    <label>29. Do you have any data that is currently undigitized? If so, tell us about the data and
                         whether you would like assistance in digitizing it.</label>
                     <textarea name="undigitizedData" rows="4" placeholder="Describe any undigitized data..."></textarea>
                 </div>
             </div>
 
-            <!-- Section 8: Data Sharing -->
-            <div class="section" data-section="8">
+            <!-- Section 11: Data Sharing -->
+            <div class="section" data-section="11">
                 <h2>Data Sharing</h2>
 
                 <div class="form-group">
-                    <label>16. Do you submit reports on your biodiversity data to the government of Belize?</label>
+                    <label>30. Do you submit reports on your data to the government of Belize?</label>
                     <div class="radio-group">
                         <label class="radio-option">
                             <input type="radio" name="govReports" value="Yes">
@@ -882,7 +1199,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>17. Do you publish your technical reports online (e.g., on a website)?</label>
+                    <label>31. Do you publish your technical reports online (e.g., on a website)?</label>
                     <div class="radio-group">
                         <label class="radio-option">
                             <input type="radio" name="publishOnline" value="Yes">
@@ -900,7 +1217,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>18. Do you publish peer-reviewed papers on your data?</label>
+                    <label>32. Do you publish peer-reviewed papers on your data?</label>
                     <div class="radio-group">
                         <label class="radio-option">
                             <input type="radio" name="publishPapers" value="Yes" onchange="togglePublishPapers()">
@@ -932,7 +1249,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>19. Do you share biodiversity data results in a public data dashboard?</label>
+                    <label>33. Do you share data results in a public data dashboard?</label>
                     <div class="radio-group">
                         <label class="radio-option">
                             <input type="radio" name="publicDashboard" value="Yes">
@@ -946,7 +1263,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>20. Do you share your biodiversity datasets outside your organization?</label>
+                    <label>34. Do you share your datasets outside your organization?</label>
                     <div class="radio-group">
                         <label class="radio-option">
                             <input type="radio" name="shareData" value="Yes" onchange="toggleShareData()">
@@ -963,7 +1280,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>21. Do you publish your biodiversity datasets on any online repositories?</label>
+                    <label>35. Do you publish your datasets on any online repositories?</label>
                     <div class="radio-group">
                         <label class="radio-option">
                             <input type="radio" name="onlineRepos" value="Yes" onchange="toggleOnlineRepos()">
@@ -980,7 +1297,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label>22. Would you be interested in publishing your data on the GBIF online repository (gbif.org),
+                    <label>36. Would you be interested in publishing your biodiversity data on the GBIF online
+                        repository (gbif.org),
                         if you were given support by UB-ERI to do so to increase the visibility, traceability, and
                         impact of your work?</label>
                     <div class="radio-group">
@@ -1000,12 +1318,12 @@
                 </div>
             </div>
 
-            <!-- Section 9: National Biodiversity Coordination -->
-            <div class="section" data-section="9">
+            <!-- Section 12: National Biodiversity Coordination -->
+            <div class="section" data-section="12">
                 <h2>National Biodiversity Coordination</h2>
 
                 <div class="form-group">
-                    <label>23. Is your organization involved in any national working groups related to biodiversity in
+                    <label>37. Is your organization involved in any national working groups related to biodiversity in
                         Belize (e.g., National Coral Reef Monitoring Network, Sea Turtle
                         Working Group, Jaguar Working Group)? If yes, list each
                         working group.</label>
@@ -1028,7 +1346,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>24. Is your organization leading any of the national working groups related to biodiversity
+                    <label>38. Is your organization leading any of the national working groups related to biodiversity
                         in
                         Belize? If so, state which ones.</label>
                     <div class="radio-group">
@@ -1050,7 +1368,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>25. Is your organization involved in any species or ecosystem task force (e.g., Manatee Task
+                    <label>39. Is your organization involved in any species or ecosystem task force (e.g., Manatee Task
                         Force)? If yes, please
                         list.</label>
                     <div class="radio-group">
@@ -1069,8 +1387,8 @@
                 </div>
             </div>
 
-            <!-- Section 10: Significance & Interest -->
-            <div class="section" data-section="10">
+            <!-- Section 13: Significance & Interest -->
+            <div class="section" data-section="13">
                 <h2>Significance & Interest</h2>
 
                 <div class="form-group">
@@ -1078,17 +1396,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label>26. Which species do you consider of cultural significance in Belize?</label>
+                    <label>40. Which species do you consider of cultural significance in Belize?</label>
                     <textarea name="culturalSpecies" rows="3" placeholder="List species..."></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>27. Which species do you consider of economic significance in Belize?</label>
+                    <label>41. Which species do you consider of economic significance in Belize?</label>
                     <textarea name="economicSpecies" rows="3" placeholder="List species..."></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>28. Have communities that you work with expressed concern for specific species (e.g., because
+                    <label>42. Have communities that you work with expressed concern for specific species (e.g., because
                         of dwindling numbers, or persistence as a pest)?</label>
                     <div class="radio-group">
                         <label class="radio-option">
@@ -1132,7 +1450,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>29. If any, which potential species/taxa would your organization be interested in monitoring
+                    <label>43. If any, which potential species/taxa would your organization be interested in monitoring
                         or
                         studying in the future? Why?</label>
                     <textarea name="futureMonitoring" rows="4"
@@ -1140,7 +1458,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>30. Which species/taxa in Belize do you think need more biodiversity monitoring, because
+                    <label>44. Which species/taxa in Belize do you think need more biodiversity monitoring, because
                         of:</label>
                     <div class="conditional">
                         <label>Lack of or gap in monitoring:</label>
@@ -1153,7 +1471,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>31. Which area(s) in Belize do you think need more biodiversity monitoring, because
+                    <label>45. Which area(s) in Belize do you think need more biodiversity monitoring, because
                         of:</label>
                     <div class="conditional">
                         <label>Lack of or gap in monitoring:</label>
@@ -1232,8 +1550,8 @@
             }
 
             let next = currentSection + 1;
-            if (shouldSkipMonitoringSections() && next >= 3 && next <= 8) {
-                next = 9;
+            if (shouldSkipMonitoringSections() && next >= 3 && next <= 4) {
+                next = 5;
             }
             if (next < sections.length) {
                 currentSection = next;
@@ -1247,7 +1565,7 @@
 
         function prevSection() {
             let prev = currentSection - 1;
-            if (shouldSkipMonitoringSections() && prev >= 3 && prev <= 8) {
+            if (shouldSkipMonitoringSections() && prev >= 3 && prev <= 4) {
                 prev = 2;
             }
             if (prev >= 0) {
@@ -1317,6 +1635,92 @@
         function toggleCommunityConcern() {
             const yes = document.querySelector('input[name="communityConcern"][value="Yes"]').checked;
             document.getElementById("communityConcernDetails").style.display = yes ? "block" : "none";
+        }
+
+        function toggleEcosystemHealthData() {
+            const yes = document.querySelector('input[name="ecosystemHealthData"][value="Yes"]').checked;
+            document.getElementById("ecosystemHealthEcosystems").style.display = yes ? "block" : "none";
+        }
+
+        function toggleInvasiveSpecies() {
+            const yes = document.querySelector('input[name="invasiveSpecies"][value="Yes"]').checked;
+            document.getElementById("invasiveSpeciesList").style.display = yes ? "block" : "none";
+        }
+
+        function toggleEcosystemServices() {
+            const yes = document.querySelector('input[name="ecosystemServices"][value="Yes"]').checked;
+            document.getElementById("ecosystemServicesWhich").style.display = yes ? "block" : "none";
+        }
+
+        function toggleEnforcement() {
+            const yes = document.querySelector('input[name="doesEnforcement"][value="Yes"]').checked;
+            document.getElementById("enforcementSection").style.display = yes ? "block" : "none";
+        }
+
+        function toggleWildlifeExtraction() {
+            const checked = document.querySelector('input[name="enforcementTypes"][value="Wildlife extraction"]').checked;
+            const container = document.getElementById("wildlifeExtractionOptions");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+                const huntingContainer = document.getElementById("huntingSpeciesInput");
+                if (huntingContainer) huntingContainer.hidden = true;
+            }
+        }
+
+        function toggleHuntingSpecies() {
+            const checked = document.querySelector('input[name="enforcementTypes"][value="Hunting"]').checked;
+            const container = document.getElementById("huntingSpeciesInput");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
+        function togglePatrolDataOther() {
+            const checked = document.querySelector('input[name="patrolDataTools"][value="Yes, Other"]').checked;
+            const container = document.getElementById("patrolDataToolsOther");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
+        function togglePatrolDataCollection() {
+            const smart = document.querySelector('input[name="patrolDataTools"][value="Yes, SMART"]')?.checked;
+            const earth = document.querySelector('input[name="patrolDataTools"][value="Yes, EarthRanger"]')?.checked;
+            const other = document.querySelector('input[name="patrolDataTools"][value="Yes, Other"]')?.checked;
+            const hasPatrolData = smart || earth || other;
+
+            const container = document.getElementById("patrolDataTypesSection");
+            if (!container) return;
+            container.style.display = hasPatrolData ? "block" : "none";
+
+            if (!hasPatrolData) {
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+            }
+        }
+
+        function toggleCommunityEngagement() {
+            const yes = document.querySelector('input[name="communityEngagement"][value="Yes"]').checked;
+            document.getElementById("communityEngagementSection").style.display = yes ? "block" : "none";
         }
 
         function toggleMammalsOptions() {
@@ -1624,6 +2028,15 @@
             togglePlantsOptions();
             toggleSurveyEquipmentSpecify();
             toggleSoftwareTrainingOptions();
+            toggleEcosystemHealthData();
+            toggleInvasiveSpecies();
+            toggleEcosystemServices();
+            toggleEnforcement();
+            toggleWildlifeExtraction();
+            toggleHuntingSpecies();
+            togglePatrolDataOther();
+            togglePatrolDataCollection();
+            toggleCommunityEngagement();
             toggleCollaboration();
             toggleDigitizationPortals();
             toggleShareData();
