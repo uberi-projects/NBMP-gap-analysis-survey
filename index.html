@@ -1296,7 +1296,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="gbifQuestion" style="display: none;">
                     <label>36. Would you be interested in publishing your biodiversity data on the GBIF online
                         repository (gbif.org),
                         if you were given support by UB-ERI to do so to increase the visibility, traceability, and
@@ -1537,6 +1537,47 @@
             return noRadio && noRadio.checked;
         }
 
+        function collectsAnyData() {
+            // Check if they do biodiversity monitoring
+            const doesBiodiversity = document.querySelector('input[name="doesMonitoring"][value="Yes"]')?.checked;
+            if (doesBiodiversity) return true;
+
+            // Check Ecosystem Health section for any data collection
+            const ecosystemHealth = document.querySelector('input[name="ecosystemHealthData"][value="Yes"]')?.checked;
+            if (ecosystemHealth) return true;
+
+            const habitatRestoration = document.querySelector('input[name="habitatRestoration"][value="Yes"]')?.checked;
+            if (habitatRestoration) return true;
+
+            // Check quality data (but not "No")
+            const qualityDataCheckboxes = document.querySelectorAll('input[name="qualityData"]:checked');
+            const hasQualityData = Array.from(qualityDataCheckboxes).some(cb => cb.value !== "No");
+            if (hasQualityData) return true;
+
+            const pollutionData = document.querySelector('input[name="pollutionData"][value="Yes"]')?.checked;
+            if (pollutionData) return true;
+
+            const invasiveSpecies = document.querySelector('input[name="invasiveSpecies"][value="Yes"]')?.checked;
+            if (invasiveSpecies) return true;
+
+            const ecosystemServices = document.querySelector('input[name="ecosystemServices"][value="Yes"]')?.checked;
+            if (ecosystemServices) return true;
+
+            const communityEcosystemServices = document.querySelector('input[name="communityEcosystemServices"][value="Yes"]')?.checked;
+            if (communityEcosystemServices) return true;
+
+            // Check climate resiliency (but not "No")
+            const climateResiliencyCheckboxes = document.querySelectorAll('input[name="climateResiliency"]:checked');
+            const hasClimateResiliency = Array.from(climateResiliencyCheckboxes).some(cb => cb.value !== "No");
+            if (hasClimateResiliency) return true;
+
+            return false;
+        }
+
+        function shouldSkipDataSections() {
+            return !collectsAnyData();
+        }
+
         function nextSection() {
             document.querySelectorAll(".validation-error").forEach(el => el.style.display = "none");
 
@@ -1553,6 +1594,9 @@
             if (shouldSkipMonitoringSections() && next >= 3 && next <= 4) {
                 next = 5;
             }
+            if (shouldSkipDataSections() && next >= 8 && next <= 11) {
+                next = 12;
+            }
             if (next < sections.length) {
                 currentSection = next;
                 showSection(currentSection);
@@ -1568,6 +1612,9 @@
             if (shouldSkipMonitoringSections() && prev >= 3 && prev <= 4) {
                 prev = 2;
             }
+            if (shouldSkipDataSections() && prev >= 8 && prev <= 11) {
+                prev = 7;
+            }
             if (prev >= 0) {
                 currentSection = prev;
                 showSection(currentSection);
@@ -1581,6 +1628,15 @@
         function toggleMonitoringQuestions() {
             const yes = document.querySelector('input[name="doesMonitoring"][value="Yes"]').checked;
             document.getElementById("monitoringAreasSection").style.display = yes ? "block" : "none";
+            toggleGbifQuestion();
+        }
+
+        function toggleGbifQuestion() {
+            const doesMonitoring = document.querySelector('input[name="doesMonitoring"][value="Yes"]')?.checked;
+            const gbifQuestion = document.getElementById("gbifQuestion");
+            if (gbifQuestion) {
+                gbifQuestion.style.display = doesMonitoring ? "block" : "none";
+            }
         }
 
         function toggleCollaboration() {
@@ -2042,6 +2098,7 @@
             toggleShareData();
             toggleOnlineRepos();
             togglePublishPapers();
+            toggleGbifQuestion();
             toggleWorkingGroups();
             toggleWorkingGroupsLeading();
             toggleTaskForce();
