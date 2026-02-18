@@ -22,7 +22,7 @@ The code was written with extensive support from Codex and Claude Code, with ove
 
 ### Survey Structure Overview
 
-The survey consists of **14 sections** (numbered 0-13) containing **45 questions** total:
+The survey consists of **14 sections** (numbered 0-13) containing **46 questions** total:
 
 - **Section 0:** Introduction (no questions, informational only)
 - **Section 1:** Organization Information (organization name)
@@ -30,14 +30,14 @@ The survey consists of **14 sections** (numbered 0-13) containing **45 questions
 - **Section 3:** Ecosystems (Question 3) - *conditionally skipped*
 - **Section 4:** Research Projects (Questions 4-5) - *conditionally skipped*
 - **Section 5:** Ecosystem Health (Questions 6-13) - *everyone answers*
-- **Section 6:** Enforcement (Questions 14-16) - *conditionally shown*
-- **Section 7:** Mainstreaming (Questions 17-19) - *conditionally shown*
-- **Section 8:** Collaboration & Challenges (Questions 20-21) - *conditionally skipped*
-- **Section 9:** Technology & Skills (Questions 22-27) - *conditionally skipped*
-- **Section 10:** Data Management (Questions 28-29) - *conditionally skipped*
-- **Section 11:** Data Sharing (Questions 30-36) - *conditionally skipped*
-- **Section 12:** National Biodiversity Coordination (Questions 37-39)
-- **Section 13:** Significance & Interest (Questions 40-45)
+- **Section 6:** Enforcement (Questions 14-17) - *conditionally shown*
+- **Section 7:** Mainstreaming (Questions 18-20) - *conditionally shown*
+- **Section 8:** Collaboration & Challenges (Questions 21-22) - *conditionally skipped*
+- **Section 9:** Technology & Skills (Questions 23-28) - *conditionally skipped*
+- **Section 10:** Data Management (Questions 29-30) - *conditionally skipped*
+- **Section 11:** Data Sharing (Questions 31-37) - *conditionally skipped*
+- **Section 12:** National Biodiversity Coordination (Questions 38-40)
+- **Section 13:** Significance & Interest (Questions 41-46)
 
 ### Conditional Logic & Skip Patterns
 
@@ -56,21 +56,21 @@ The survey implements skip logic based on respondent answers:
   - Ecosystem health data (Question 6 = "Yes")
   - Habitat restoration data (Question 7 = "Yes")
   - Water/air/soil quality data (Question 8, any except "No")
-  - Pollution data (Question 9 = "Yes")
+  - Pollution data (Question 9, any except "No")
   - Invasive species data (Question 10 = "Yes")
   - Ecosystem services data (Question 11 = "Yes")
   - Community ecosystem services data (Question 12 = "Yes")
   - Climate resiliency data (Question 13, any except "No")
 - **Result:** If ANY of these are true, respondent must answer Sections 8-11
 
-#### Skip Logic 3: GBIF Question (Question 36)
+#### Skip Logic 3: GBIF Question (Question 37)
 - **Trigger:** Only shown if respondent does biodiversity monitoring (Question 1 = "Yes")
-- **Behavior:** Question is hidden if they don't do biodiversity monitoring
+- **Behavior:** Question 37 is hidden if they don't do biodiversity monitoring
 - **Implementation:** `toggleGbifQuestion()` function conditionally displays/hides the question
 
 ### Toggle Functions
 
-The survey uses **31 toggle functions** to show/hide conditional content based on user selections. Key toggle patterns:
+The survey uses **32 toggle functions** to show/hide conditional content based on user selections. Key toggle patterns:
 
 - **Nested checkbox groups:** Selecting a parent checkbox reveals sub-options (e.g., "Mammals" reveals specific mammal types)
 - **Follow-up questions:** Answering "Yes" reveals additional detail questions (e.g., "Do you collaborate?" → "With whom?")
@@ -100,7 +100,7 @@ All toggle functions are called in `restoreProgress()` to ensure conditional fie
 3. **default_headers.csv** (Schema Definition)
    - Defines the exact column structure for the response spreadsheet
    - **Must match** the `name` attributes of form fields in index.html
-   - Contains 87 columns total (including timestamp)
+   - Contains 116 columns total (including timestamp)
    - Column order matters: data is written to columns in the order headers appear
    - Dynamic fields use underscore notation: `ltSpecies_0`, `ltSpecies_1`, `ltSpecies_2` for table rows
 
@@ -209,7 +209,7 @@ The survey automatically saves progress to browser localStorage:
 
 When deploying or updating the survey:
 
-1. Update Google Apps Script deployment URL in index.html at lines ~1703 and ~1718
+1. Update Google Apps Script deployment URL in index.html — search for `submitToGoogleSheet` and update the two fetch URLs (primary and no-cors retry)
 2. Ensure default_headers.csv matches all form field names in index.html
 3. Copy headers from default_headers.csv to first row of Google Sheets response spreadsheet
 4. Attach code.gs to the response spreadsheet and deploy as web app
