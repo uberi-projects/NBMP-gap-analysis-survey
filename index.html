@@ -727,16 +727,27 @@
                 </div>
 
                 <div class="form-group">
-                    <label>9. Do you collect any other data on pollution?</label>
-                    <div class="radio-group">
-                        <label class="radio-option">
-                            <input type="radio" name="pollutionData" value="Yes">
-                            <span>Yes</span>
+                    <label>9. Do you collect data on pollution for any of the following?</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="pollutionData"
+                                value="Water pollution"> Water pollution</label>
+                        <label class="checkbox-option"><input type="checkbox" name="pollutionData"
+                                value="Air pollution"> Air pollution</label>
+                        <label class="checkbox-option"><input type="checkbox" name="pollutionData"
+                                value="Noise pollution"> Noise pollution</label>
+                        <label class="checkbox-option"><input type="checkbox" name="pollutionData"
+                                value="Light pollution"> Light pollution</label>
+                        <label class="checkbox-option"><input type="checkbox" name="pollutionData"
+                                value="Thermal pollution"> Thermal pollution</label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="pollutionData" value="Other" onchange="togglePollutionOther()">
+                            Other
                         </label>
-                        <label class="radio-option">
-                            <input type="radio" name="pollutionData" value="No">
-                            <span>No</span>
-                        </label>
+                        <div id="pollutionOther" class="nested-group" hidden>
+                            <input type="text" name="pollutionDataOther" placeholder="Please specify">
+                        </div>
+                        <label class="checkbox-option"><input type="checkbox" name="pollutionData" value="No">
+                            No</label>
                     </div>
                 </div>
 
@@ -1555,8 +1566,9 @@
             const hasQualityData = Array.from(qualityDataCheckboxes).some(cb => cb.value !== "No");
             if (hasQualityData) return true;
 
-            const pollutionData = document.querySelector('input[name="pollutionData"][value="Yes"]')?.checked;
-            if (pollutionData) return true;
+            const pollutionDataCheckboxes = document.querySelectorAll('input[name="pollutionData"]:checked');
+            const hasPollutionData = Array.from(pollutionDataCheckboxes).some(cb => cb.value !== "No");
+            if (hasPollutionData) return true;
 
             const invasiveSpecies = document.querySelector('input[name="invasiveSpecies"][value="Yes"]')?.checked;
             if (invasiveSpecies) return true;
@@ -1917,6 +1929,19 @@
             }
         }
 
+        function togglePollutionOther() {
+            const checked = document.querySelector('input[name="pollutionData"][value="Other"]').checked;
+            const container = document.getElementById("pollutionOther");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
         function toggleSurveyEquipmentSpecify() {
             const checked = document.querySelector('input[name="techGaps"][value="Lack of survey equipment"]').checked;
             const container = document.getElementById("surveyEquipmentSpecify");
@@ -2086,6 +2111,7 @@
             toggleSurveyEquipmentSpecify();
             toggleSoftwareTrainingOptions();
             toggleEcosystemHealthData();
+            togglePollutionOther();
             toggleInvasiveSpecies();
             toggleEcosystemServices();
             toggleEnforcement();
