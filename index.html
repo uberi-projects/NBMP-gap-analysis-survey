@@ -1040,6 +1040,18 @@
                                 <input type="checkbox" name="patrolDataTypes" value="Arrests">
                                 Arrests
                             </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="patrolDataTypes" value="Perpetrators profiles">
+                                Perpetrators profiles
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="patrolDataTypes" value="Other"
+                                    onchange="togglePatrolDataTypesOther()">
+                                Other
+                            </label>
+                        </div>
+                        <div id="patrolDataTypesOther" class="nested-group" hidden>
+                            <input type="text" name="patrolDataTypesOtherSpecify" placeholder="Specify">
                         </div>
                     </div>
                 </div>
@@ -1050,9 +1062,9 @@
                 <h2>Mainstreaming</h2>
 
                 <div class="form-group">
-                    <label class="question-label">Do you engage with communities on biodiversity and/or ecosystem
-                        services education and
-                        awareness?</label>
+                    <label class="question-label">Do you carry out engagement and outreach activities with communities
+                        on biodiversity and/or ecosystem services?
+                    </label>
                     <div class="radio-group">
                         <label class="radio-option">
                             <input type="radio" name="communityEngagement" value="Yes"
@@ -1074,7 +1086,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="question-label">What kind of engagement do you most often do?</label>
+                        <label class="question-label">How would you describe the type(s) of engagement that you most
+                            often do? </label>
                         <textarea name="engagementTypes" rows="3" placeholder="Describe engagement types..."></textarea>
                     </div>
                 </div>
@@ -1197,6 +1210,9 @@
                                 value="High staff turnover"> High staff turnover leading to repeated skill loss</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
                                 value="Difficulty with report writing"> Difficulty with report writing</label>
+                        <label class="checkbox-option"><input type="checkbox" name="skillGaps"
+                                value="Difficulty with publishing in peer-review journals"> Difficulty with publishing
+                            in peer-review journals</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
                                 value="Lack of technical skills for biodiversity projects"> Lack of technical skills for
                             developing biodiversity research and monitoring projects</label>
@@ -1889,6 +1905,17 @@
             }
         }
 
+        function togglePatrolDataTypesOther() {
+            const checked = document.querySelector('input[name="patrolDataTypes"][value="Other"]')?.checked;
+            const container = document.getElementById("patrolDataTypesOther");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="text"]').forEach(t => t.value = '');
+            }
+        }
+
         function togglePatrolDataCollection() {
             const smart = document.querySelector('input[name="patrolDataTools"][value="Yes, SMART"]')?.checked;
             const earth = document.querySelector('input[name="patrolDataTools"][value="Yes, EarthRanger"]')?.checked;
@@ -1902,6 +1929,9 @@
             if (!hasPatrolData) {
                 container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                     cb.checked = false;
+                });
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
                 });
             }
         }
@@ -2239,6 +2269,7 @@
             toggleHuntingSpecies();
             togglePatrolDataOther();
             togglePatrolDataCollection();
+            togglePatrolDataTypesOther();
             toggleCommunityEngagement();
             toggleCollaboration();
             toggleDigitizationPortals();
