@@ -674,23 +674,31 @@
                 <h2>Ecosystem Health</h2>
 
                 <div class="form-group">
-                    <label>6. Do you collect any data about the overall health of ecosystems (e.g., coral reef
-                        health)?</label>
-                    <div class="radio-group">
-                        <label class="radio-option">
-                            <input type="radio" name="ecosystemHealthData" value="Yes"
-                                onchange="toggleEcosystemHealthData()">
-                            <span>Yes</span>
+                    <label>6. Do you collect any data about the overall health of ecosystems?</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Species richness"> Species richness</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Presence/absence of indicator or target species"> Presence/absence of indicator or target species</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Population size"> Population size</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Freshwater water quality"> Freshwater water quality</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Marine water quality"> Marine water quality</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Air quality"> Air quality</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Soil quality"> Soil quality</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Nutrient content/levels"> Nutrient content/levels</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Habitat structure"> Habitat structure</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Habitat patch size"> Habitat patch size</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Connectivity"> Connectivity</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Presence of diseases"> Presence of diseases</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Extent of diseases"> Extent of diseases</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Productivity"> Productivity</label>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="Harvest quotas"> Harvest quotas</label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="ecosystemHealthData" value="Other" onchange="toggleEcosystemHealthData()">
+                            Other
                         </label>
-                        <label class="radio-option">
-                            <input type="radio" name="ecosystemHealthData" value="No"
-                                onchange="toggleEcosystemHealthData()">
-                            <span>No</span>
-                        </label>
-                    </div>
-                    <div id="ecosystemHealthEcosystems" class="conditional" style="display: none;">
-                        <label>Ecosystems:</label>
-                        <input type="text" name="ecosystemHealthEcosystemsList" placeholder="List ecosystems...">
+                        <div id="ecosystemHealthDataOther" class="nested-group" hidden>
+                            <input type="text" name="ecosystemHealthDataOther" placeholder="Please specify">
+                        </div>
+                        <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData" value="No"> No</label>
                     </div>
                 </div>
 
@@ -1581,8 +1589,9 @@
             if (doesBiodiversity) return true;
 
             // Check Ecosystem Health section for any data collection
-            const ecosystemHealth = document.querySelector('input[name="ecosystemHealthData"][value="Yes"]')?.checked;
-            if (ecosystemHealth) return true;
+            const ecosystemHealthCheckboxes = document.querySelectorAll('input[name="ecosystemHealthData"]:checked');
+            const hasEcosystemHealth = Array.from(ecosystemHealthCheckboxes).some(cb => cb.value !== "No");
+            if (hasEcosystemHealth) return true;
 
             const habitatRestoration = document.querySelector('input[name="habitatRestoration"][value="Yes"]')?.checked;
             if (habitatRestoration) return true;
@@ -1728,8 +1737,16 @@
         }
 
         function toggleEcosystemHealthData() {
-            const yes = document.querySelector('input[name="ecosystemHealthData"][value="Yes"]').checked;
-            document.getElementById("ecosystemHealthEcosystems").style.display = yes ? "block" : "none";
+            const checked = document.querySelector('input[name="ecosystemHealthData"][value="Other"]').checked;
+            const container = document.getElementById("ecosystemHealthDataOther");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
         }
 
         function toggleInvasiveSpecies() {
