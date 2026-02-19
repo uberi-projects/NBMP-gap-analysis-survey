@@ -790,7 +790,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="question-label">Do you measure any ecosystem services?</label>
+                    <label class="question-label">Do you measure access to or benefits of ecosystem services?</label>
                     <div class="radio-group">
                         <label class="radio-option">
                             <input type="radio" name="ecosystemServices" value="Yes"
@@ -807,13 +807,26 @@
                         <label>Which ecosystem services do you measure?</label>
                         <div class="checkbox-group">
                             <label class="checkbox-option"><input type="checkbox" name="ecosystemServicesTypes"
-                                    value="Access to clean water"> Access to clean water</label>
+                                    value="Access to clean water (potable water, river, streams)"> Access to clean water
+                                (potable water, river, streams)</label>
+                            <label class="checkbox-option"><input type="checkbox" name="ecosystemServicesTypes"
+                                    value="Access to forest products (wood, game meat, medicinal plants, etc.)"> Access
+                                to forest products (wood, game meat, medicinal plants, etc.)</label>
+                            <label class="checkbox-option"><input type="checkbox" name="ecosystemServicesTypes"
+                                    value="Access to marine products"> Access to marine products</label>
+                            <label class="checkbox-option"><input type="checkbox" name="ecosystemServicesTypes"
+                                    value="Eco-businesses"> Eco-businesses</label>
                             <label class="checkbox-option"><input type="checkbox" name="ecosystemServicesTypes"
                                     value="Carbon stocks"> Carbon stocks</label>
                             <label class="checkbox-option"><input type="checkbox" name="ecosystemServicesTypes"
                                     value="Shoreline protection"> Shoreline protection</label>
-                            <div style="margin-top: 10px;">
-                                <input type="text" name="ecosystemServicesOther" placeholder="Other">
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="ecosystemServicesTypes" value="Other"
+                                    onchange="toggleEcosystemServicesOther()">
+                                Other
+                            </label>
+                            <div id="ecosystemServicesOther" class="nested-group" hidden>
+                                <input type="text" name="ecosystemServicesOther" placeholder="Please specify">
                             </div>
                         </div>
                     </div>
@@ -1816,6 +1829,16 @@
             document.getElementById("ecosystemServicesWhich").style.display = yes ? "block" : "none";
         }
 
+        function toggleEcosystemServicesOther() {
+            const checked = document.querySelector('input[name="ecosystemServicesTypes"][value="Other"]').checked;
+            const container = document.getElementById("ecosystemServicesOther");
+            if (!container) return;
+            container.hidden = !checked;
+            if (!checked) {
+                container.querySelectorAll('input[type="text"]').forEach(t => t.value = '');
+            }
+        }
+
         function toggleEnforcement() {
             const yes = document.querySelector('input[name="doesEnforcement"][value="Yes"]').checked;
             document.getElementById("enforcementSection").style.display = yes ? "block" : "none";
@@ -2209,6 +2232,7 @@
             togglePollutionOther();
             toggleInvasiveSpecies();
             toggleEcosystemServices();
+            toggleEcosystemServicesOther();
             toggleEnforcement();
             toggleWildlifeExtraction();
             toggleHuntingSpecies();
