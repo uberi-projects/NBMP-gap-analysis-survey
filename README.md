@@ -127,7 +127,7 @@ For dynamic table rows that users can add:
 
 1. **In index.html:**
    - Add the question HTML in the appropriate section
-   - Update question numbering for this and all subsequent questions
+   - Give the question's `<label>` a `class="question-label"` attribute — **do not add a number prefix**; numbering is automatic (see below)
    - Add any necessary toggle functions if the question is conditional
    - Add the toggle function call to `restoreProgress()` if conditional
    - Update validation logic in `nextSection()` if required
@@ -162,6 +162,20 @@ Skip logic is controlled in three key functions in index.html:
 - `nextSection()` and `prevSection()` - implement the skip behavior during navigation
 
 To modify skip behavior, update the conditional checks in these functions.
+
+#### Question Numbering
+
+Question numbers are generated automatically — they are not written into the HTML. On page load, a JavaScript one-liner (see the Init block in `index.html`) finds every `<label class="question-label">` in document order and assigns a `data-question-number` attribute (1, 2, 3, …). A CSS `::before` rule then displays that number before the label text.
+
+This means:
+- Adding, removing, or reordering questions renumbers everything automatically.
+- When writing a question label, use `class="question-label"` with no number prefix:
+
+```html
+<label class="question-label">Does your organization do biodiversity monitoring?</label>
+```
+
+CSS counters were intentionally not used here because the survey shows one section at a time via `display: none`, which causes CSS counters to reset per visible section.
 
 #### Adding Conditional Display Logic
 
