@@ -69,7 +69,7 @@ The survey implements skip logic based on respondent answers:
 
 ### Toggle Functions
 
-The survey uses **32 toggle functions** to show/hide conditional content based on user selections. Key toggle patterns:
+The survey uses **33 toggle functions** to show/hide conditional content based on user selections. Key toggle patterns:
 
 - **Nested checkbox groups:** Selecting a parent checkbox reveals sub-options (e.g., "Mammals" reveals specific mammal types)
 - **Follow-up questions:** Answering "Yes" reveals additional detail questions (e.g., "Do you collaborate?" → "With whom?")
