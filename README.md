@@ -11,6 +11,7 @@ The code was written with extensive support from Codex and Claude Code, with ove
 - default_headers.csv lists the recommended headers to use in the target response Google Sheet. These should be added to the Google Sheet before collecting responses.
 - data_analysis.r stores R code to analyze any response data exports found in the data_deposit folder and produce outputs in the outputs folder. (NOT YET IMPLEMENTED)
 - index.html is the survey HTML. The deployment URL for the Google Apps Script on your response spreadsheet must be set in the submit handler in two places: the primary fetch URL and the no-cors retry URL inside `submitToGoogleSheet()`. See `index.html:1703` and `index.html:1718`.
+- wireframe.md documents the survey's question flow, ordering, and skip logic in plain language, for non-technical review.
 
 
 ## Folders
