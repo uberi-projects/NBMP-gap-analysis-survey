@@ -149,8 +149,8 @@ If none of the above are true, the survey jumps straight from Section 7 to Secti
 
 **Communities**
 
-- **Q40. Which species do you consider of cultural significance in Belize?** ~ long text
-- **Q41. Which species do you consider of economic significance in Belize?** ~ long text
+- **Q40. Which species do you consider of cultural significance in your region/area of work?** ~ long text
+- **Q41. Which species do you consider of economic significance in your region/area of work?** ~ long text
 - **Q42. Have communities you work with expressed concern for specific species?** (e.g., dwindling numbers, or pest) ~ Yes / No
   - If **Yes** → reveals dynamic table (1 row minimum, "Add Row" up to 3): Community, District, Species, Reason of Concern
 
