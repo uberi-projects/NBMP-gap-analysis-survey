@@ -66,7 +66,7 @@ Informational only. No questions.
   - **Wildlife extraction** checked → reveals sub-list: Hunting, Taking live animals, Freshwater fishing, Marine fishing, Conch/Lobster/Sea cucumber harvesting
     - **Hunting** checked → reveals free text "Which species"
 - **Q16. Do you collect patrol data using SMART, EarthRanger, or a similar tool?** (only if Q13 = Yes) ~ checkboxes: Yes SMART / Yes EarthRanger / Yes Other (free text) / No
-  - If any "Yes" option checked → reveals **follow-up**: "What kind of patrol data do you collect?" ~ checkboxes: Patrol hours, Number of infractions, Types of infractions, Arrests, Perpetrator profiles, Other (free text)
+  - If any "Yes" option checked → reveals **follow-up**: "What kind of patrol data do you collect?" ~ checkboxes: Patrol hours, Number of infractions, Types of infractions, Arrests, Human encounter profiles, Other (free text)
 
 ## Section 7 ~ Mainstreaming
 
