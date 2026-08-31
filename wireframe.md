@@ -108,7 +108,8 @@ If none of the above are true, the survey jumps straight from Section 7 to Secti
 - **Q24. Do you have the complementary software to operate/process data from your survey equipment? Which software?** ~ long text
 - **Q25. Are you missing any other complementary software, equipment, or technology needed?** (e.g., online subscriptions) ~ long text
 - **Q26. What technical skills and training gaps does your organization have?** ~ checkboxes: None, Limited data analysis skills, Limited GIS access, Limited technical support, High staff turnover leading to constant retraining needs, Limited technical report writing skills, Limited skills for publishing in peer-review journals, Limited project development and management skills + free text "Others"
-- **Q27. What type of training is staff continuously needing?** ~ checkboxes: None, Technical training, Research and monitoring development, Equipment operation, Software, Working with data + free text "Other"
+- **Q27. What type of training is staff continuously needing?** ~ checkboxes: None, Technical training, Research and monitoring development, Equipment operation, Software, Data cleaning and entering (for existing databases or systems), Data interpretation and analysis, Technical and scientific report writing + free text "Other"
+  - **Technical training** checked → reveals free text "What technical training specifically?"
   - **Software** checked → reveals sub-list: Data processing software, Data analysis software, Geospatial software, Equipment operation software
 
 ## Section 10 ~ Data Management _(skipped per Skip Logic 2)_
@@ -121,6 +122,7 @@ If none of the above are true, the survey jumps straight from Section 7 to Secti
 
 - **Q30. Do you submit reports on your data to the government of Belize?** ~ Yes / No / We do not do reporting
 - **Q31. Do you publish your technical reports online** (e.g., website)? ~ Yes / No / We do not do reporting
+  - If **Yes** → reveals "How often do you publish your technical reports online?" ~ 1+ times/year, 1+ times/5yrs, 1+ times/10yrs (single choice)
 - **Q32. Do you publish peer-reviewed papers on your data?** ~ Yes / No
   - If **Yes** → reveals "How often do you publish papers?" ~ 1+ times/year, 1+ times/5yrs, 1+ times/10yrs (single choice)
 - **Q33. Do you share data results in a public data dashboard?** ~ Yes / No

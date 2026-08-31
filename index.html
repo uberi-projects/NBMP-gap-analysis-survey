@@ -1248,8 +1248,15 @@
                     <div class="checkbox-group">
                         <label class="checkbox-option"><input type="checkbox" name="trainingNeeds" value="None">
                             None</label>
-                        <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
-                                value="Technical training"> Technical training</label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="trainingNeeds" value="Technical training"
+                                onchange="toggleTechnicalTrainingSpecify()">
+                            Technical training
+                        </label>
+                        <div id="technicalTrainingSpecify" class="nested-group" hidden>
+                            <input type="text" name="technicalTrainingSpecify"
+                                placeholder="What technical training specifically?">
+                        </div>
                         <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
                                 value="Research and monitoring development"> Research and monitoring
                             development</label>
@@ -1272,7 +1279,13 @@
                                 software</label>
                         </div>
                         <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
-                                value="Working with data"> Working with data</label>
+                                value="Data cleaning and entering (for existing databases or systems)"> Data cleaning and
+                            entering (for existing databases or systems)</label>
+                        <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
+                                value="Data interpretation and analysis"> Data interpretation and analysis</label>
+                        <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
+                                value="Technical and scientific report writing"> Technical and scientific report
+                            writing</label>
                         <div style="margin-top: 10px;">
                             <input type="text" name="trainingNeedsOther" placeholder="Other (please specify)">
                         </div>
@@ -1345,17 +1358,37 @@
                         website)?</label>
                     <div class="radio-group">
                         <label class="radio-option">
-                            <input type="radio" name="publishOnline" value="Yes">
+                            <input type="radio" name="publishOnline" value="Yes" onchange="togglePublishOnline()">
                             <span>Yes</span>
                         </label>
                         <label class="radio-option">
-                            <input type="radio" name="publishOnline" value="No">
+                            <input type="radio" name="publishOnline" value="No" onchange="togglePublishOnline()">
                             <span>No</span>
                         </label>
                         <label class="radio-option">
-                            <input type="radio" name="publishOnline" value="We do not do reporting">
+                            <input type="radio" name="publishOnline" value="We do not do reporting"
+                                onchange="togglePublishOnline()">
                             <span>We do not do reporting</span>
                         </label>
+                    </div>
+                    <div id="publishOnlineFrequency" class="conditional" style="display: none;">
+                        <label>How often do you publish your technical reports online?</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="publishOnlineFrequency" value="1 or more times a year">
+                                <span>1 or more times a year</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="publishOnlineFrequency"
+                                    value="1 or more times every 5 years">
+                                <span>1 or more times every 5 years</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="publishOnlineFrequency"
+                                    value="1 or more times every 10 years">
+                                <span>1 or more times every 10 years</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -1818,6 +1851,19 @@
             }
         }
 
+        function togglePublishOnline() {
+            const yes = document.querySelector('input[name="publishOnline"][value="Yes"]').checked;
+            const container = document.getElementById("publishOnlineFrequency");
+            if (!container) return;
+            container.style.display = yes ? "block" : "none";
+
+            if (!yes) {
+                container.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    radio.checked = false;
+                });
+            }
+        }
+
         function toggleDigitizationPortals() {
             const dataPortals = document.querySelector('input[type="checkbox"][name="digitization"][value="Data portals"]').checked;
             document.getElementById("digitizationPortalsList").style.display = dataPortals ? "block" : "none";
@@ -2137,6 +2183,19 @@
             }
         }
 
+        function toggleTechnicalTrainingSpecify() {
+            const checked = document.querySelector('input[name="trainingNeeds"][value="Technical training"]').checked;
+            const container = document.getElementById("technicalTrainingSpecify");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
         /* -----------------------------
            Dynamic table rows
         ------------------------------ */
@@ -2279,6 +2338,7 @@
             togglePlantsOptions();
             toggleSurveyEquipmentSpecify();
             toggleSoftwareTrainingOptions();
+            toggleTechnicalTrainingSpecify();
             toggleEcosystemHealthData();
             togglePollutionOther();
             toggleInvasiveSpecies();
@@ -2296,6 +2356,7 @@
             toggleShareData();
             toggleOnlineRepos();
             togglePublishPapers();
+            togglePublishOnline();
             toggleGbifQuestion();
             toggleWorkingGroups();
             toggleWorkingGroupsLeading();
