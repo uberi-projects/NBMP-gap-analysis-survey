@@ -73,7 +73,7 @@ Informational only. No questions.
 - **Q17. Do you carry out engagement and outreach activities with communities on biodiversity/ecosystem services?** ~ Yes / No
   - If **Yes** → reveals:
     - **Q18. Which communities do you engage with?** ~ long text
-    - **Q19. How would you describe the type(s) of engagement you most often do?** ~ long text
+    - **Q19. How would you describe the type(s) of engagement you most often do?** ~ checkboxes, select all that apply: Education on fire management, Illegal wildlife trade, Protected areas and ecosystem benefits, Community governance and participation, Project development and implementation + free text "Other"
 
 ---
 
