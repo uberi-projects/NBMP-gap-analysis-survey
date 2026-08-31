@@ -107,7 +107,7 @@ If none of the above are true, the survey jumps straight from Section 7 to Secti
   - **Lack of survey equipment** checked → reveals free text "Specify"
 - **Q24. Do you have the complementary software to operate/process data from your survey equipment? Which software?** ~ long text
 - **Q25. Are you missing any other complementary software, equipment, or technology needed?** (e.g., online subscriptions) ~ long text
-- **Q26. What technical skills and training gaps does your organization have?** ~ checkboxes: None, Limited data analysis skills, Limited GIS access, Limited technical support, High staff turnover, Difficulty with report writing, Difficulty publishing in peer-review journals, Lack of technical skills for projects + free text "Others"
+- **Q26. What technical skills and training gaps does your organization have?** ~ checkboxes: None, Limited data analysis skills, Limited GIS access, Limited technical support, High staff turnover leading to constant retraining needs, Limited technical report writing skills, Limited skills for publishing in peer-review journals, Limited project development and management skills + free text "Others"
 - **Q27. What type of training is staff continuously needing?** ~ checkboxes: None, Technical training, Research and monitoring development, Equipment operation, Software, Working with data + free text "Other"
   - **Software** checked → reveals sub-list: Data processing software, Data analysis software, Geospatial software, Equipment operation software
 
