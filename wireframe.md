@@ -12,7 +12,7 @@ Informational only. No questions.
 
 ## Section 2 ~ Biodiversity Monitoring Activities
 
-- **Q1. Does your organization do long-term biodiversity monitoring projects and/or project-based biodiversity research?\*** ~ Yes / No
+- **Q1. Does your organization do long-term biodiversity monitoring programs and/or project-based biodiversity research?\*** ~ Yes / No
   - If **Yes** → reveals Q2, and later unlocks the GBIF question in Section 11.
   - If **No** → Q2 stays hidden, and Sections 3–4 are skipped entirely (see Skip Logic 1 below).
 - **Q2. Which taxa does your organization do monitoring in?** (only shown if Q1 = Yes) ~ checkboxes, select all that apply:
