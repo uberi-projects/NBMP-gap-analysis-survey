@@ -343,28 +343,55 @@
             background: #f3f4f6;
         }
 
-        .intro-box {
-            background: #f0fdf4;
-            padding: 25px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        .intro-logos {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 28px;
+            margin: 0 0 20px;
         }
 
-        .intro-box p {
+        .intro-logos img {
+            max-height: 72px;
+            max-width: 44%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .intro-divider {
+            border: none;
+            border-top: 1px solid #d1d5db;
+            margin: 20px 0 24px;
+        }
+
+        .intro-logos[hidden],
+        .intro-divider[hidden] {
+            display: none;
+        }
+
+        .intro-content p {
             color: #374151;
             line-height: 1.6;
             margin-bottom: 15px;
         }
 
-        .intro-box ol {
+        .intro-content ol {
             margin-left: 20px;
             margin-bottom: 15px;
         }
 
-        .intro-box li {
+        .intro-content li {
             color: #374151;
             margin-bottom: 10px;
             line-height: 1.6;
+        }
+
+        .intro-content .survey-details-label {
+            color: #166534;
+            font-weight: 700;
+            margin-bottom: 10px;
         }
 
         .footer {
@@ -443,6 +470,13 @@
 
 <body>
     <div class="container">
+        <div class="intro-logos" id="introLogos">
+            <img src="assets/logo-ub-eri.jpg" alt="UB-ERI">
+            <img src="assets/logo-nbio.jpg" alt="NBIO">
+        </div>
+
+        <hr class="intro-divider" id="introDivider">
+
         <h1>UB-ERI Biodiversity Monitoring Gap Analysis</h1>
 
         <div class="header-info">
@@ -456,7 +490,8 @@
             <!-- Section 0: Introduction -->
             <div class="section active" data-section="0">
                 <h2>Welcome</h2>
-                <div class="intro-box">
+
+                <div class="intro-content">
                     <p>This survey is being conducted as part of the Gap Analysis for the National Biodiversity
                         Monitoring Plan (NBMP) currently being developed by the University of Belize Environmental
                         Research Institute (UB-ERI).</p>
@@ -473,13 +508,16 @@
                         UB-ERI in developing a comprehensive and coordinated NBMP that addresses current monitoring
                         gaps, strengthens collaboration among stakeholders, and promotes effective biodiversity
                         conservation across Belize.</p>
-                    <p><em>This survey form will save your progress automatically using your local browser
-                            cache, however, we will not receive any responses until you hit Finish. No personal
-                            identification data will be collected. All questions are optional except the indication of
-                            your organization.
-                            By completing this survey, you agree that your responses may be used in biodiversity
-                            planning and analysis for Belize. This survey should
-                            take approximately 20-40mins to complete.</em></p>
+                    <p class="survey-details-label">Survey Details:</p>
+                    <ol>
+                        <li>This survey form will save your progress automatically using your local browser cache.</li>
+                        <li>We will not receive any responses until you hit Finish.</li>
+                        <li>No personal identification data will be collected.</li>
+                        <li>All questions are optional except the indication of your organization.</li>
+                        <li>By completing this survey, you agree that your responses may be used in biodiversity
+                            planning and analysis for Belize.</li>
+                        <li>This survey should take approximately 20&ndash;40 minutes to complete.</li>
+                    </ol>
                 </div>
             </div>
 
@@ -1832,6 +1870,10 @@
             document.getElementById("prevBtn").disabled = index === 0;
             document.getElementById("nextBtn").textContent =
                 index === sections.length - 1 ? "Finish" : "Next";
+
+            // Organization logos only appear on the intro section
+            document.getElementById("introLogos").hidden = index !== 0;
+            document.getElementById("introDivider").hidden = index !== 0;
         }
 
         function shouldSkipMonitoringSections() {

@@ -14,6 +14,7 @@ The code was written with extensive support from Codex and Claude Code, with ove
 
 
 ## Folders
+- assets/ — image assets referenced by index.html. Currently holds the two organization logos shown on the Welcome screen (`logo-ub-eri.jpg` and `logo-nbio.jpg`).
 - data_deposit/ — this is the location that any response data exports to be used for analysis should be manually placed prior to running data_analysis.r.
 - outputs/ — this is the location that any analysis products will be created.
 
