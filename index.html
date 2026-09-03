@@ -211,7 +211,14 @@
         .navigation {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-top: 40px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .nav-btn {
@@ -244,10 +251,96 @@
             background: #15803d;
         }
 
+        .nav-btn.start-over {
+            background: white;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+        }
+
+        .nav-btn.start-over:hover:not(:disabled) {
+            background: #fef2f2;
+            border-color: #f87171;
+        }
+
         .nav-btn:disabled {
             background: #d1d5db;
             color: #9ca3af;
             cursor: not-allowed;
+        }
+
+        .nav-btn.start-over:disabled {
+            border-color: #d1d5db;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 440px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-box h3 {
+            color: #991b1b;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .modal-box p {
+            color: #374151;
+            line-height: 1.6;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            padding: 10px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .modal-btn.confirm {
+            background: #dc2626;
+            color: white;
+        }
+
+        .modal-btn.confirm:hover {
+            background: #b91c1c;
+        }
+
+        .modal-btn.cancel {
+            background: white;
+            color: #374151;
+            border-color: #d1d5db;
+        }
+
+        .modal-btn.cancel:hover {
+            background: #f3f4f6;
         }
 
         .intro-box {
@@ -1677,7 +1770,10 @@
         </div>
 
         <div class="navigation">
-            <button type="button" class="nav-btn prev" id="prevBtn" onclick="prevSection()">Previous</button>
+            <div class="nav-left">
+                <button type="button" class="nav-btn prev" id="prevBtn" onclick="prevSection()">Previous</button>
+                <button type="button" class="nav-btn start-over" id="startOverBtn" onclick="openStartOver()">Start Over</button>
+            </div>
             <button type="button" class="nav-btn next" id="nextBtn" onclick="nextSection()">Next</button>
         </div>
         <div class="error-msg" id="errorMsg">There was an error saving your response. <button type="button"
@@ -1688,6 +1784,17 @@
             <p>Your response has been successfully recorded.</p>
             <p>We sincerely appreciate your time and contribution to the<br>
                 National Biodiversity Monitoring Plan for Belize.</p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="startOverModal" role="dialog" aria-modal="true" aria-labelledby="startOverTitle">
+        <div class="modal-box">
+            <h3 id="startOverTitle">Warning</h3>
+            <p>This will remove ALL your inputs and start the survey over from the beginning. Proceed?</p>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn cancel" id="startOverCancelBtn" onclick="closeStartOver()">Cancel</button>
+                <button type="button" class="modal-btn confirm" onclick="confirmStartOver()">Yes</button>
+            </div>
         </div>
     </div>
 
@@ -1804,6 +1911,39 @@
                 saveProgress();
             }
         }
+
+        /* -----------------------------
+           Start over
+        ------------------------------ */
+        function openStartOver() {
+            document.getElementById("startOverModal").classList.add("active");
+            document.getElementById("startOverCancelBtn").focus();
+        }
+
+        function closeStartOver() {
+            document.getElementById("startOverModal").classList.remove("active");
+            document.getElementById("startOverBtn").focus();
+        }
+
+        function confirmStartOver() {
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+            } catch (e) {
+                console.warn('Could not clear saved progress:', e);
+            }
+            document.getElementById("surveyForm").reset();
+            location.reload();
+        }
+
+        document.getElementById("startOverModal").addEventListener("click", function (e) {
+            if (e.target === this) closeStartOver();
+        });
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && document.getElementById("startOverModal").classList.contains("active")) {
+                closeStartOver();
+            }
+        });
 
         /* -----------------------------
            Conditional logic
@@ -2389,9 +2529,11 @@
 
             const nextBtn = document.getElementById("nextBtn");
             const prevBtn = document.getElementById("prevBtn");
+            const startOverBtn = document.getElementById("startOverBtn");
             const originalNextText = nextBtn.textContent;
             nextBtn.disabled = true;
             prevBtn.disabled = true;
+            startOverBtn.disabled = true;
             nextBtn.textContent = "Submitting...";
 
             const success = await submitToGoogleSheet();
@@ -2400,6 +2542,7 @@
                 document.getElementById("errorMsg").style.display = "block";
                 nextBtn.disabled = false;
                 prevBtn.disabled = false;
+                startOverBtn.disabled = false;
                 nextBtn.textContent = originalNextText;
                 return;
             }

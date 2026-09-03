@@ -215,8 +215,10 @@ Each table supports up to 3 rows (indices 0-2). To add more rows:
 The survey automatically saves progress to browser localStorage:
 - Saves after each section navigation
 - Restores on page reload using `restoreProgress()`
-- Data remains until form submission or user clears browser data
+- Data remains until form submission, the respondent clicks "Start Over" (see below), or the user clears browser data
 - **Important:** Data is saved locally only; responses aren't sent to Google Sheets until "Finish" is clicked
+
+The **"Start Over"** button (next to "Previous" in the navigation bar) lets a respondent discard their session. It opens a confirmation dialog; on "Yes" it clears the saved localStorage state, resets the form, and reloads the page so the survey restarts from the beginning. "Cancel" closes the dialog with no change. Handled by `openStartOver()` / `closeStartOver()` / `confirmStartOver()` in `index.html`.
 
 ### Deployment Checklist
 
