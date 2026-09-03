@@ -42,7 +42,7 @@ Informational only. No questions.
 
 ## Section 4 - Research Projects _(skipped if Q1 = No)_
 
-- **Q4. Long-term biodiversity monitoring projects** (current or closed within the last 10 years) - dynamic table, 1 row minimum, "Add Row" (up to 3 rows): Species/Taxa, Location Name(s), Year(s), Methods, Still Ongoing? (free text)
+- **Q4. Long-term biodiversity monitoring projects** (current or closed within the last 5 years) - dynamic table, 1 row minimum, "Add Row" (up to 3 rows): Species/Taxa, Location Name(s), Year(s), Methods, Still Ongoing? (free text)
 - **Q5. Project-based research projects conducted in the past 5 years** - same dynamic table pattern (no "Still Ongoing" column), up to 3 rows
 
 ## Section 5 - Ecosystem Health _(everyone answers - never skipped)_
