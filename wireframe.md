@@ -134,7 +134,7 @@ If none of the above are true, the survey jumps straight from Section 7 to Secti
   - If **Yes** → reveals free text "Which repositories?"
 - **Q36. Would you be interested in publishing your biodiversity data on GBIF (gbif.org) with UB-ERI support?**
   - **Only shown if Q1 = Yes** (biodiversity monitoring). Not tied to Skip Logic 2 - this question has its own independent visibility rule.
-  - Yes / No / Maybe
+  - Yes / No / Maybe / I am already involved
 
 ---
 
