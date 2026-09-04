@@ -822,8 +822,8 @@
                 <h2>Ecosystem Health</h2>
 
                 <div class="form-group">
-                    <label class="question-label">Do you collect any data about the overall health of
-                        ecosystems?</label>
+                    <label class="question-label">Which of the following ecosystem health data does your organization
+                        collect? (Select all that apply; select "No" if none)</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData"
                                 value="Species richness"> Species richness</label>
@@ -886,7 +886,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="question-label">Do you collect data on pollution for any of the following?</label>
+                    <label class="question-label">Do you collect data on pollution for any of the following? (Select
+                        all that apply)</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option"><input type="checkbox" name="pollutionData"
                                 value="Water pollution"> Water pollution</label>
@@ -943,7 +944,7 @@
                         </label>
                     </div>
                     <div id="ecosystemServicesWhich" class="conditional" style="display: none;">
-                        <label>Which ecosystem services do you measure?</label>
+                        <label>Which ecosystem services do you measure? (Select all that apply)</label>
                         <div class="checkbox-group">
                             <label class="checkbox-option"><input type="checkbox" name="ecosystemServicesTypes"
                                     value="Access to clean water (potable water, river, streams)"> Access to clean water
@@ -989,7 +990,7 @@
 
                 <div class="form-group">
                     <label class="question-label">Do you collect any data on climate resiliency in ecosystems or
-                        communities?</label>
+                        communities? (Select all that apply)</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option"><input type="checkbox" name="climateResiliency"
                                 value="Yes, communities"> Yes, communities</label>
@@ -1160,7 +1161,7 @@
                     </div>
 
                     <div id="patrolDataTypesSection" class="form-group" style="display: none;">
-                        <label>What kind of patrol data do you collect?</label>
+                        <label>What kind of patrol data do you collect? (Select all that apply)</label>
                         <div class="checkbox-group">
                             <label class="checkbox-option">
                                 <input type="checkbox" name="patrolDataTypes" value="Patrol hours">
@@ -1437,8 +1438,8 @@
                 <h2>Data Management</h2>
 
                 <div class="form-group">
-                    <label class="question-label">When your organization digitizes its data, describe how it does
-                        so</label>
+                    <label class="question-label">When your organization digitizes its data, how does it do so?
+                        (Select all that apply)</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option">
                             <input type="checkbox" name="digitization" value="Excel/Google Sheets"
@@ -1822,8 +1823,9 @@
             </div>
             <button type="button" class="nav-btn next" id="nextBtn" onclick="nextSection()">Next</button>
         </div>
-        <div class="error-msg" id="errorMsg">There was an error saving your response. <button type="button"
-                class="retry-btn" onclick="document.getElementById('surveyForm').requestSubmit()">Retry</button></div>
+        <div class="error-msg" id="errorMsg"><span id="errorText">There was an error saving your response.</span>
+            <button type="button" class="retry-btn"
+                onclick="document.getElementById('surveyForm').requestSubmit()">Retry</button></div>
 
         <div class="thank-you-box" id="thankYou">
             <h2>Thank you!</h2>
@@ -2574,6 +2576,12 @@
         /* -----------------------------
            Submit → Thank you page
         ------------------------------ */
+
+        // Google Apps Script web app URL. To point the survey at a different response
+        // spreadsheet, change this one line (see README "Deployment Checklist").
+        const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbx62RysZB3Bt8T7-XEPL1BM0mJqH68gLneAtXMJoV3UBNRXuDnHqVCfrsn6VYhItYv-2g/exec";
+        const SUBMIT_TIMEOUT_MS = 20000;
+
         document.getElementById("surveyForm").addEventListener("submit", async function (e) {
             e.preventDefault();
             document.getElementById("errorMsg").style.display = "none";
@@ -2587,9 +2595,10 @@
             startOverBtn.disabled = true;
             nextBtn.textContent = "Submitting...";
 
-            const success = await submitToGoogleSheet();
+            const result = await submitToGoogleSheet();
 
-            if (!success) {
+            if (!result.ok) {
+                document.getElementById("errorText").textContent = result.message;
                 document.getElementById("errorMsg").style.display = "block";
                 nextBtn.disabled = false;
                 prevBtn.disabled = false;
@@ -2608,50 +2617,73 @@
             document.getElementById("thankYou").style.display = "block";
         });
 
+        // Resolves to { ok: true } only on a confirmed save, otherwise
+        // { ok: false, message } with a plain-language reason. The respondent's
+        // answers stay in localStorage until { ok: true }, so pressing Retry is
+        // always safe and never loses data.
         async function submitToGoogleSheet() {
             const form = document.getElementById("surveyForm");
             const formData = new FormData(form);
 
-            // IMPORTANT: handle multi-value fields (checkboxes)
+            // Combine multi-value fields (checkboxes) into one "; "-separated string
             const data = {};
             for (let [key, value] of formData.entries()) {
                 if (data[key]) {
-                    data[key] += "; " + value;   // combine checkbox values
+                    data[key] += "; " + value;
                 } else {
                     data[key] = value;
                 }
             }
 
-            try {
-                const response = await fetch(
-                    "https://script.google.com/macros/s/AKfycbx62RysZB3Bt8T7-XEPL1BM0mJqH68gLneAtXMJoV3UBNRXuDnHqVCfrsn6VYhItYv-2g/exec",
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(data)
-                    }
-                );
+            const savedNote = " Your answers are still saved on this device - please press Retry in a moment.";
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
 
-                return response.ok;
+            try {
+                // Sending the body as text/plain keeps this a "simple" request, so the
+                // browser skips the CORS preflight that Apps Script cannot answer. The
+                // POST is then actually sent and the JSON reply can be read, so a save
+                // can be confirmed. Apps Script reads the body the same way regardless
+                // of this header.
+                const response = await fetch(SUBMIT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(data),
+                    signal: controller.signal
+                });
+                clearTimeout(timer);
+
+                if (!response.ok) {
+                    return {
+                        ok: false,
+                        message: "The server could not save your response (error " + response.status + ")." + savedNote
+                    };
+                }
+
+                let body = null;
+                try { body = await response.json(); } catch (_) { /* reply was not JSON */ }
+
+                if (!body || body.status === "success") {
+                    return { ok: true };
+                }
+                return {
+                    ok: false,
+                    message: "The server reported a problem while saving your response." + savedNote
+                };
             } catch (err) {
+                clearTimeout(timer);
                 console.error("Submit failed:", err);
 
-                // Retry with no-cors (common workaround for Apps Script CORS from file://)
-                try {
-                    await fetch(
-                        "https://script.google.com/macros/s/AKfycbx62RysZB3Bt8T7-XEPL1BM0mJqH68gLneAtXMJoV3UBNRXuDnHqVCfrsn6VYhItYv-2g/exec",
-                        {
-                            method: "POST",
-                            mode: "no-cors",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(data)
-                        }
-                    );
-                    return true; // can't read response in no-cors, assume sent
-                } catch (retryErr) {
-                    console.error("Submit retry failed:", retryErr);
-                    return false;
+                if (err.name === "AbortError") {
+                    return {
+                        ok: false,
+                        message: "The submission took too long and was stopped. Check your internet connection." + savedNote
+                    };
                 }
+                return {
+                    ok: false,
+                    message: "Could not reach the server. Check your internet connection." + savedNote
+                };
             }
         }
     </script>

@@ -7,10 +7,10 @@ The code was written with extensive support from Codex and Claude Code, with ove
 
 ## Files
 - .gitignore defines which local files and folders should not be committed to the repository (in this case, generated outputs and local-only data).
-- code.gs includes the Google Apps Script which attaches to the target response spreadsheet. This should be attached to the target response Google Sheet. 
+- code.gs includes the Google Apps Script that receives submissions and appends them to the response spreadsheet. It must be bound to that Google Sheet and deployed as a Web App. It writes to the tab named in its `SHEET_NAME` constant (default `Responses`), falling back to the first tab, and uses `LockService` so simultaneous submissions are written one at a time. Opening the deployment URL in a browser (a GET) returns `{"status":"ok"}` as a quick liveness check.
 - default_headers.csv lists the recommended headers to use in the target response Google Sheet. These should be added to the Google Sheet before collecting responses.
 - data_analysis.r stores R code to analyze any response data exports found in the data_deposit folder and produce outputs in the outputs folder. (NOT YET IMPLEMENTED)
-- index.html is the survey HTML. The deployment URL for the Google Apps Script on your response spreadsheet must be set in the submit handler in two places: the primary fetch URL and the no-cors retry URL inside `submitToGoogleSheet()`. See `index.html:1703` and `index.html:1718`.
+- index.html is the survey HTML. The deployment URL for the Google Apps Script on your response spreadsheet must be set in one place: the `SUBMIT_URL` constant just above the submit handler in `index.html` (search for `const SUBMIT_URL`).
 
 
 ## Folders
@@ -94,13 +94,14 @@ All toggle functions are called in `restoreProgress()` to ensure conditional fie
    - Receives POST requests from the HTML form
    - Parses incoming JSON data
    - Maps form field names to spreadsheet columns using header row
+   - Serializes concurrent submissions with `LockService` so rows can't collide
    - Appends new row with timestamp and all response data
-   - Returns success/error status to the HTML form
+   - Returns `{"status":"success"}` (or `{"status":"error", ...}`) to the HTML form, which the form reads to confirm the save
 
 3. **default_headers.csv** (Schema Definition)
    - Defines the exact column structure for the response spreadsheet
    - **Must match** the `name` attributes of form fields in index.html
-   - Contains 115 columns total (including timestamp)
+   - Contains 119 columns total (including timestamp)
    - Column order matters: data is written to columns in the order headers appear
    - Dynamic fields use underscore notation: `ltSpecies_0`, `ltSpecies_1`, `ltSpecies_2` for table rows
 
@@ -216,8 +217,9 @@ Each table supports up to 3 rows (indices 0-2). To add more rows:
 The survey automatically saves progress to browser localStorage:
 - Saves after each section navigation
 - Restores on page reload using `restoreProgress()`
-- Data remains until form submission, the respondent clicks "Start Over" (see below), or the user clears browser data
+- Data remains until the save is confirmed by the server, the respondent clicks "Start Over" (see below), or the user clears browser data
 - **Important:** Data is saved locally only; responses aren't sent to Google Sheets until "Finish" is clicked
+- On "Finish" the response is POSTed to the Apps Script web app. localStorage is cleared only after the server confirms the save (`{"status":"success"}`); if the request fails or times out, an error with a **Retry** button is shown and the answers are kept
 
 The **"Start Over"** button (next to "Previous" in the navigation bar) lets a respondent discard their session. It opens a confirmation dialog; on "Yes" it clears the saved localStorage state, resets the form, and reloads the page so the survey restarts from the beginning. "Cancel" closes the dialog with no change. Handled by `openStartOver()` / `closeStartOver()` / `confirmStartOver()` in `index.html`.
 
@@ -225,10 +227,10 @@ The **"Start Over"** button (next to "Previous" in the navigation bar) lets a re
 
 When deploying or updating the survey:
 
-1. Update Google Apps Script deployment URL in index.html — search for `submitToGoogleSheet` and update the two fetch URLs (primary and no-cors retry)
+1. Set the Google Apps Script deployment URL in index.html — the `SUBMIT_URL` constant just above the submit handler (search for `const SUBMIT_URL`)
 2. Ensure default_headers.csv matches all form field names in index.html
-3. Copy headers from default_headers.csv to first row of Google Sheets response spreadsheet
-4. Attach code.gs to the response spreadsheet and deploy as web app
-5. Set web app permissions to "Anyone" for public access
-6. Test form submission and verify data appears correctly in spreadsheet
+3. Copy headers from default_headers.csv into row 1 of the response tab, and name that tab `Responses` (or update `SHEET_NAME` in code.gs to match its name)
+4. Paste code.gs into the sheet-bound Apps Script project and deploy as a Web App (Execute as: Me; Who has access: Anyone). Re-deploy (new version) after any code.gs change
+5. Open the `/exec` URL in a browser — it should show `{"status":"ok"}`
+6. Submit the form once from the live (GitHub Pages) URL; confirm the row lands in the spreadsheet AND the "Thank you" screen appears. If an error message shows instead, the web app is unreachable or not deployed with "Anyone" access — fix before sending the survey out
 7. Verify skip logic works correctly for all paths through the survey

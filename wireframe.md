@@ -1,6 +1,6 @@
 # NBMP Gap Analysis Survey - Wireframe
 
-This markdown outlines the flow logic for the NBMP draft gap analysis survey, as of commit 155dc7c10e7952ecfdea6765eaef59c402384724
+This markdown outlines the flow logic for the NBMP draft gap analysis survey. It is kept in step with `index.html` — when the survey changes, update this file in the same commit.
 
 ## Section 0 - Welcome
 
@@ -11,6 +11,8 @@ Informational only. No questions.
 - **Organization Name\*** - free text.
 
 ## Section 2 - Biodiversity Monitoring Activities
+
+_Section opens with a highlighted instruction: "Please answer all questions based on work your organization has done in the last 5 years."_
 
 - **Q1. Does your organization do long-term biodiversity monitoring programs and/or project-based biodiversity research?\*** - Yes / No
   - If **Yes** → reveals Q2, and later unlocks the GBIF question in Section 11.
@@ -47,7 +49,7 @@ Informational only. No questions.
 
 ## Section 5 - Ecosystem Health _(everyone answers - never skipped)_
 
-- **Q6. Do you collect any data about the overall health of ecosystems?** - checkboxes (select all that apply): Species richness, Presence/absence of indicator or target species, Population size, Freshwater water quality, Marine water quality, Air quality, Soil quality, Nutrient content/levels, Habitat structure, Habitat patch size, Connectivity, Presence of diseases, Extent of diseases, Productivity, Harvest quotas, Other (free text), No
+- **Q6. Which of the following ecosystem health data does your organization collect?** (select all that apply; "No" if none) - checkboxes: Species richness, Presence/absence of indicator or target species, Population size, Freshwater water quality, Marine water quality, Air quality, Soil quality, Nutrient content/levels, Habitat structure, Habitat patch size, Connectivity, Presence of diseases, Extent of diseases, Productivity, Harvest quotas, Other (free text), No
 - **Q7. Do you collect any data about the restoration of degraded habitats** (e.g., fire recovery)? - Yes / No
 - **Q8. Do you collect data on pollution for any of the following?** - checkboxes: Water, Air, Noise, Light, Thermal pollution, Other (free text), No
 - **Q9. Do you collect data on invasive species specifically?** - Yes / No
@@ -61,9 +63,9 @@ Informational only. No questions.
 
 - **Q13. Do you do any enforcement?** - Yes / No
   - If **No** → rest of section (Q14–Q16) hidden.
-- **Q14. What kinds of enforcement activities do you do?** (only if Q13 = Yes) - checkboxes, 15 options (patrol types, prevention, detection, incident response, demarcation, checkpoints, joint operations, compliance)
+- **Q14. What kinds of enforcement activities do you do?** (only if Q13 = Yes) - checkboxes, 16 options (patrol types, camera traps/audio sensors, technological surveillance, prevention, detection, incident response, demarcation, checkpoints, joint operations, compliance)
 - **Q15. What kind of illegal activities would your organization usually encounter?** (only if Q13 = Yes) - checkboxes: Wildlife extraction, Illegal Wildlife trade/possession, Illegal Clearing, Illegal Logging, Polluting/dumping, Fires, Squatters/trespassing, Illegal mineral extraction
-  - **Wildlife extraction** checked → reveals sub-list: Hunting, Taking live animals, Freshwater fishing, Marine fishing, Conch/Lobster/Sea cucumber harvesting
+  - **Wildlife extraction** checked → reveals sub-list: Hunting, Taking live animals, Freshwater fishing, Marine fishing (finfish), Conch harvesting, Lobster harvesting, Sea cucumber harvesting
     - **Hunting** checked → reveals free text "Which species"
 - **Q16. Do you collect patrol data using SMART, EarthRanger, or a similar tool?** (only if Q13 = Yes) - checkboxes: Yes SMART / Yes EarthRanger / Yes Other (free text) / No
   - If any "Yes" option checked → reveals **follow-up**: "What kind of patrol data do you collect?" - checkboxes: Patrol hours, Number of infractions, Types of infractions, Arrests, Human encounter profiles, Other (free text)
@@ -186,3 +188,6 @@ If none of the above are true, the survey jumps straight from Section 7 to Secti
 - **Progress saving:** answers autosave to the respondent's browser (localStorage) after every "Next"/"Previous" click, so a respondent can close the tab and resume later on the same device/browser. Nothing is sent to the response spreadsheet until **Finish** (the last section's Next button) is clicked.
 - **Back navigation:** respects the same skip logic in reverse - e.g., going back from Section 5 lands on Section 2 if Sections 3–4 were skipped.
 - **Validation:** only two hard stops in the whole survey - a blank Organization Name (Section 1) and an unanswered Q1 (Section 2). All other questions can be left blank.
+- **Start Over:** a "Start Over" button sits next to "Previous" in the nav bar on every section. It opens a confirmation dialog; confirming clears the saved localStorage progress, resets the form, and reloads so the survey restarts from the Welcome screen. "Cancel" (or Esc, or clicking the backdrop) closes it with no change.
+- **Submission:** on **Finish** the response is POSTed to the Google Apps Script web app. The saved progress is cleared only once the server confirms the save. If the request fails or times out (~20s), an error message with a **Retry** button is shown and the answers are kept - so Retry never loses data.
+- **Dynamic tables (Q4, Q5, Q42):** start with one row; "Add Row" appends more. The response spreadsheet has columns for the first 3 rows of each table.
