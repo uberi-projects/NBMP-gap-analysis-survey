@@ -101,9 +101,9 @@ All toggle functions are called in `restoreProgress()` to ensure conditional fie
 3. **default_headers.csv** (Schema Definition)
    - Defines the exact column structure for the response spreadsheet
    - **Must match** the `name` attributes of form fields in index.html
-   - Contains 119 columns total (including timestamp)
+   - Contains 145 columns total (including timestamp)
    - Column order matters: data is written to columns in the order headers appear
-   - Dynamic fields use underscore notation: `ltSpecies_0`, `ltSpecies_1`, `ltSpecies_2` for table rows
+   - Dynamic fields use underscore notation: `ltSpecies_0`, `ltSpecies_1`, ... for table rows. Columns for rows 0-4 are pre-provisioned; if a respondent adds a 6th row or more, `code.gs` appends the extra columns (`ltSpecies_5`, ...) to the end of the sheet automatically (see Dynamic Tables below)
 
 #### Critical Field Naming Convention
 
@@ -201,16 +201,28 @@ function toggleMyNewField() {
 
 ### Dynamic Tables
 
-The survey includes three dynamic tables where users can add rows:
+The survey includes three dynamic tables where users can add rows. Each table starts
+with one row and the respondent can add **an unlimited number** via the "Add Row"
+button (there is no cap — respondents are expected to list every project/concern they
+have).
 
-- **Long-term monitoring projects** (Section 4): Fields `ltSpecies_0-2`, `ltSites_0-2`, `ltYears_0-2`, `ltMethods_0-2`, `ltOngoing_0-2`
-- **Recent research projects** (Section 4): Fields `rrSpecies_0-2`, `rrSites_0-2`, `rrYears_0-2`, `rrMethods_0-2`
-- **Community species concerns** (Section 13): Fields `ccCommunity_0-2`, `ccDistrict_0-2`, `ccSpecies_0-2`, `ccReason_0-2`
+- **Long-term monitoring projects** (Section 4): Fields `ltSpecies_N`, `ltSites_N`, `ltYears_N`, `ltMethods_N`, `ltOngoing_N`
+- **Recent research projects** (Section 4): Fields `rrSpecies_N`, `rrSites_N`, `rrYears_N`, `rrMethods_N`
+- **Community species concerns** (Section 13): Fields `ccCommunity_N`, `ccDistrict_N`, `ccSpecies_N`, `ccReason_N`
 
-Each table supports up to 3 rows (indices 0-2). To add more rows:
-1. Increment the maximum row counter in the `addRow()` functions
-2. Add additional column headers to default_headers.csv (e.g., `ltSpecies_3`, `ltSpecies_4`)
-3. Add corresponding columns to the Google Sheets response spreadsheet
+`N` starts at 0. `default_headers.csv` pre-provisions columns for rows 0-4. If a
+respondent adds a 6th row or beyond, `code.gs` appends the new columns
+(`ltSpecies_5`, `ltSites_5`, ...) to the right-hand end of the sheet on the first
+submission that needs them, and fills them in. No data is lost, but those overflow
+columns are added in first-seen order rather than pre-grouped.
+
+**For analysis:** read these table columns by header name, not by fixed position —
+the three tables are variable-width.
+
+To change how many rows are pre-provisioned, add or remove `_N` column sets in
+`default_headers.csv` and the sheet's header row (keeping each table's columns
+grouped and contiguous). No `index.html` change is needed — the "Add Row" buttons
+already generate unlimited `_N` field names.
 
 ### Form State Persistence
 

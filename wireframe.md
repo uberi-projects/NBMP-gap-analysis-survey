@@ -44,8 +44,8 @@ _Section opens with a highlighted instruction: "Please answer all questions base
 
 ## Section 4 - Research Projects _(skipped if Q1 = No)_
 
-- **Q4. Long-term biodiversity monitoring projects** (current or closed within the last 5 years) - dynamic table, 1 row minimum, "Add Row" (up to 3 rows): Species/Taxa, Location Name(s), Year(s), Methods, Still Ongoing? (free text)
-- **Q5. Project-based research projects conducted in the past 5 years** - same dynamic table pattern (no "Still Ongoing" column), up to 3 rows
+- **Q4. Long-term biodiversity monitoring projects** (current or closed within the last 5 years) - dynamic table, starts with 1 row, "Add Row" adds unlimited rows: Species/Taxa, Location Name(s), Year(s), Methods, Still Ongoing? (free text)
+- **Q5. Project-based research projects conducted in the past 5 years** - same dynamic table pattern (no "Still Ongoing" column), unlimited rows
 
 ## Section 5 - Ecosystem Health _(everyone answers - never skipped)_
 
@@ -154,7 +154,7 @@ If none of the above are true, the survey jumps straight from Section 7 to Secti
 - **Q40. Which species do you consider of cultural significance in your region/area of work?** - long text
 - **Q41. Which species do you consider of economic significance in your region/area of work?** - long text
 - **Q42. Have communities you work with expressed concern for specific species?** (e.g., dwindling numbers, or pest) - Yes / No
-  - If **Yes** → reveals dynamic table (1 row minimum, "Add Row" up to 3): Community, District, Species, Reason of Concern
+  - If **Yes** → reveals dynamic table (starts with 1 row, "Add Row" adds unlimited rows): Community, District, Species, Reason of Concern
 
 **Managers & Experts**
 
@@ -190,4 +190,4 @@ If none of the above are true, the survey jumps straight from Section 7 to Secti
 - **Validation:** only two hard stops in the whole survey - a blank Organization Name (Section 1) and an unanswered Q1 (Section 2). All other questions can be left blank.
 - **Start Over:** a "Start Over" button sits next to "Previous" in the nav bar on every section. It opens a confirmation dialog; confirming clears the saved localStorage progress, resets the form, and reloads so the survey restarts from the Welcome screen. "Cancel" (or Esc, or clicking the backdrop) closes it with no change.
 - **Submission:** on **Finish** the response is POSTed to the Google Apps Script web app. The saved progress is cleared only once the server confirms the save. If the request fails or times out (~20s), an error message with a **Retry** button is shown and the answers are kept - so Retry never loses data.
-- **Dynamic tables (Q4, Q5, Q42):** start with one row; "Add Row" appends more. The response spreadsheet has columns for the first 3 rows of each table.
+- **Dynamic tables (Q4, Q5, Q42):** start with one row; "Add Row" appends an unlimited number, and "Remove" deletes a row. The response spreadsheet pre-provisions columns for rows 0-4; if a respondent adds a 6th row or more, the Apps Script appends the extra columns to the end of the sheet automatically (no data lost). Analysis should read these columns by header name, since the tables are variable-width.
