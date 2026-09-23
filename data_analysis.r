@@ -716,12 +716,21 @@ df_patrol <- df %>%
         }),
         organizationsAndTools = paste0(organizationName, " (", toolsUsed, ")")
     )
+df_patrol_datatypes <- df %>%
+    select(patrolDataTypes) %>%
+    separate_rows(patrolDataTypes, sep = ";\\s*") %>%
+    mutate(patrolDataTypes = fun_clean_text(patrolDataTypes)) %>%
+    filter(!is.na(patrolDataTypes), patrolDataTypes != "") %>%
+    count(patrolDataTypes, name = "n") %>%
+    arrange(-n) %>%
+    mutate(patrolDataTypesCount = paste0(patrolDataTypes, " (", n, ")"))
 result_num_does_patrol_data <- paste0(
     "The number of organizations collecting patrol data using apps is ",
     num_does_patrol_data,
     ", including: ",
     combine_words(df_patrol$organizationsAndTools),
-    "."
+    ". Data collected varies by organization, with reported data collected by number of responses including: ",
+    combine_words(df_patrol_datatypes$patrolDataTypesCount), "."
 )
 
 ## Analyze Section 8: Mainstreaming
