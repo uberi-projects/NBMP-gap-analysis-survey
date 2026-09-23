@@ -479,7 +479,7 @@ ggsave("outputs/result_plot_ecosystem_services.jpeg", result_plot_ecosystem_serv
 num_does_comm_services_relations_studying <- round(sum(df$communityEcosystemServices == "Yes", na.rm = TRUE), 2)
 organizations_do_comm_services_relations_studying <- filter(df, df$communityEcosystemServices == "Yes")$organizationName
 result_num_does_comm_services_relations_studying <- paste0(
-    "The number of organizations collecting data on relationship between communities and ecosystem services ",
+    "The number of organizations collecting data on relationship between communities and ecosystem services is ",
     num_does_comm_services_relations_studying,
     ", including: ",
     combine_words(organizations_do_comm_services_relations_studying)
@@ -489,7 +489,7 @@ num_does_climate_resiliency <- round(sum(df$climateResiliency == "Yes, ecosystem
 organizations_do_climate_resiliency_ecosystems <- filter(df, df$climateResiliency == "Yes, ecosystems")$organizationName
 organizations_do_climate_resiliency_communities <- filter(df, df$climateResiliency == "Yes, communities")$organizationName
 result_num_does_climate_resiliency <- paste0(
-    "The number of organizations collecting data on climate resiliency ",
+    "The number of organizations collecting data on climate resiliency is ",
     num_does_climate_resiliency,
     ", including: ",
     combine_words(organizations_do_climate_resiliency_communities),
@@ -499,7 +499,230 @@ result_num_does_climate_resiliency <- paste0(
 )
 
 ## Analyze Section 7: Enforcement
-# TO DO
+# See how many organizations do enforcement
+num_does_enforcement <- round(sum(df$doesEnforcement == "Yes", na.rm = TRUE), 2)
+organizations_do_enforcement <- filter(df, df$doesEnforcement == "Yes")$organizationName
+result_num_does_enforcement <- paste0(
+    "The number of organizations doing enforcement is ",
+    num_does_enforcement,
+    ", including: ",
+    combine_words(organizations_do_enforcement)
+)
+# Examine enforcement activities
+df_long_enforcement <- select(df, enforcementActivities) %>%
+    mutate(resp_id = row_number()) %>%
+    separate_rows(enforcementActivities, sep = ";\\s*") %>%
+    mutate(enforcementActivities = str_trim(enforcementActivities)) %>%
+    filter(enforcementActivities != "")
+levels_split_enforcement <- str_split_fixed(df_long_enforcement$enforcementActivities, ":\\s*", 2)
+df_long_enforcement <- df_long_enforcement %>%
+    mutate(
+        level1 = fun_clean_text(levels_split_enforcement[, 1]),
+        level2 = fun_clean_text(levels_split_enforcement[, 2]),
+        has_child = levels_split_enforcement[, 2] != ""
+    )
+enforcement_family_order <- c(
+    "Vehicle Patrols", "Foot Patrols", "Boat Patrols", "Risk-Based Patrols",
+    "Camera Traps And Audio Sensors", "Technological Surveillance",
+    "Prevention", "Detection", "Incident Response", "Demarcation",
+    "Joint Operations", "Compliance"
+)
+fun_build_enforcement_rows <- function(df_long, family_order, base_width = 0.9, shrink = 0.55) {
+    rows <- list()
+    for (fam in family_order) {
+        children <- df_long %>%
+            filter(level1 == fam, has_child) %>%
+            count(level2, name = "n") %>%
+            arrange(desc(n))
+        if (nrow(children) == 0) {
+            top_n <- df_long %>%
+                filter(level1 == fam, !has_child) %>%
+                nrow()
+            if (top_n == 0) next
+            rows[[length(rows) + 1]] <- tibble(
+                category = fam, n = top_n, depth = 1, width = base_width, family = fam
+            )
+        } else {
+            top_n <- df_long %>%
+                filter(level1 == fam, has_child) %>%
+                distinct(resp_id) %>%
+                nrow()
+            rows[[length(rows) + 1]] <- tibble(
+                category = fam, n = top_n, depth = 1, width = base_width, family = fam
+            )
+            for (i in seq_len(nrow(children))) {
+                rows[[length(rows) + 1]] <- tibble(
+                    category = children$level2[i], n = children$n[i], depth = 2,
+                    width = base_width * shrink, family = fam
+                )
+            }
+        }
+    }
+    bind_rows(rows)
+}
+df_long_enforcement_plot <- fun_build_enforcement_rows(df_long_enforcement, enforcement_family_order)
+var_family_gap_enforcement <- 0.5
+df_long_enforcement_plot <- df_long_enforcement_plot %>%
+    mutate(
+        touch_step = width / 2 + lag(width) / 2,
+        step = case_when(
+            row_number() == 1 ~ 0,
+            family != lag(family) ~ touch_step + var_family_gap_enforcement,
+            TRUE ~ touch_step
+        ),
+        y_pos = -cumsum(step)
+    )
+label_size_pt_enforcement <- c("1" = 22, "2" = 18)
+df_long_enforcement_plot <- df_long_enforcement_plot %>%
+    mutate(
+        depth = factor(depth),
+        category_label = paste0(
+            "<span style='font-size:", label_size_pt_enforcement[as.character(depth)], "pt'>",
+            category, "</span>"
+        )
+    )
+result_plot_enforcement_activities <- ggplot(df_long_enforcement_plot, aes(x = n, y = y_pos, width = width, fill = depth)) +
+    geom_col(orientation = "y", color = "black") +
+    scale_fill_manual(
+        values = c("1" = "#382e6b", "2" = "#766da7"),
+        guide = "none"
+    ) +
+    scale_y_continuous(
+        breaks = df_long_enforcement_plot$y_pos, labels = df_long_enforcement_plot$category_label,
+        expand = expansion(add = var_family_gap_enforcement)
+    ) +
+    labs(
+        x = "Number of responses", y = "Enforcement Activity"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_markdown(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+result_caption_plot_enforcement_activities <- paste0(
+    "Figure 6. Bar chart of enforcement activities (n = ",
+    length(organizations_do_enforcement), ") done by those that do enforcement,",
+    " with parent groupings (e.g., Incident Response) attached to lower-level children groupings.",
+    " Parent bars reflect the number of organizations selecting at least one child activity in that grouping."
+)
+ggsave("outputs/result_plot_enforcement_activities.jpeg", result_plot_enforcement_activities,
+    units = "in", height = 23, width = 18
+)
+# Examine illegal activities encountered
+illegal_activities_order <- c(
+    "Wildlife Extraction", "Illegal Wildlife Trade Or Possession", "Illegal Clearing",
+    "Illegal Logging", "Polluting/Dumping", "Fires (Illegal)",
+    "Squatters/Development/Trespassing", "Illegal Mineral Extraction"
+)
+wildlife_extraction_children_order <- c(
+    "Hunting", "Taking Live Animals", "Freshwater Fishing", "Marine Fishing (Finfish)",
+    "Conch Harvesting", "Lobster Harvesting", "Sea Cucumber Harvesting"
+)
+df_long_illegal_activities <- select(df, illegalActivities) %>%
+    separate_rows(illegalActivities, sep = ";\\s*") %>%
+    mutate(illegalActivities = fun_clean_text(illegalActivities)) %>%
+    filter(!is.na(illegalActivities)) %>%
+    mutate(
+        level1 = if_else(illegalActivities %in% wildlife_extraction_children_order, "Wildlife Extraction", illegalActivities),
+        level2 = if_else(illegalActivities %in% wildlife_extraction_children_order, illegalActivities, ""),
+        depth  = 1 + (level2 != "")
+    )
+counts_illegal_activities <- df_long_illegal_activities %>%
+    count(level1, level2, depth, name = "n")
+fun_build_illegal_activity_rows <- function(counts, category_order, subcategory_order = NULL, base_width = 0.9, shrink = 0.55) {
+    rows <- list()
+    for (cat in category_order) {
+        top_row <- counts %>% filter(level1 == cat, depth == 1)
+        if (nrow(top_row) == 0) next # skip activities nobody selected
+        rows[[length(rows) + 1]] <- tibble(
+            category = cat, n = top_row$n, depth = 1, width = base_width, family = cat
+        )
+        children <- counts %>% filter(level1 == cat, depth == 2)
+        if (!is.null(subcategory_order)) {
+            children <- children %>% arrange(match(level2, subcategory_order), desc(n))
+        } else {
+            children <- children %>% arrange(desc(n))
+        }
+        for (i in seq_len(nrow(children))) {
+            rows[[length(rows) + 1]] <- tibble(
+                category = children$level2[i], n = children$n[i], depth = 2,
+                width = base_width * shrink, family = cat
+            )
+        }
+    }
+    bind_rows(rows)
+}
+df_long_illegal_activities_plot <- fun_build_illegal_activity_rows(
+    counts_illegal_activities, illegal_activities_order, wildlife_extraction_children_order
+)
+var_family_gap_illegal_activities <- 0.5
+df_long_illegal_activities_plot <- df_long_illegal_activities_plot %>%
+    mutate(
+        touch_step = width / 2 + lag(width) / 2,
+        step = case_when(
+            row_number() == 1 ~ 0,
+            family != lag(family) ~ touch_step + var_family_gap_illegal_activities,
+            TRUE ~ touch_step
+        ),
+        y_pos = -cumsum(step)
+    )
+label_size_pt_illegal_activities <- c("1" = 22, "2" = 18)
+df_long_illegal_activities_plot <- df_long_illegal_activities_plot %>%
+    mutate(
+        depth = factor(depth),
+        category_label = paste0(
+            "<span style='font-size:", label_size_pt_illegal_activities[as.character(depth)], "pt'>",
+            category, "</span>"
+        )
+    )
+result_plot_illegal_activities <- ggplot(df_long_illegal_activities_plot, aes(x = n, y = y_pos, width = width, fill = depth)) +
+    geom_col(orientation = "y", color = "black") +
+    scale_fill_manual(
+        values = c("1" = "#382e6b", "2" = "#766da7"),
+        guide = "none"
+    ) +
+    scale_y_continuous(
+        breaks = df_long_illegal_activities_plot$y_pos, labels = df_long_illegal_activities_plot$category_label,
+        expand = expansion(add = var_family_gap_illegal_activities)
+    ) +
+    labs(
+        x = "Number of responses", y = "Illegal Activity"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_markdown(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+result_caption_plot_illegal_activities <- paste0(
+    "Figure 7. Bar chart of illegal activities (n = ",
+    length(organizations_do_enforcement), ") encountered by those that do enforcement,",
+    " with parent groupings (e.g., Wildlife Extraction) attached to lower-level children groupings."
+)
+ggsave("outputs/result_plot_illegal_activities.jpeg", result_plot_illegal_activities,
+    units = "in", height = 23, width = 18
+)
+# See how many organizations collect patrol data
+num_does_patrol_data <- round(sum(df$patrolDataTools != "No" & !is.na(df$patrolDataTools) & df$patrolDataTools != ""), 2)
+df_patrol <- df %>%
+    select(organizationName, patrolDataTools, patrolDataToolsOtherSpecify) %>%
+    filter(patrolDataTools != "No" & !is.na(patrolDataTools) & patrolDataTools != "") %>%
+    mutate(
+        toolsUsed = map2_chr(patrolDataTools, patrolDataToolsOtherSpecify, function(tools, other) {
+            tools_split <- str_remove(str_split(tools, ";\\s*")[[1]], "^Yes,\\s*")
+            tools_split <- if_else(tools_split == "Other", other, tools_split)
+            paste(tools_split, collapse = ", ")
+        }),
+        organizationsAndTools = paste0(organizationName, " (", toolsUsed, ")")
+    )
+result_num_does_patrol_data <- paste0(
+    "The number of organizations collecting patrol data using apps is ",
+    num_does_patrol_data,
+    ", including: ",
+    combine_words(df_patrol$organizationsAndTools),
+    "."
+)
 
 ## Analyze Section 8: Mainstreaming
 # TO DO
@@ -539,3 +762,9 @@ result_plot_ecosystem_services
 result_caption_plot_ecosystem_services
 result_num_does_comm_services_relations_studying
 result_num_does_climate_resiliency
+result_num_does_enforcement
+result_plot_enforcement_activities
+result_plot_enforcement_activities
+result_plot_illegal_activities
+result_caption_plot_illegal_activities
+result_num_does_patrol_data
