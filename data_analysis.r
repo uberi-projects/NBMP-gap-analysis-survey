@@ -9,6 +9,13 @@ library(ggtext)
 ## Load Data ---------------------------------------------------
 df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Responses.csv")
 
+## Define Functions ---------------------------------------------------
+fun_clean_text <- function(x) {
+    x <- str_trim(x)
+    x <- na_if(x, "")
+    str_to_title(x)
+}
+
 ## Clean Data ---------------------------------------------------
 # Remove duplicates
 df <- df %>%
@@ -48,15 +55,13 @@ df_long_taxa <- df_long_taxa %>%
         level1 = str_trim(levels_split_taxa[, 1]),
         level2 = str_trim(levels_split_taxa[, 2]),
         level3 = str_trim(levels_split_taxa[, 3]),
-        depth  = 1 + (level2 != "") + (level3 != "")
+        depth  = 1 + (level2 != "") + (level3 != ""),
+        level1 = fun_clean_text(level1),
+        level2 = fun_clean_text(level2),
+        level3 = fun_clean_text(level3)
     )
 counts_taxa <- df_long_taxa %>%
     count(level1, level2, level3, depth, name = "n")
-fun_clean_other <- function(x) {
-    x <- str_trim(x)
-    x <- na_if(x, "")
-    str_to_title(x)
-}
 other_field_map <- tribble(
     ~column, ~level1, ~level2, ~is_new_taxon,
     "monitoringAreasOther", "Other", NA_character_, TRUE,
@@ -75,7 +80,7 @@ fun_build_other_counts <- function(df, other_field_map) {
         level1 <- other_field_map$level1[i]
         level2 <- other_field_map$level2[i]
         is_new_taxon <- other_field_map$is_new_taxon[i]
-        cleaned <- fun_clean_other(df[[column]])
+        cleaned <- fun_clean_text(df[[column]])
         cleaned <- cleaned[!is.na(cleaned)]
         if (length(cleaned) == 0) next
         response_counts <- tibble(response = cleaned) %>% count(response, name = "n")
@@ -105,13 +110,13 @@ taxon_order <- c(
     "Amphibians", "Reptiles", "Plants", "Other"
 )
 subtaxon_order_mammals <- c(
-    "Bats", "Marine mammals", "Primates",
-    "Other small mammals (e.g., hispid cotton rat)",
-    "Other medium-sized mammals (e.g., paca)",
-    "Other large mammals (e.g., jaguars)"
+    "Bats", "Marine Mammals", "Primates",
+    "Other Small Mammals (E.g., Hispid Cotton Rat)",
+    "Other Medium-Sized Mammals (E.g., Paca)",
+    "Other Large Mammals (E.g., Jaguars)"
 )
 subtaxon_order_fish <- c(
-    "Freshwater fish", "Marine fish"
+    "Freshwater Fish", "Marine Fish"
 )
 subtaxon_order_marine_invertebrates <- c(
     "Conch", "Crustaceans", "Mollusks",
@@ -222,15 +227,15 @@ ggsave("outputs/result_plot_taxa.jpeg", result_plot_taxa,
 # Examine monitoring ecosystems
 ecosystems_order <- c(
     "Open Sea", "Deep Reef", "Coral Reef", "Lagoon",
-    "Sparse Algae", "Seagrass", "Mangrove and littoral forest", "Urban",
+    "Sparse Algae", "Seagrass", "Mangrove And Littoral Forest", "Urban",
     "Agricultural Areas", "Riparian", "Wetland", "Shrubland",
-    "Broad-leaved Forest", "Pine Forest", "Savannah"
+    "Broad-Leaved Forest", "Pine Forest", "Savannah"
 )
 df_ecosystems <- df %>%
     select(ecosystems) %>%
     separate_rows(ecosystems, sep = ";\\s*") %>%
-    mutate(ecosystems = str_trim(ecosystems)) %>%
-    filter(ecosystems != "") %>%
+    mutate(ecosystems = fun_clean_text(ecosystems)) %>%
+    filter(!is.na(ecosystems)) %>%
     group_by(ecosystems) %>%
     summarise(n = n(), .groups = "drop") %>%
     mutate(ecosystems = factor(ecosystems, levels = ecosystems_order))
@@ -257,14 +262,33 @@ ggsave("outputs/result_plot_ecosystems.jpeg", result_plot_ecosystems,
 # TO DO
 
 ## Analyze Section 6: Ecosystem Health
-# TO DO
+# Investigate types of data collected on ecosystem health
+ecosystem_health_fixed_order <- c(
+    "Species Richness", "Presence/Absence Of Indicator Or Target Species", "Population Size",
+    "Freshwater Water Quality", "Marine Water Quality", "Air Quality", "Soil Quality",
+    "Nutrient Content/Levels", "Habitat Structure", "Habitat Patch Size", "Connectivity",
+    "Presence Of Diseases", "Extent Of Diseases", "Productivity", "Harvest Quotas"
+)
 df_ecosystem_health <- df %>%
     select(ecosystemHealthData) %>%
     separate_rows(ecosystemHealthData, sep = ";\\s*") %>%
-    mutate(ecosystemHealthData = str_trim(ecosystemHealthData)) %>%
-    filter(ecosystemHealthData != "") %>%
+    mutate(ecosystemHealthData = fun_clean_text(ecosystemHealthData)) %>%
+    filter(!is.na(ecosystemHealthData), ecosystemHealthData != "Other") %>%
     group_by(ecosystemHealthData) %>%
     summarise(n = n(), .groups = "drop")
+ecosystem_health_other <- fun_clean_text(df$ecosystemHealthDataOther)
+ecosystem_health_other <- ecosystem_health_other[!is.na(ecosystem_health_other)]
+df_ecosystem_health_other <- tibble(ecosystemHealthData = ecosystem_health_other) %>%
+    count(ecosystemHealthData, name = "n")
+df_ecosystem_health <- bind_rows(df_ecosystem_health, df_ecosystem_health_other) %>%
+    mutate(ecosystemHealthData = if_else(ecosystemHealthData == "No", "None", ecosystemHealthData))
+ecosystem_health_order <- rev(c(
+    ecosystem_health_fixed_order,
+    sort(unique(df_ecosystem_health_other$ecosystemHealthData)),
+    "None"
+))
+df_ecosystem_health <- df_ecosystem_health %>%
+    mutate(ecosystemHealthData = factor(ecosystemHealthData, levels = ecosystem_health_order))
 result_plot_ecosystem_health <- ggplot(df_ecosystem_health, aes(x = n, y = ecosystemHealthData)) +
     geom_col(orientation = "y", color = "black", fill = "#382e6b") +
     labs(
