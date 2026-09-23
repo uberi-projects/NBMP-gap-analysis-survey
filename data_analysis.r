@@ -253,6 +253,36 @@ ggsave("outputs/result_plot_ecosystems.jpeg", result_plot_ecosystems,
     units = "in", height = 23, width = 18
 )
 
+## Analyze Section 5: Research Projects
+# TO DO
+
+## Analyze Section 6: Ecosystem Health
+# TO DO
+
+## Analyze Section 7: Enforcement
+# TO DO
+
+## Analyze Section 8: Mainstreaming
+# TO DO
+
+## Analyze Section 9: Collaboration & Challenges
+# TO DO
+
+## Analyze Section 10: Technology & Skill Gaps
+# TO DO
+
+## Analyze Section 11: Data Management
+# TO DO
+
+## Analyze Section 12: Data Sharing
+# TO DO
+
+## Analyze Section 13: National Biodiversity Coordination
+# TO DO
+
+## Analyze Section 14: Significance & Interest
+# TO DO
+
 ## Present Results
 result_unique_organizations
 result_proportion_does_biodiversity_monitoring
