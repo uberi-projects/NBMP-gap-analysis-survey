@@ -221,10 +221,10 @@ ggsave("outputs/result_plot_taxa.jpeg", result_plot_taxa,
 ## Analyze Section 4: Ecosystems
 # Examine monitoring ecosystems
 ecosystems_order <- c(
-    "Savannah", "Pine Forest", "Broad-leaved Forest",
-    "Shrubland", "Wetland", "Riparian", "Agricultural Areas",
-    "Urban", "Mangrove and littoral forest", "Seagrass", "Sparse Algae",
-    "Lagoon", "Coral Reef", "Deep Reef", "Open Sea"
+    "Open Sea", "Deep Reef", "Coral Reef", "Lagoon",
+    "Sparse Algae", "Seagrass", "Mangrove and littoral forest", "Urban",
+    "Agricultural Areas", "Riparian", "Wetland", "Shrubland",
+    "Broad-leaved Forest", "Pine Forest", "Savannah"
 )
 df_ecosystems <- df %>%
     select(ecosystems) %>%
@@ -232,8 +232,8 @@ df_ecosystems <- df %>%
     mutate(ecosystems = str_trim(ecosystems)) %>%
     filter(ecosystems != "") %>%
     group_by(ecosystems) %>%
-    summarise(n = n(), .groups = "drop")
-
+    summarise(n = n(), .groups = "drop") %>%
+    mutate(ecosystems = factor(ecosystems, levels = ecosystems_order))
 result_plot_ecosystems <- ggplot(df_ecosystems, aes(x = n, y = ecosystems)) +
     geom_col(orientation = "y", color = "black", fill = "#382e6b") +
     labs(
