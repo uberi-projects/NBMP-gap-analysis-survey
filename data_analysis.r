@@ -258,6 +258,31 @@ ggsave("outputs/result_plot_ecosystems.jpeg", result_plot_ecosystems,
 
 ## Analyze Section 6: Ecosystem Health
 # TO DO
+df_ecosystem_health <- df %>%
+    select(ecosystemHealthData) %>%
+    separate_rows(ecosystemHealthData, sep = ";\\s*") %>%
+    mutate(ecosystemHealthData = str_trim(ecosystemHealthData)) %>%
+    filter(ecosystemHealthData != "") %>%
+    group_by(ecosystemHealthData) %>%
+    summarise(n = n(), .groups = "drop")
+result_plot_ecosystem_health <- ggplot(df_ecosystem_health, aes(x = n, y = ecosystemHealthData)) +
+    geom_col(orientation = "y", color = "black", fill = "#382e6b") +
+    labs(
+        x = "Number of responses", y = "Ecosystem Health Data"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_text(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+result_caption_plot_ecosystem_health <- paste0(
+    "Figure 3. Bar chart of how many surveyed organizations (n = ",
+    unique_organizations, ") collect different types of ecosystem health data."
+)
+ggsave("outputs/result_plot_ecosystem_health.jpeg", result_plot_ecosystem_health,
+    units = "in", height = 23, width = 18
+)
 
 ## Analyze Section 7: Enforcement
 # TO DO
