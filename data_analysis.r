@@ -307,6 +307,17 @@ result_caption_plot_ecosystem_health <- paste0(
 ggsave("outputs/result_plot_ecosystem_health.jpeg", result_plot_ecosystem_health,
     units = "in", height = 23, width = 18
 )
+# See how many organizations study degraded habitats
+num_does_habitat_restoration_studying <- round(sum(df$habitatRestoration == "Yes", na.rm = TRUE), 2)
+organizations_do_habitat_restoration_studying <- filter(df, df$habitatRestoration == "Yes")$organizationName
+result_num_does_habitat_restoration_studying <- paste0(
+    "The number of organizations collecting data on restoration of degraded habitats is ",
+    num_does_habitat_restoration_studying,
+    ", including: ",
+    combine_words(organizations_do_habitat_restoration_studying)
+)
+
+
 
 ## Analyze Section 7: Enforcement
 # TO DO
@@ -339,3 +350,6 @@ result_plot_taxa
 result_caption_plot_taxa
 result_plot_ecosystems
 result_caption_plot_ecosystems
+result_plot_ecosystem_health
+result_caption_plot_ecosystem_health
+result_num_does_habitat_restoration_studying
