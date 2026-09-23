@@ -4,6 +4,7 @@
 library(tidyverse)
 library(knitr)
 library(ggpubr)
+library(ggtext)
 
 ## Load Data ---------------------------------------------------
 df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Responses.csv")
@@ -51,6 +52,53 @@ df_long_taxa <- df_long_taxa %>%
     )
 counts_taxa <- df_long_taxa %>%
     count(level1, level2, level3, depth, name = "n")
+fun_clean_other <- function(x) {
+    x <- str_trim(x)
+    x <- na_if(x, "")
+    str_to_title(x)
+}
+other_field_map <- tribble(
+    ~column, ~level1, ~level2, ~is_new_taxon,
+    "monitoringAreasOther", "Other", NA_character_, TRUE,
+    "marineInvertebratesOther", "Marine Invertebrates", NA_character_, FALSE,
+    "terrestrialInvertebratesOther", "Terrestrial Macroinvertebrates", NA_character_, FALSE,
+    "reptilesOther", "Reptiles", NA_character_, FALSE,
+    "plantsOther", "Plants", NA_character_, FALSE,
+    "freshwaterMacroSpecify", "Freshwater Macroinvertebrate", NA_character_, FALSE,
+    "amphibiansSpecify", "Amphibians", NA_character_, FALSE,
+    "marineFishOther", "Fish", "Marine fish", FALSE
+)
+fun_build_other_counts <- function(df, other_field_map) {
+    rows <- list()
+    for (i in seq_len(nrow(other_field_map))) {
+        column <- other_field_map$column[i]
+        level1 <- other_field_map$level1[i]
+        level2 <- other_field_map$level2[i]
+        is_new_taxon <- other_field_map$is_new_taxon[i]
+        cleaned <- fun_clean_other(df[[column]])
+        cleaned <- cleaned[!is.na(cleaned)]
+        if (length(cleaned) == 0) next
+        response_counts <- tibble(response = cleaned) %>% count(response, name = "n")
+        if (is.na(level2)) {
+            if (is_new_taxon) {
+                rows[[length(rows) + 1]] <- tibble(
+                    level1 = level1, level2 = "", level3 = "", depth = 1, n = length(cleaned)
+                )
+            }
+            rows[[length(rows) + 1]] <- tibble(
+                level1 = level1, level2 = response_counts$response, level3 = "",
+                depth = 2, n = response_counts$n
+            )
+        } else {
+            rows[[length(rows) + 1]] <- tibble(
+                level1 = level1, level2 = level2, level3 = response_counts$response,
+                depth = 3, n = response_counts$n
+            )
+        }
+    }
+    bind_rows(rows)
+}
+counts_taxa <- bind_rows(counts_taxa, fun_build_other_counts(df, other_field_map))
 taxon_order <- c(
     "Birds", "Mammals", "Fish", "Marine Invertebrates",
     "Freshwater Macroinvertebrate", "Terrestrial Macroinvertebrates",
@@ -58,7 +106,7 @@ taxon_order <- c(
 )
 subtaxon_order_mammals <- c(
     "Bats", "Marine mammals", "Primates",
-    "Other small mammals (e.g., hispid cotton rats)",
+    "Other small mammals (e.g., hispid cotton rat)",
     "Other medium-sized mammals (e.g., paca)",
     "Other large mammals (e.g., jaguars)"
 )
@@ -68,22 +116,29 @@ subtaxon_order_fish <- c(
 subtaxon_order_marine_invertebrates <- c(
     "Conch", "Crustaceans", "Mollusks",
     "Crabs", "Lobsters", "Corals", "Urchins",
-    "Sea Cucumbers", "Other" # need to figure out how to handle other
+    "Sea Cucumbers"
 )
 subtaxon_order_terrestrial_macroinvertebrates <- c(
-    "Agricultural Pest Insects (e.g., stem-borers)",
-    "Disease Vector Insects (e.g., mosquitoes, screwworms)",
-    "Butterflies", "Bees", "Other" # need to figure out how to handle other
+    "Agricultural Pest Insects",
+    "Disease Vector Insects",
+    "Butterflies", "Bees"
 )
 subtaxon_order_reptiles <- c(
-    "Snakes", "Crocodiles", "Turtles", "Other" # need to figure out how to handle other
+    "Snakes", "Crocodiles", "Turtles"
 )
 subtaxon_order_plants <- c(
     "Mangroves", "Seaweed/Seagrass/Macroalgae", "Hardwood Trees",
-    "Epiphytes", "Other" # need to figure out how to handle other
+    "Epiphytes"
 )
-
-fun_build_rows <- function(counts_taxa, taxon_order, base_width = 0.9, shrink = 0.55) {
+subtaxon_orders <- list(
+    "Mammals" = subtaxon_order_mammals,
+    "Fish" = subtaxon_order_fish,
+    "Marine Invertebrates" = subtaxon_order_marine_invertebrates,
+    "Terrestrial Macroinvertebrates" = subtaxon_order_terrestrial_macroinvertebrates,
+    "Reptiles" = subtaxon_order_reptiles,
+    "Plants" = subtaxon_order_plants
+)
+fun_build_rows <- function(counts_taxa, taxon_order, subtaxon_orders = list(), base_width = 0.9, shrink = 0.55) {
     rows <- list()
     for (t in taxon_order) {
         top_row <- counts_taxa %>% filter(level1 == t, depth == 1)
@@ -91,9 +146,13 @@ fun_build_rows <- function(counts_taxa, taxon_order, base_width = 0.9, shrink = 
         rows[[length(rows) + 1]] <- tibble(
             category = t, n = top_row$n, depth = 1, width = base_width, family = t
         )
-        children <- counts_taxa %>%
-            filter(level1 == t, depth == 2) %>%
-            arrange(desc(n))
+        children <- counts_taxa %>% filter(level1 == t, depth == 2)
+        subtaxon_order <- subtaxon_orders[[t]]
+        if (!is.null(subtaxon_order)) {
+            children <- children %>% arrange(match(level2, subtaxon_order), desc(n))
+        } else {
+            children <- children %>% arrange(desc(n))
+        }
         for (i in seq_len(nrow(children))) {
             child <- children$level2[i]
             rows[[length(rows) + 1]] <- tibble(
@@ -112,7 +171,7 @@ fun_build_rows <- function(counts_taxa, taxon_order, base_width = 0.9, shrink = 
     }
     bind_rows(rows)
 }
-df_long_taxa_plot <- fun_build_rows(counts_taxa, taxon_order) %>%
+df_long_taxa_plot <- fun_build_rows(counts_taxa, taxon_order, subtaxon_orders) %>%
     mutate(depth = factor(depth))
 var_family_gap <- 0.5
 df_long_taxa_plot <- df_long_taxa_plot %>%
@@ -125,6 +184,12 @@ df_long_taxa_plot <- df_long_taxa_plot %>%
         ),
         y_pos = -cumsum(step)
     )
+label_size_pt <- c("1" = 22, "2" = 18, "3" = 14)
+df_long_taxa_plot <- df_long_taxa_plot %>%
+    mutate(category_label = paste0(
+        "<span style='font-size:", label_size_pt[as.character(depth)], "pt'>",
+        category, "</span>"
+    ))
 result_plot_taxa <- ggplot(df_long_taxa_plot, aes(x = n, y = y_pos, width = width, fill = depth)) +
     geom_col(orientation = "y", color = "black") +
     scale_fill_manual(
@@ -132,14 +197,18 @@ result_plot_taxa <- ggplot(df_long_taxa_plot, aes(x = n, y = y_pos, width = widt
         guide = "none"
     ) +
     scale_y_continuous(
-        breaks = df_long_taxa_plot$y_pos, labels = df_long_taxa_plot$category,
+        breaks = df_long_taxa_plot$y_pos, labels = df_long_taxa_plot$category_label,
         expand = expansion(add = var_family_gap)
     ) +
     labs(
         x = "Number of responses", y = "Grouping"
     ) +
     theme_pubclean() +
-    theme(axis.text = element_text(size = 22), axis.title = element_text(size = 25))
+    theme(
+        axis.text.y = element_markdown(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
 result_caption_plot_taxa <- paste0(
     "Figure 1. Bar chart of how many surveyed organizations (n = ",
     unique_organizations,
@@ -148,12 +217,6 @@ result_caption_plot_taxa <- paste0(
 ggsave("outputs/result_plot_taxa.jpeg", result_plot_taxa,
     units = "in", height = 23, width = 18
 )
-
-
-
-
-
-
 
 ## Present Results
 result_unique_organizations
