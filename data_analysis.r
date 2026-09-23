@@ -412,6 +412,91 @@ result_num_does_invasive_species_studying <- paste0(
     ", including: ",
     combine_words(df_invasives$organizationsAndSpecies)
 )
+# Investigate types of data collected on ecosystem services
+ecosystem_services_fixed_order <- c(
+    "Access To Clean Water (Potable Water, River, Streams)",
+    "Access To Forest Products (Wood, Game Meat, Medicinal Plants, Etc.)",
+    "Access To Marine Products", "Eco-Businesses", "Carbon Stocks",
+    "Shoreline Protection"
+)
+df_ecosystem_services <- df %>%
+    select(ecosystemServicesTypes) %>%
+    separate_rows(ecosystemServicesTypes, sep = ";\\s*") %>%
+    mutate(ecosystemServicesTypes = fun_clean_text(ecosystemServicesTypes)) %>%
+    filter(!is.na(ecosystemServicesTypes), ecosystemServicesTypes != "Other") %>%
+    group_by(ecosystemServicesTypes) %>%
+    summarise(n = n(), .groups = "drop") %>%
+    mutate(is_other = FALSE)
+ecosystem_services_other <- fun_clean_text(df$ecosystemServicesOther)
+ecosystem_services_other <- ecosystem_services_other[!is.na(ecosystem_services_other)]
+df_ecosystem_services_other <- tibble(ecosystemServicesTypes = ecosystem_services_other) %>%
+    count(ecosystemServicesTypes, name = "n") %>%
+    mutate(is_other = TRUE)
+df_ecosystem_services_none <- tibble(
+    ecosystemServicesTypes = "None",
+    n = sum(df$ecosystemServices == "No", na.rm = TRUE),
+    is_other = FALSE
+)
+df_ecosystem_services <- bind_rows(df_ecosystem_services, df_ecosystem_services_other, df_ecosystem_services_none)
+ecosystem_services_order <- rev(c(
+    ecosystem_services_fixed_order,
+    sort(unique(df_ecosystem_services_other$ecosystemServicesTypes)),
+    "None"
+))
+df_ecosystem_services <- df_ecosystem_services %>%
+    mutate(
+        ecosystemServicesTypes = factor(ecosystemServicesTypes, levels = ecosystem_services_order),
+        fill_category = case_when(
+            ecosystemServicesTypes == "None" ~ "none",
+            is_other ~ "other",
+            TRUE ~ "normal"
+        )
+    )
+result_plot_ecosystem_services <- ggplot(df_ecosystem_services, aes(x = n, y = ecosystemServicesTypes, fill = fill_category)) +
+    geom_col(orientation = "y", color = "black") +
+    scale_fill_manual(
+        values = c("normal" = "#382e6b", "other" = "#456b2e", "none" = "#6b4b2e"),
+        guide = "none"
+    ) +
+    labs(
+        x = "Number of responses", y = "Ecosystem Services Data"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_text(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+result_caption_plot_ecosystem_services <- paste0(
+    "Figure 5. Bar chart of how many surveyed organizations (n = ",
+    unique_organizations, ") collect different types of ecosystem services data.",
+    " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
+)
+ggsave("outputs/result_plot_ecosystem_services.jpeg", result_plot_ecosystem_services,
+    units = "in", height = 23, width = 18
+)
+# See how many organizations study relationship between communities and ecosystem services
+num_does_comm_services_relations_studying <- round(sum(df$communityEcosystemServices == "Yes", na.rm = TRUE), 2)
+organizations_do_comm_services_relations_studying <- filter(df, df$communityEcosystemServices == "Yes")$organizationName
+result_num_does_comm_services_relations_studying <- paste0(
+    "The number of organizations collecting data on relationship between communities and ecosystem services ",
+    num_does_comm_services_relations_studying,
+    ", including: ",
+    combine_words(organizations_do_comm_services_relations_studying)
+)
+# See how many organizations study climate resiliency
+num_does_climate_resiliency <- round(sum(df$climateResiliency == "Yes, ecosystems" | df$climateResiliency == "Yes, communities", na.rm = TRUE), 2)
+organizations_do_climate_resiliency_ecosystems <- filter(df, df$climateResiliency == "Yes, ecosystems")$organizationName
+organizations_do_climate_resiliency_communities <- filter(df, df$climateResiliency == "Yes, communities")$organizationName
+result_num_does_climate_resiliency <- paste0(
+    "The number of organizations collecting data on climate resiliency ",
+    num_does_climate_resiliency,
+    ", including: ",
+    combine_words(organizations_do_climate_resiliency_communities),
+    " focused on communities, and: ",
+    combine_words(organizations_do_climate_resiliency_ecosystems),
+    " focused on ecosystems."
+)
 
 ## Analyze Section 7: Enforcement
 # TO DO
@@ -450,3 +535,7 @@ result_num_does_habitat_restoration_studying
 result_plot_pollution
 result_caption_plot_pollution
 result_num_does_invasive_species_studying
+result_plot_ecosystem_services
+result_caption_plot_ecosystem_services
+result_num_does_comm_services_relations_studying
+result_num_does_climate_resiliency
