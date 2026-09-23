@@ -316,7 +316,49 @@ result_num_does_habitat_restoration_studying <- paste0(
     ", including: ",
     combine_words(organizations_do_habitat_restoration_studying)
 )
-
+# Investigate types of data collected on pollution
+pollution_fixed_order <- c(
+    "Water Pollution", "Air Pollution", "Noise Pollution",
+    "Light Pollution", "Thermal Pollution"
+)
+df_pollution <- df %>%
+    select(pollutionData) %>%
+    separate_rows(pollutionData, sep = ";\\s*") %>%
+    mutate(pollutionData = fun_clean_text(pollutionData)) %>%
+    filter(!is.na(pollutionData), pollutionData != "Other") %>%
+    group_by(pollutionData) %>%
+    summarise(n = n(), .groups = "drop")
+pollution_other <- fun_clean_text(df$pollutionDataOther)
+pollution_other <- pollution_other[!is.na(pollution_other)]
+df_pollution_other <- tibble(pollutionData = pollution_other) %>%
+    count(pollutionData, name = "n")
+df_pollution <- bind_rows(df_pollution, df_pollution_other) %>%
+    mutate(pollutionData = if_else(pollutionData == "No", "None", pollutionData))
+pollution_order <- rev(c(
+    pollution_fixed_order,
+    sort(unique(df_pollution_other$pollutionData)),
+    "None"
+))
+df_pollution <- df_pollution %>%
+    mutate(pollutionData = factor(pollutionData, levels = pollution_order))
+result_plot_pollution <- ggplot(df_pollution, aes(x = n, y = pollutionData)) +
+    geom_col(orientation = "y", color = "black", fill = "#382e6b") +
+    labs(
+        x = "Number of responses", y = "Pollution Data"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_text(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+result_caption_plot_pollution <- paste0(
+    "Figure 4. Bar chart of how many surveyed organizations (n = ",
+    unique_organizations, ") collect different types of pollution data."
+)
+ggsave("outputs/result_plot_pollution.jpeg", result_plot_pollution,
+    units = "in", height = 23, width = 18
+)
 
 
 ## Analyze Section 7: Enforcement
@@ -353,3 +395,5 @@ result_caption_plot_ecosystems
 result_plot_ecosystem_health
 result_caption_plot_ecosystem_health
 result_num_does_habitat_restoration_studying
+result_plot_pollution
+result_caption_plot_pollution
