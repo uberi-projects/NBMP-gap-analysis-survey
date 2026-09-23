@@ -56,6 +56,33 @@ taxon_order <- c(
     "Freshwater Macroinvertebrate", "Terrestrial Macroinvertebrates",
     "Amphibians", "Reptiles", "Plants", "Other"
 )
+subtaxon_order_mammals <- c(
+    "Bats", "Marine mammals", "Primates",
+    "Other small mammals (e.g., hispid cotton rats)",
+    "Other medium-sized mammals (e.g., paca)",
+    "Other large mammals (e.g., jaguars)"
+)
+subtaxon_order_fish <- c(
+    "Freshwater fish", "Marine fish"
+)
+subtaxon_order_marine_invertebrates <- c(
+    "Conch", "Crustaceans", "Mollusks",
+    "Crabs", "Lobsters", "Corals", "Urchins",
+    "Sea Cucumbers", "Other" # need to figure out how to handle other
+)
+subtaxon_order_terrestrial_macroinvertebrates <- c(
+    "Agricultural Pest Insects (e.g., stem-borers)",
+    "Disease Vector Insects (e.g., mosquitoes, screwworms)",
+    "Butterflies", "Bees", "Other" # need to figure out how to handle other
+)
+subtaxon_order_reptiles <- c(
+    "Snakes", "Crocodiles", "Turtles", "Other" # need to figure out how to handle other
+)
+subtaxon_order_plants <- c(
+    "Mangroves", "Seaweed/Seagrass/Macroalgae", "Hardwood Trees",
+    "Epiphytes", "Other" # need to figure out how to handle other
+)
+
 fun_build_rows <- function(counts_taxa, taxon_order, base_width = 0.9, shrink = 0.55) {
     rows <- list()
     for (t in taxon_order) {
