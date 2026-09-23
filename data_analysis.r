@@ -61,7 +61,8 @@ df_long_taxa <- df_long_taxa %>%
         level3 = fun_clean_text(level3)
     )
 counts_taxa <- df_long_taxa %>%
-    count(level1, level2, level3, depth, name = "n")
+    count(level1, level2, level3, depth, name = "n") %>%
+    mutate(is_other = FALSE)
 other_field_map <- tribble(
     ~column, ~level1, ~level2, ~is_new_taxon,
     "monitoringAreasOther", "Other", NA_character_, TRUE,
@@ -87,17 +88,18 @@ fun_build_other_counts <- function(df, other_field_map) {
         if (is.na(level2)) {
             if (is_new_taxon) {
                 rows[[length(rows) + 1]] <- tibble(
-                    level1 = level1, level2 = "", level3 = "", depth = 1, n = length(cleaned)
+                    level1 = level1, level2 = "", level3 = "", depth = 1, n = length(cleaned),
+                    is_other = TRUE
                 )
             }
             rows[[length(rows) + 1]] <- tibble(
                 level1 = level1, level2 = response_counts$response, level3 = "",
-                depth = 2, n = response_counts$n
+                depth = 2, n = response_counts$n, is_other = TRUE
             )
         } else {
             rows[[length(rows) + 1]] <- tibble(
                 level1 = level1, level2 = level2, level3 = response_counts$response,
-                depth = 3, n = response_counts$n
+                depth = 3, n = response_counts$n, is_other = TRUE
             )
         }
     }
@@ -149,7 +151,8 @@ fun_build_rows <- function(counts_taxa, taxon_order, subtaxon_orders = list(), b
         top_row <- counts_taxa %>% filter(level1 == t, depth == 1)
         if (nrow(top_row) == 0) next # skip taxa nobody selected
         rows[[length(rows) + 1]] <- tibble(
-            category = t, n = top_row$n, depth = 1, width = base_width, family = t
+            category = t, n = top_row$n, depth = 1, width = base_width, family = t,
+            is_other = top_row$is_other
         )
         children <- counts_taxa %>% filter(level1 == t, depth == 2)
         subtaxon_order <- subtaxon_orders[[t]]
@@ -161,7 +164,8 @@ fun_build_rows <- function(counts_taxa, taxon_order, subtaxon_orders = list(), b
         for (i in seq_len(nrow(children))) {
             child <- children$level2[i]
             rows[[length(rows) + 1]] <- tibble(
-                category = child, n = children$n[i], depth = 2, width = base_width * shrink, family = t
+                category = child, n = children$n[i], depth = 2, width = base_width * shrink, family = t,
+                is_other = children$is_other[i]
             )
             grandchildren <- counts_taxa %>%
                 filter(level1 == t, level2 == child, depth == 3) %>%
@@ -169,7 +173,8 @@ fun_build_rows <- function(counts_taxa, taxon_order, subtaxon_orders = list(), b
             for (j in seq_len(nrow(grandchildren))) {
                 rows[[length(rows) + 1]] <- tibble(
                     category = grandchildren$level3[j], n = grandchildren$n[j],
-                    depth = 3, width = base_width * shrink^2, family = t
+                    depth = 3, width = base_width * shrink^2, family = t,
+                    is_other = grandchildren$is_other[j]
                 )
             }
         }
@@ -177,7 +182,10 @@ fun_build_rows <- function(counts_taxa, taxon_order, subtaxon_orders = list(), b
     bind_rows(rows)
 }
 df_long_taxa_plot <- fun_build_rows(counts_taxa, taxon_order, subtaxon_orders) %>%
-    mutate(depth = factor(depth))
+    mutate(
+        depth = factor(depth),
+        fill_group = if_else(is_other, paste0("other_", depth), as.character(depth))
+    )
 var_family_gap <- 0.5
 df_long_taxa_plot <- df_long_taxa_plot %>%
     mutate(
@@ -195,10 +203,13 @@ df_long_taxa_plot <- df_long_taxa_plot %>%
         "<span style='font-size:", label_size_pt[as.character(depth)], "pt'>",
         category, "</span>"
     ))
-result_plot_taxa <- ggplot(df_long_taxa_plot, aes(x = n, y = y_pos, width = width, fill = depth)) +
+result_plot_taxa <- ggplot(df_long_taxa_plot, aes(x = n, y = y_pos, width = width, fill = fill_group)) +
     geom_col(orientation = "y", color = "black") +
     scale_fill_manual(
-        values = c("1" = "#382e6b", "2" = "#766da7", "3" = "#b1abd1"),
+        values = c(
+            "1" = "#382e6b", "2" = "#766da7", "3" = "#b1abd1",
+            "other_1" = "#456b2e", "other_2" = "#729a5a", "other_3" = "#b4cca6"
+        ),
         guide = "none"
     ) +
     scale_y_continuous(
@@ -217,7 +228,8 @@ result_plot_taxa <- ggplot(df_long_taxa_plot, aes(x = n, y = y_pos, width = widt
 result_caption_plot_taxa <- paste0(
     "Figure 1. Bar chart of how many surveyed organizations (n = ",
     unique_organizations,
-    ") survey each biodiversity grouping, with parent groupings attached to lower-level children groupings. "
+    ") survey each biodiversity grouping, with parent groupings attached to lower-level children groupings. ",
+    " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_taxa.jpeg", result_plot_taxa,
     units = "in", height = 23, width = 18
@@ -275,11 +287,13 @@ df_ecosystem_health <- df %>%
     mutate(ecosystemHealthData = fun_clean_text(ecosystemHealthData)) %>%
     filter(!is.na(ecosystemHealthData), ecosystemHealthData != "Other") %>%
     group_by(ecosystemHealthData) %>%
-    summarise(n = n(), .groups = "drop")
+    summarise(n = n(), .groups = "drop") %>%
+    mutate(is_other = FALSE)
 ecosystem_health_other <- fun_clean_text(df$ecosystemHealthDataOther)
 ecosystem_health_other <- ecosystem_health_other[!is.na(ecosystem_health_other)]
 df_ecosystem_health_other <- tibble(ecosystemHealthData = ecosystem_health_other) %>%
-    count(ecosystemHealthData, name = "n")
+    count(ecosystemHealthData, name = "n") %>%
+    mutate(is_other = TRUE)
 df_ecosystem_health <- bind_rows(df_ecosystem_health, df_ecosystem_health_other) %>%
     mutate(ecosystemHealthData = if_else(ecosystemHealthData == "No", "None", ecosystemHealthData))
 ecosystem_health_order <- rev(c(
@@ -288,9 +302,20 @@ ecosystem_health_order <- rev(c(
     "None"
 ))
 df_ecosystem_health <- df_ecosystem_health %>%
-    mutate(ecosystemHealthData = factor(ecosystemHealthData, levels = ecosystem_health_order))
-result_plot_ecosystem_health <- ggplot(df_ecosystem_health, aes(x = n, y = ecosystemHealthData)) +
-    geom_col(orientation = "y", color = "black", fill = "#382e6b") +
+    mutate(
+        ecosystemHealthData = factor(ecosystemHealthData, levels = ecosystem_health_order),
+        fill_category = case_when(
+            ecosystemHealthData == "None" ~ "none",
+            is_other ~ "other",
+            TRUE ~ "normal"
+        )
+    )
+result_plot_ecosystem_health <- ggplot(df_ecosystem_health, aes(x = n, y = ecosystemHealthData, fill = fill_category)) +
+    geom_col(orientation = "y", color = "black") +
+    scale_fill_manual(
+        values = c("normal" = "#382e6b", "other" = "#456b2e", "none" = "#6b4b2e"),
+        guide = "none"
+    ) +
     labs(
         x = "Number of responses", y = "Ecosystem Health Data"
     ) +
@@ -302,7 +327,9 @@ result_plot_ecosystem_health <- ggplot(df_ecosystem_health, aes(x = n, y = ecosy
     )
 result_caption_plot_ecosystem_health <- paste0(
     "Figure 3. Bar chart of how many surveyed organizations (n = ",
-    unique_organizations, ") collect different types of ecosystem health data."
+    unique_organizations,
+    ") collect different types of ecosystem health data.",
+    " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_ecosystem_health.jpeg", result_plot_ecosystem_health,
     units = "in", height = 23, width = 18
@@ -327,11 +354,13 @@ df_pollution <- df %>%
     mutate(pollutionData = fun_clean_text(pollutionData)) %>%
     filter(!is.na(pollutionData), pollutionData != "Other") %>%
     group_by(pollutionData) %>%
-    summarise(n = n(), .groups = "drop")
+    summarise(n = n(), .groups = "drop") %>%
+    mutate(is_other = FALSE)
 pollution_other <- fun_clean_text(df$pollutionDataOther)
 pollution_other <- pollution_other[!is.na(pollution_other)]
 df_pollution_other <- tibble(pollutionData = pollution_other) %>%
-    count(pollutionData, name = "n")
+    count(pollutionData, name = "n") %>%
+    mutate(is_other = TRUE)
 df_pollution <- bind_rows(df_pollution, df_pollution_other) %>%
     mutate(pollutionData = if_else(pollutionData == "No", "None", pollutionData))
 pollution_order <- rev(c(
@@ -340,9 +369,20 @@ pollution_order <- rev(c(
     "None"
 ))
 df_pollution <- df_pollution %>%
-    mutate(pollutionData = factor(pollutionData, levels = pollution_order))
-result_plot_pollution <- ggplot(df_pollution, aes(x = n, y = pollutionData)) +
-    geom_col(orientation = "y", color = "black", fill = "#382e6b") +
+    mutate(
+        pollutionData = factor(pollutionData, levels = pollution_order),
+        fill_category = case_when(
+            pollutionData == "None" ~ "none",
+            is_other ~ "other",
+            TRUE ~ "normal"
+        )
+    )
+result_plot_pollution <- ggplot(df_pollution, aes(x = n, y = pollutionData, fill = fill_category)) +
+    geom_col(orientation = "y", color = "black") +
+    scale_fill_manual(
+        values = c("normal" = "#382e6b", "other" = "#456b2e", "none" = "#6b4b2e"),
+        guide = "none"
+    ) +
     labs(
         x = "Number of responses", y = "Pollution Data"
     ) +
@@ -354,7 +394,8 @@ result_plot_pollution <- ggplot(df_pollution, aes(x = n, y = pollutionData)) +
     )
 result_caption_plot_pollution <- paste0(
     "Figure 4. Bar chart of how many surveyed organizations (n = ",
-    unique_organizations, ") collect different types of pollution data."
+    unique_organizations, ") collect different types of pollution data.",
+    " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_pollution.jpeg", result_plot_pollution,
     units = "in", height = 23, width = 18
