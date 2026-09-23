@@ -218,8 +218,45 @@ ggsave("outputs/result_plot_taxa.jpeg", result_plot_taxa,
     units = "in", height = 23, width = 18
 )
 
+## Analyze Section 4: Ecosystems
+# Examine monitoring ecosystems
+ecosystems_order <- c(
+    "Savannah", "Pine Forest", "Broad-leaved Forest",
+    "Shrubland", "Wetland", "Riparian", "Agricultural Areas",
+    "Urban", "Mangrove and littoral forest", "Seagrass", "Sparse Algae",
+    "Lagoon", "Coral Reef", "Deep Reef", "Open Sea"
+)
+df_ecosystems <- df %>%
+    select(ecosystems) %>%
+    separate_rows(ecosystems, sep = ";\\s*") %>%
+    mutate(ecosystems = str_trim(ecosystems)) %>%
+    filter(ecosystems != "") %>%
+    group_by(ecosystems) %>%
+    summarise(n = n(), .groups = "drop")
+
+result_plot_ecosystems <- ggplot(df_ecosystems, aes(x = n, y = ecosystems)) +
+    geom_col(orientation = "y", color = "black", fill = "#382e6b") +
+    labs(
+        x = "Number of responses", y = "Ecosystem"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_text(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+result_caption_plot_ecosystems <- paste0(
+    "Figure 2. Bar chart of how many surveyed organizations (n = ",
+    unique_organizations, ") survey each ecosystem."
+)
+ggsave("outputs/result_plot_ecosystems.jpeg", result_plot_ecosystems,
+    units = "in", height = 23, width = 18
+)
+
 ## Present Results
 result_unique_organizations
 result_proportion_does_biodiversity_monitoring
 result_plot_taxa
 result_caption_plot_taxa
+result_plot_ecosystems
+result_caption_plot_ecosystems
