@@ -400,7 +400,18 @@ result_caption_plot_pollution <- paste0(
 ggsave("outputs/result_plot_pollution.jpeg", result_plot_pollution,
     units = "in", height = 23, width = 18
 )
-
+# See how many organizations study invasive species
+num_does_invasive_species_studying <- round(sum(df$invasiveSpecies == "Yes", na.rm = TRUE), 2)
+df_invasives <- df %>%
+    select(organizationName, invasiveSpecies, invasiveSpeciesWhich) %>%
+    filter(invasiveSpecies == "Yes") %>%
+    mutate(organizationsAndSpecies = paste0(organizationName, " (", invasiveSpeciesWhich, ")"))
+result_num_does_invasive_species_studying <- paste0(
+    "The number of organizations collecting data on invasive species is ",
+    num_does_invasive_species_studying,
+    ", including: ",
+    combine_words(df_invasives$organizationsAndSpecies)
+)
 
 ## Analyze Section 7: Enforcement
 # TO DO
@@ -438,3 +449,4 @@ result_caption_plot_ecosystem_health
 result_num_does_habitat_restoration_studying
 result_plot_pollution
 result_caption_plot_pollution
+result_num_does_invasive_species_studying
