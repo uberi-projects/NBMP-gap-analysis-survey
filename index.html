@@ -211,7 +211,14 @@
         .navigation {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-top: 40px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .nav-btn {
@@ -244,34 +251,147 @@
             background: #15803d;
         }
 
+        .nav-btn.start-over {
+            background: white;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+        }
+
+        .nav-btn.start-over:hover:not(:disabled) {
+            background: #fef2f2;
+            border-color: #f87171;
+        }
+
         .nav-btn:disabled {
             background: #d1d5db;
             color: #9ca3af;
             cursor: not-allowed;
         }
 
-        .intro-box {
-            background: #f0fdf4;
-            padding: 25px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        .nav-btn.start-over:disabled {
+            border-color: #d1d5db;
         }
 
-        .intro-box p {
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 440px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-box h3 {
+            color: #991b1b;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .modal-box p {
+            color: #374151;
+            line-height: 1.6;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            padding: 10px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .modal-btn.confirm {
+            background: #dc2626;
+            color: white;
+        }
+
+        .modal-btn.confirm:hover {
+            background: #b91c1c;
+        }
+
+        .modal-btn.cancel {
+            background: white;
+            color: #374151;
+            border-color: #d1d5db;
+        }
+
+        .modal-btn.cancel:hover {
+            background: #f3f4f6;
+        }
+
+        .intro-logos {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 0 0 20px;
+        }
+
+        .intro-logos img {
+            max-height: 72px;
+            max-width: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .intro-divider {
+            border: none;
+            border-top: 1px solid #d1d5db;
+            margin: 20px 0 24px;
+        }
+
+        .intro-logos[hidden],
+        .intro-divider[hidden] {
+            display: none;
+        }
+
+        .intro-content p {
             color: #374151;
             line-height: 1.6;
             margin-bottom: 15px;
         }
 
-        .intro-box ol {
+        .intro-content ol {
             margin-left: 20px;
             margin-bottom: 15px;
         }
 
-        .intro-box li {
+        .intro-content li {
             color: #374151;
             margin-bottom: 10px;
             line-height: 1.6;
+        }
+
+        .intro-content .survey-details-label {
+            color: #166534;
+            font-weight: 700;
+            margin-bottom: 10px;
         }
 
         .footer {
@@ -350,6 +470,16 @@
 
 <body>
     <div class="container">
+        <div class="intro-logos" id="introLogos">
+            <img src="assets/logo-ub-eri.jpg" alt="UB-ERI">
+            <img src="assets/logo-nbio.jpg" alt="NBIO">
+            <img src="assets/logo-project.png" alt="Linking the Central American Landscape">
+            <img src="assets/logo_collection_iucn.jpg"
+                alt="Funding partners: German Cooperation, KfW, IUCN, CCAD, and SICA">
+        </div>
+
+        <hr class="intro-divider" id="introDivider">
+
         <h1>UB-ERI Biodiversity Monitoring Gap Analysis</h1>
 
         <div class="header-info">
@@ -363,7 +493,8 @@
             <!-- Section 0: Introduction -->
             <div class="section active" data-section="0">
                 <h2>Welcome</h2>
-                <div class="intro-box">
+
+                <div class="intro-content">
                     <p>This survey is being conducted as part of the Gap Analysis for the National Biodiversity
                         Monitoring Plan (NBMP) currently being developed by the University of Belize Environmental
                         Research Institute (UB-ERI).</p>
@@ -380,9 +511,16 @@
                         UB-ERI in developing a comprehensive and coordinated NBMP that addresses current monitoring
                         gaps, strengthens collaboration among stakeholders, and promotes effective biodiversity
                         conservation across Belize.</p>
-                    <p><em>This survey form will save your progress automatically using your local browser
-                            cache, however, we will not receive any responses until you hit Finish. This survey should
-                            take approximately 10-25mins to complete.</em></p>
+                    <p class="survey-details-label">Survey Details:</p>
+                    <ol>
+                        <li>This survey form will save your progress automatically using your local browser cache.</li>
+                        <li>We will not receive any responses until you hit Finish.</li>
+                        <li>No personal identification data will be collected.</li>
+                        <li>All questions are optional except the indication of your organization.</li>
+                        <li>By completing this survey, you agree that your responses may be used in biodiversity
+                            planning and analysis for Belize.</li>
+                        <li>This survey should take approximately 20&ndash;40 minutes to complete.</li>
+                    </ol>
                 </div>
             </div>
 
@@ -399,8 +537,10 @@
             <!-- Section 2: Monitoring Activities -->
             <div class="section" data-section="2">
                 <h2>Biodiversity Monitoring Activities</h2>
+                <p style="color: #ea580c; font-weight: 700; margin-bottom: 20px;">Please answer all questions
+                    based on work your organization has done in the last 5 years.</p>
                 <div class="form-group">
-                    <label class="question-label">Does your organization do long-term biodiversity monitoring projects
+                    <label class="question-label">Does your organization do long-term biodiversity monitoring programs
                         and/or project-based
                         biodiversity research? *</label>
                     <div class="radio-group">
@@ -619,8 +759,9 @@
 
                 <div class="form-group">
                     <label class="question-label">What are the long-term biodiversity monitoring projects that your
-                        organization conducts or
-                        used to conduct? Only list closed projects that closed no more than 10yrs ago. </label>
+                        organization conducts or used to conduct? If it is a closed project, ensure it closed no more
+                        than 5yrs ago.
+                    </label>
                     <div style="overflow-x: auto;">
                         <table id="longTermTable">
                             <thead>
@@ -684,8 +825,8 @@
                 <h2>Ecosystem Health</h2>
 
                 <div class="form-group">
-                    <label class="question-label">Do you collect any data about the overall health of
-                        ecosystems?</label>
+                    <label class="question-label">Which of the following ecosystem health data does your organization
+                        collect? (Select all that apply; select "No" if none)</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option"><input type="checkbox" name="ecosystemHealthData"
                                 value="Species richness"> Species richness</label>
@@ -748,7 +889,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="question-label">Do you collect data on pollution for any of the following?</label>
+                    <label class="question-label">Do you collect data on pollution for any of the following? (Select
+                        all that apply)</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option"><input type="checkbox" name="pollutionData"
                                 value="Water pollution"> Water pollution</label>
@@ -805,7 +947,7 @@
                         </label>
                     </div>
                     <div id="ecosystemServicesWhich" class="conditional" style="display: none;">
-                        <label>Which ecosystem services do you measure?</label>
+                        <label>Which ecosystem services do you measure? (Select all that apply)</label>
                         <div class="checkbox-group">
                             <label class="checkbox-option"><input type="checkbox" name="ecosystemServicesTypes"
                                     value="Access to clean water (potable water, river, streams)"> Access to clean water
@@ -851,7 +993,7 @@
 
                 <div class="form-group">
                     <label class="question-label">Do you collect any data on climate resiliency in ecosystems or
-                        communities?</label>
+                        communities? (Select all that apply)</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option"><input type="checkbox" name="climateResiliency"
                                 value="Yes, communities"> Yes, communities</label>
@@ -1022,7 +1164,7 @@
                     </div>
 
                     <div id="patrolDataTypesSection" class="form-group" style="display: none;">
-                        <label>What kind of patrol data do you collect?</label>
+                        <label>What kind of patrol data do you collect? (Select all that apply)</label>
                         <div class="checkbox-group">
                             <label class="checkbox-option">
                                 <input type="checkbox" name="patrolDataTypes" value="Patrol hours">
@@ -1041,8 +1183,8 @@
                                 Arrests
                             </label>
                             <label class="checkbox-option">
-                                <input type="checkbox" name="patrolDataTypes" value="Perpetrators profiles">
-                                Perpetrators profiles
+                                <input type="checkbox" name="patrolDataTypes" value="Human encounter profiles">
+                                Human encounter profiles
                             </label>
                             <label class="checkbox-option">
                                 <input type="checkbox" name="patrolDataTypes" value="Other"
@@ -1087,8 +1229,26 @@
 
                     <div class="form-group">
                         <label class="question-label">How would you describe the type(s) of engagement that you most
-                            often do? </label>
-                        <textarea name="engagementTypes" rows="3" placeholder="Describe engagement types..."></textarea>
+                            often do? (Select all that apply)</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-option"><input type="checkbox" name="engagementTypes"
+                                    value="Education on fire management"> Education on fire management</label>
+                            <label class="checkbox-option"><input type="checkbox" name="engagementTypes"
+                                    value="Illegal wildlife trade"> Illegal wildlife trade</label>
+                            <label class="checkbox-option"><input type="checkbox" name="engagementTypes"
+                                    value="Protected areas and ecosystem benefits"> Protected areas and ecosystem
+                                benefits</label>
+                            <label class="checkbox-option"><input type="checkbox" name="engagementTypes"
+                                    value="Community governance and participation"> Community governance and
+                                participation</label>
+                            <label class="checkbox-option"><input type="checkbox" name="engagementTypes"
+                                    value="Project development and implementation"> Project development and
+                                implementation</label>
+                            <div style="margin-top: 10px;">
+                                <textarea name="engagementTypesOther" rows="2"
+                                    placeholder="Other (please specify)"></textarea>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1201,21 +1361,23 @@
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps" value="None">
                             None</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
-                                value="Limited data analysis skills"> Lack of / limited data analysis skills</label>
+                                value="Limited data analysis skills"> Limited data analysis skills</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
-                                value="Limited access to GIS software"> Limited access to GIS software</label>
+                                value="Limited GIS access"> Limited GIS access</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
-                                value="Limited technical support"> Limited technical support or IT personnel</label>
+                                value="Limited technical support"> Limited technical support</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
-                                value="High staff turnover"> High staff turnover leading to repeated skill loss</label>
+                                value="High staff turnover leading to constant retraining needs"> High staff turnover
+                            leading to constant retraining needs</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
-                                value="Difficulty with report writing"> Difficulty with report writing</label>
+                                value="Limited technical report writing skills"> Limited technical report writing
+                            skills</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
-                                value="Difficulty with publishing in peer-review journals"> Difficulty with publishing
-                            in peer-review journals</label>
+                                value="Limited skills for publishing in peer-review journals"> Limited skills for
+                            publishing in peer-review journals</label>
                         <label class="checkbox-option"><input type="checkbox" name="skillGaps"
-                                value="Lack of technical skills for biodiversity projects"> Lack of technical skills for
-                            developing biodiversity research and monitoring projects</label>
+                                value="Limited project development and management skills"> Limited project development
+                            and management skills</label>
                         <div style="margin-top: 10px;">
                             <input type="text" name="skillGapsOther" placeholder="Others (please specify)">
                         </div>
@@ -1228,8 +1390,15 @@
                     <div class="checkbox-group">
                         <label class="checkbox-option"><input type="checkbox" name="trainingNeeds" value="None">
                             None</label>
-                        <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
-                                value="Technical training"> Technical training</label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="trainingNeeds" value="Technical training"
+                                onchange="toggleTechnicalTrainingSpecify()">
+                            Technical training
+                        </label>
+                        <div id="technicalTrainingSpecify" class="nested-group" hidden>
+                            <input type="text" name="technicalTrainingSpecify"
+                                placeholder="What technical training specifically?">
+                        </div>
                         <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
                                 value="Research and monitoring development"> Research and monitoring
                             development</label>
@@ -1252,7 +1421,14 @@
                                 software</label>
                         </div>
                         <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
-                                value="Working with data"> Working with data</label>
+                                value="Data cleaning and entering (for existing databases or systems)"> Data cleaning
+                            and
+                            entering (for existing databases or systems)</label>
+                        <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
+                                value="Data interpretation and analysis"> Data interpretation and analysis</label>
+                        <label class="checkbox-option"><input type="checkbox" name="trainingNeeds"
+                                value="Technical and scientific report writing"> Technical and scientific report
+                            writing</label>
                         <div style="margin-top: 10px;">
                             <input type="text" name="trainingNeedsOther" placeholder="Other (please specify)">
                         </div>
@@ -1265,8 +1441,8 @@
                 <h2>Data Management</h2>
 
                 <div class="form-group">
-                    <label class="question-label">When your organization digitizes its data, describe how it does
-                        so</label>
+                    <label class="question-label">When your organization digitizes its data, how does it do so?
+                        (Select all that apply)</label>
                     <div class="checkbox-group">
                         <label class="checkbox-option">
                             <input type="checkbox" name="digitization" value="Excel/Google Sheets"
@@ -1325,17 +1501,36 @@
                         website)?</label>
                     <div class="radio-group">
                         <label class="radio-option">
-                            <input type="radio" name="publishOnline" value="Yes">
+                            <input type="radio" name="publishOnline" value="Yes" onchange="togglePublishOnline()">
                             <span>Yes</span>
                         </label>
                         <label class="radio-option">
-                            <input type="radio" name="publishOnline" value="No">
+                            <input type="radio" name="publishOnline" value="No" onchange="togglePublishOnline()">
                             <span>No</span>
                         </label>
                         <label class="radio-option">
-                            <input type="radio" name="publishOnline" value="We do not do reporting">
+                            <input type="radio" name="publishOnline" value="We do not do reporting"
+                                onchange="togglePublishOnline()">
                             <span>We do not do reporting</span>
                         </label>
+                    </div>
+                    <div id="publishOnlineFrequency" class="conditional" style="display: none;">
+                        <label>How often do you publish your technical reports online?</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="publishOnlineFrequency" value="1 or more times a year">
+                                <span>1 or more times a year</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="publishOnlineFrequency" value="1 or more times every 5 years">
+                                <span>1 or more times every 5 years</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="publishOnlineFrequency"
+                                    value="1 or more times every 10 years">
+                                <span>1 or more times every 10 years</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -1438,6 +1633,10 @@
                             <input type="radio" name="gbifInterest" value="Maybe">
                             <span>Maybe</span>
                         </label>
+                        <label class="radio-option">
+                            <input type="radio" name="gbifInterest" value="I am already involved">
+                            <span>I am already involved</span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -1524,13 +1723,13 @@
 
                 <div class="form-group">
                     <label class="question-label">Which species do you consider of cultural significance in
-                        Belize?</label>
+                        your region/area of work?</label>
                     <textarea name="culturalSpecies" rows="3" placeholder="List species..."></textarea>
                 </div>
 
                 <div class="form-group">
                     <label class="question-label">Which species do you consider of economic significance in
-                        Belize?</label>
+                        your region/area of work?</label>
                     <textarea name="economicSpecies" rows="3" placeholder="List species..."></textarea>
                 </div>
 
@@ -1624,17 +1823,34 @@
         </div>
 
         <div class="navigation">
-            <button type="button" class="nav-btn prev" id="prevBtn" onclick="prevSection()">Previous</button>
+            <div class="nav-left">
+                <button type="button" class="nav-btn prev" id="prevBtn" onclick="prevSection()">Previous</button>
+                <button type="button" class="nav-btn start-over" id="startOverBtn" onclick="openStartOver()">Start
+                    Over</button>
+            </div>
             <button type="button" class="nav-btn next" id="nextBtn" onclick="nextSection()">Next</button>
         </div>
-        <div class="error-msg" id="errorMsg">There was an error saving your response. <button type="button"
-                class="retry-btn" onclick="document.getElementById('surveyForm').requestSubmit()">Retry</button></div>
+        <div class="error-msg" id="errorMsg"><span id="errorText">There was an error saving your response.</span>
+            <button type="button" class="retry-btn"
+                onclick="document.getElementById('surveyForm').requestSubmit()">Retry</button></div>
 
         <div class="thank-you-box" id="thankYou">
             <h2>Thank you!</h2>
             <p>Your response has been successfully recorded.</p>
             <p>We sincerely appreciate your time and contribution to the<br>
                 National Biodiversity Monitoring Plan for Belize.</p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="startOverModal" role="dialog" aria-modal="true" aria-labelledby="startOverTitle">
+        <div class="modal-box">
+            <h3 id="startOverTitle">Warning</h3>
+            <p>This will remove ALL your inputs and start the survey over from the beginning. Proceed?</p>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn cancel" id="startOverCancelBtn"
+                    onclick="closeStartOver()">Cancel</button>
+                <button type="button" class="modal-btn confirm" onclick="confirmStartOver()">Yes</button>
+            </div>
         </div>
     </div>
 
@@ -1663,6 +1879,10 @@
             document.getElementById("prevBtn").disabled = index === 0;
             document.getElementById("nextBtn").textContent =
                 index === sections.length - 1 ? "Finish" : "Next";
+
+            // Organization logos only appear on the intro section
+            document.getElementById("introLogos").hidden = index !== 0;
+            document.getElementById("introDivider").hidden = index !== 0;
         }
 
         function shouldSkipMonitoringSections() {
@@ -1753,6 +1973,39 @@
         }
 
         /* -----------------------------
+           Start over
+        ------------------------------ */
+        function openStartOver() {
+            document.getElementById("startOverModal").classList.add("active");
+            document.getElementById("startOverCancelBtn").focus();
+        }
+
+        function closeStartOver() {
+            document.getElementById("startOverModal").classList.remove("active");
+            document.getElementById("startOverBtn").focus();
+        }
+
+        function confirmStartOver() {
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+            } catch (e) {
+                console.warn('Could not clear saved progress:', e);
+            }
+            document.getElementById("surveyForm").reset();
+            location.reload();
+        }
+
+        document.getElementById("startOverModal").addEventListener("click", function (e) {
+            if (e.target === this) closeStartOver();
+        });
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && document.getElementById("startOverModal").classList.contains("active")) {
+                closeStartOver();
+            }
+        });
+
+        /* -----------------------------
            Conditional logic
         ------------------------------ */
         function toggleMonitoringQuestions() {
@@ -1788,6 +2041,19 @@
         function togglePublishPapers() {
             const yes = document.querySelector('input[name="publishPapers"][value="Yes"]').checked;
             const container = document.getElementById("publishPapersFrequency");
+            if (!container) return;
+            container.style.display = yes ? "block" : "none";
+
+            if (!yes) {
+                container.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    radio.checked = false;
+                });
+            }
+        }
+
+        function togglePublishOnline() {
+            const yes = document.querySelector('input[name="publishOnline"][value="Yes"]').checked;
+            const container = document.getElementById("publishOnlineFrequency");
             if (!container) return;
             container.style.display = yes ? "block" : "none";
 
@@ -2117,6 +2383,19 @@
             }
         }
 
+        function toggleTechnicalTrainingSpecify() {
+            const checked = document.querySelector('input[name="trainingNeeds"][value="Technical training"]').checked;
+            const container = document.getElementById("technicalTrainingSpecify");
+            if (!container) return;
+            container.hidden = !checked;
+
+            if (!checked) {
+                container.querySelectorAll('input[type="text"]').forEach(t => {
+                    t.value = '';
+                });
+            }
+        }
+
         /* -----------------------------
            Dynamic table rows
         ------------------------------ */
@@ -2259,6 +2538,7 @@
             togglePlantsOptions();
             toggleSurveyEquipmentSpecify();
             toggleSoftwareTrainingOptions();
+            toggleTechnicalTrainingSpecify();
             toggleEcosystemHealthData();
             togglePollutionOther();
             toggleInvasiveSpecies();
@@ -2276,6 +2556,7 @@
             toggleShareData();
             toggleOnlineRepos();
             togglePublishPapers();
+            togglePublishOnline();
             toggleGbifQuestion();
             toggleWorkingGroups();
             toggleWorkingGroupsLeading();
@@ -2302,23 +2583,33 @@
         /* -----------------------------
            Submit → Thank you page
         ------------------------------ */
+
+        // Google Apps Script web app URL. To point the survey at a different response
+        // spreadsheet, change this one line (see README "Deployment Checklist").
+        const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbx62RysZB3Bt8T7-XEPL1BM0mJqH68gLneAtXMJoV3UBNRXuDnHqVCfrsn6VYhItYv-2g/exec";
+        const SUBMIT_TIMEOUT_MS = 20000;
+
         document.getElementById("surveyForm").addEventListener("submit", async function (e) {
             e.preventDefault();
             document.getElementById("errorMsg").style.display = "none";
 
             const nextBtn = document.getElementById("nextBtn");
             const prevBtn = document.getElementById("prevBtn");
+            const startOverBtn = document.getElementById("startOverBtn");
             const originalNextText = nextBtn.textContent;
             nextBtn.disabled = true;
             prevBtn.disabled = true;
+            startOverBtn.disabled = true;
             nextBtn.textContent = "Submitting...";
 
-            const success = await submitToGoogleSheet();
+            const result = await submitToGoogleSheet();
 
-            if (!success) {
+            if (!result.ok) {
+                document.getElementById("errorText").textContent = result.message;
                 document.getElementById("errorMsg").style.display = "block";
                 nextBtn.disabled = false;
                 prevBtn.disabled = false;
+                startOverBtn.disabled = false;
                 nextBtn.textContent = originalNextText;
                 return;
             }
@@ -2333,50 +2624,73 @@
             document.getElementById("thankYou").style.display = "block";
         });
 
+        // Resolves to { ok: true } only on a confirmed save, otherwise
+        // { ok: false, message } with a plain-language reason. The respondent's
+        // answers stay in localStorage until { ok: true }, so pressing Retry is
+        // always safe and never loses data.
         async function submitToGoogleSheet() {
             const form = document.getElementById("surveyForm");
             const formData = new FormData(form);
 
-            // IMPORTANT: handle multi-value fields (checkboxes)
+            // Combine multi-value fields (checkboxes) into one "; "-separated string
             const data = {};
             for (let [key, value] of formData.entries()) {
                 if (data[key]) {
-                    data[key] += "; " + value;   // combine checkbox values
+                    data[key] += "; " + value;
                 } else {
                     data[key] = value;
                 }
             }
 
-            try {
-                const response = await fetch(
-                    "https://script.google.com/macros/s/AKfycbx62RysZB3Bt8T7-XEPL1BM0mJqH68gLneAtXMJoV3UBNRXuDnHqVCfrsn6VYhItYv-2g/exec",
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(data)
-                    }
-                );
+            const savedNote = " Your answers are still saved on this device - please press Retry in a moment.";
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
 
-                return response.ok;
+            try {
+                // Sending the body as text/plain keeps this a "simple" request, so the
+                // browser skips the CORS preflight that Apps Script cannot answer. The
+                // POST is then actually sent and the JSON reply can be read, so a save
+                // can be confirmed. Apps Script reads the body the same way regardless
+                // of this header.
+                const response = await fetch(SUBMIT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(data),
+                    signal: controller.signal
+                });
+                clearTimeout(timer);
+
+                if (!response.ok) {
+                    return {
+                        ok: false,
+                        message: "The server could not save your response (error " + response.status + ")." + savedNote
+                    };
+                }
+
+                let body = null;
+                try { body = await response.json(); } catch (_) { /* reply was not JSON */ }
+
+                if (!body || body.status === "success") {
+                    return { ok: true };
+                }
+                return {
+                    ok: false,
+                    message: "The server reported a problem while saving your response." + savedNote
+                };
             } catch (err) {
+                clearTimeout(timer);
                 console.error("Submit failed:", err);
 
-                // Retry with no-cors (common workaround for Apps Script CORS from file://)
-                try {
-                    await fetch(
-                        "https://script.google.com/macros/s/AKfycbx62RysZB3Bt8T7-XEPL1BM0mJqH68gLneAtXMJoV3UBNRXuDnHqVCfrsn6VYhItYv-2g/exec",
-                        {
-                            method: "POST",
-                            mode: "no-cors",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(data)
-                        }
-                    );
-                    return true; // can't read response in no-cors, assume sent
-                } catch (retryErr) {
-                    console.error("Submit retry failed:", retryErr);
-                    return false;
+                if (err.name === "AbortError") {
+                    return {
+                        ok: false,
+                        message: "The submission took too long and was stopped. Check your internet connection." + savedNote
+                    };
                 }
+                return {
+                    ok: false,
+                    message: "Could not reach the server. Check your internet connection." + savedNote
+                };
             }
         }
     </script>

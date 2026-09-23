@@ -2,19 +2,19 @@
 
 This repository hosts the HTML code for the National Biodiversity Monitoring Program (NBMP) stakeholder gap analysis survey deployment. The survey is taken through the deployment URL on GitHub Pages, and responses collected using a Google Sheet, connected through a custom Google app.
 
-The code was written with extensive support from Codex and Claude Code, with oversight and testing by the UB-ERI team.
+The code for the HTML survey was written with support from Codex and Claude Code, with oversight and testing by the UB-ERI team. The data analysis was fully written by the UB-ERI team, without the assistance of AI tools. 
 
 
 ## Files
 - .gitignore defines which local files and folders should not be committed to the repository (in this case, generated outputs and local-only data).
-- code.gs includes the Google Apps Script which attaches to the target response spreadsheet. This should be attached to the target response Google Sheet. 
+- code.gs includes the Google Apps Script that receives submissions and appends them to the response spreadsheet. It must be bound to that Google Sheet and deployed as a Web App. It writes to the tab named in its `SHEET_NAME` constant (default `Responses`), falling back to the first tab, and uses `LockService` so simultaneous submissions are written one at a time. Opening the deployment URL in a browser (a GET) returns `{"status":"ok"}` as a quick liveness check.
 - default_headers.csv lists the recommended headers to use in the target response Google Sheet. These should be added to the Google Sheet before collecting responses.
 - data_analysis.r stores R code to analyze any response data exports found in the data_deposit folder and produce outputs in the outputs folder. (NOT YET IMPLEMENTED)
-- index.html is the survey HTML. The deployment URL for the Google Apps Script on your response spreadsheet must be set in the submit handler in two places: the primary fetch URL and the no-cors retry URL inside `submitToGoogleSheet()`. See `index.html:1703` and `index.html:1718`.
-- wireframe.md documents the survey's question flow, ordering, and skip logic in plain language, for non-technical review.
+- index.html is the survey HTML. The deployment URL for the Google Apps Script on your response spreadsheet must be set in one place: the `SUBMIT_URL` constant just above the submit handler in `index.html` (search for `const SUBMIT_URL`).
 
 
 ## Folders
+- assets/ — image assets referenced by index.html, all shown together in one logo row on the Welcome screen: `logo-ub-eri.jpg`, `logo-nbio.jpg`, `logo-project.png`, and `logo_collection_iucn.jpg` (the funding-partner strip: German Cooperation, KfW, IUCN, CCAD, SICA). The row wraps to extra lines only when the screen is too narrow to fit it.
 - data_deposit/ — this is the location that any response data exports to be used for analysis should be manually placed prior to running data_analysis.r.
 - outputs/ — this is the location that any analysis products will be created.
 
@@ -94,15 +94,16 @@ All toggle functions are called in `restoreProgress()` to ensure conditional fie
    - Receives POST requests from the HTML form
    - Parses incoming JSON data
    - Maps form field names to spreadsheet columns using header row
+   - Serializes concurrent submissions with `LockService` so rows can't collide
    - Appends new row with timestamp and all response data
-   - Returns success/error status to the HTML form
+   - Returns `{"status":"success"}` (or `{"status":"error", ...}`) to the HTML form, which the form reads to confirm the save
 
 3. **default_headers.csv** (Schema Definition)
    - Defines the exact column structure for the response spreadsheet
    - **Must match** the `name` attributes of form fields in index.html
-   - Contains 115 columns total (including timestamp)
+   - Contains 145 columns total (including timestamp)
    - Column order matters: data is written to columns in the order headers appear
-   - Dynamic fields use underscore notation: `ltSpecies_0`, `ltSpecies_1`, `ltSpecies_2` for table rows
+   - Dynamic fields use underscore notation: `ltSpecies_0`, `ltSpecies_1`, ... for table rows. Columns for rows 0-4 are pre-provisioned; if a respondent adds a 6th row or more, `code.gs` appends the extra columns (`ltSpecies_5`, ...) to the end of the sheet automatically (see Dynamic Tables below)
 
 #### Critical Field Naming Convention
 
@@ -200,33 +201,48 @@ function toggleMyNewField() {
 
 ### Dynamic Tables
 
-The survey includes three dynamic tables where users can add rows:
+The survey includes three dynamic tables where users can add rows. Each table starts
+with one row and the respondent can add **an unlimited number** via the "Add Row"
+button (there is no cap — respondents are expected to list every project/concern they
+have).
 
-- **Long-term monitoring projects** (Section 4): Fields `ltSpecies_0-2`, `ltSites_0-2`, `ltYears_0-2`, `ltMethods_0-2`, `ltOngoing_0-2`
-- **Recent research projects** (Section 4): Fields `rrSpecies_0-2`, `rrSites_0-2`, `rrYears_0-2`, `rrMethods_0-2`
-- **Community species concerns** (Section 13): Fields `ccCommunity_0-2`, `ccDistrict_0-2`, `ccSpecies_0-2`, `ccReason_0-2`
+- **Long-term monitoring projects** (Section 4): Fields `ltSpecies_N`, `ltSites_N`, `ltYears_N`, `ltMethods_N`, `ltOngoing_N`
+- **Recent research projects** (Section 4): Fields `rrSpecies_N`, `rrSites_N`, `rrYears_N`, `rrMethods_N`
+- **Community species concerns** (Section 13): Fields `ccCommunity_N`, `ccDistrict_N`, `ccSpecies_N`, `ccReason_N`
 
-Each table supports up to 3 rows (indices 0-2). To add more rows:
-1. Increment the maximum row counter in the `addRow()` functions
-2. Add additional column headers to default_headers.csv (e.g., `ltSpecies_3`, `ltSpecies_4`)
-3. Add corresponding columns to the Google Sheets response spreadsheet
+`N` starts at 0. `default_headers.csv` pre-provisions columns for rows 0-4. If a
+respondent adds a 6th row or beyond, `code.gs` appends the new columns
+(`ltSpecies_5`, `ltSites_5`, ...) to the right-hand end of the sheet on the first
+submission that needs them, and fills them in. No data is lost, but those overflow
+columns are added in first-seen order rather than pre-grouped.
+
+**For analysis:** read these table columns by header name, not by fixed position —
+the three tables are variable-width.
+
+To change how many rows are pre-provisioned, add or remove `_N` column sets in
+`default_headers.csv` and the sheet's header row (keeping each table's columns
+grouped and contiguous). No `index.html` change is needed — the "Add Row" buttons
+already generate unlimited `_N` field names.
 
 ### Form State Persistence
 
 The survey automatically saves progress to browser localStorage:
 - Saves after each section navigation
 - Restores on page reload using `restoreProgress()`
-- Data remains until form submission or user clears browser data
+- Data remains until the save is confirmed by the server, the respondent clicks "Start Over" (see below), or the user clears browser data
 - **Important:** Data is saved locally only; responses aren't sent to Google Sheets until "Finish" is clicked
+- On "Finish" the response is POSTed to the Apps Script web app. localStorage is cleared only after the server confirms the save (`{"status":"success"}`); if the request fails or times out, an error with a **Retry** button is shown and the answers are kept
+
+The **"Start Over"** button (next to "Previous" in the navigation bar) lets a respondent discard their session. It opens a confirmation dialog; on "Yes" it clears the saved localStorage state, resets the form, and reloads the page so the survey restarts from the beginning. "Cancel" closes the dialog with no change. Handled by `openStartOver()` / `closeStartOver()` / `confirmStartOver()` in `index.html`.
 
 ### Deployment Checklist
 
 When deploying or updating the survey:
 
-1. Update Google Apps Script deployment URL in index.html — search for `submitToGoogleSheet` and update the two fetch URLs (primary and no-cors retry)
+1. Set the Google Apps Script deployment URL in index.html — the `SUBMIT_URL` constant just above the submit handler (search for `const SUBMIT_URL`)
 2. Ensure default_headers.csv matches all form field names in index.html
-3. Copy headers from default_headers.csv to first row of Google Sheets response spreadsheet
-4. Attach code.gs to the response spreadsheet and deploy as web app
-5. Set web app permissions to "Anyone" for public access
-6. Test form submission and verify data appears correctly in spreadsheet
+3. Copy headers from default_headers.csv into row 1 of the response tab, and name that tab `Responses` (or update `SHEET_NAME` in code.gs to match its name)
+4. Paste code.gs into the sheet-bound Apps Script project and deploy as a Web App (Execute as: Me; Who has access: Anyone). Re-deploy (new version) after any code.gs change
+5. Open the `/exec` URL in a browser — it should show `{"status":"ok"}`
+6. Submit the form once from the live (GitHub Pages) URL; confirm the row lands in the spreadsheet AND the "Thank you" screen appears. If an error message shows instead, the web app is unreachable or not deployed with "Anyone" access — fix before sending the survey out
 7. Verify skip logic works correctly for all paths through the survey
