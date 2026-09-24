@@ -1179,7 +1179,87 @@ ggsave("outputs/result_plot_training_needs.jpeg", result_plot_training_needs,
 )
 
 ## Analyze Section 11: Data Management
-# TO DO
+# Determine how many participants are seeing the section
+num_sees_section11 <- length(with(
+    df,
+    doesMonitoring %in% "Yes" |
+        fun_any_not_no(ecosystemHealthData) |
+        habitatRestoration %in% "Yes" |
+        fun_any_not_no(pollutionData) |
+        invasiveSpecies %in% "Yes" |
+        ecosystemServices %in% "Yes" |
+        communityEcosystemServices %in% "Yes" |
+        fun_any_not_no(climateResiliency)
+))
+# Investigate how data is digitized
+digitization_fixed_order <- c("Excel/Google Sheets", "Data Portals")
+counts_digitization <- df %>%
+    select(digitization) %>%
+    separate_rows(digitization, sep = ";\\s*") %>%
+    mutate(digitization = fun_clean_text(digitization)) %>%
+    filter(!is.na(digitization)) %>%
+    count(digitization, name = "n") %>%
+    transmute(level1 = digitization, level2 = "", level3 = "", depth = 1, n, is_other = FALSE)
+digitization_other_field_map <- tribble(
+    ~column, ~level1, ~level2, ~is_new_taxon,
+    "digitizationPortals", "Data Portals", NA_character_, FALSE
+)
+counts_digitization <- bind_rows(counts_digitization, fun_build_other_counts(df, digitization_other_field_map))
+digitization_order <- digitization_fixed_order
+df_digitization_plot <- fun_build_rows(counts_digitization, digitization_order) %>%
+    mutate(
+        depth = factor(depth),
+        fill_group = if_else(is_other, paste0("other_", depth), as.character(depth))
+    )
+df_digitization_plot <- df_digitization_plot %>%
+    mutate(
+        touch_step = width / 2 + lag(width) / 2,
+        step = case_when(
+            row_number() == 1 ~ 0,
+            family != lag(family) ~ touch_step + var_family_gap,
+            TRUE ~ touch_step
+        ),
+        y_pos = -cumsum(step)
+    )
+df_digitization_plot <- df_digitization_plot %>%
+    mutate(category_label = paste0(
+        "<span style='font-size:", label_size_pt[as.character(depth)], "pt'>",
+        str_replace_all(fun_wrap_two_lines(category), "\n", "<br>"), "</span>"
+    ))
+result_plot_digitization <- ggplot(df_digitization_plot, aes(x = n, y = y_pos, width = width, fill = fill_group)) +
+    geom_col(orientation = "y", color = "black") +
+    scale_fill_manual(
+        values = c(
+            "1" = "#382e6b", "2" = "#766da7",
+            "other_1" = "#456b2e", "other_2" = "#729a5a"
+        ),
+        guide = "none"
+    ) +
+    scale_y_continuous(
+        breaks = df_digitization_plot$y_pos, labels = df_digitization_plot$category_label,
+        expand = expansion(add = var_family_gap)
+    ) +
+    labs(
+        x = "Number of responses", y = "Digitization Method"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_markdown(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+result_caption_plot_digitization <- paste0(
+    "Figure 12. Bar chart of how many surveyed organizations (n = ",
+    num_sees_section11,
+    ") digitize their monitoring data using each method.",
+    " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
+)
+ggsave("outputs/result_plot_digitization.jpeg", result_plot_digitization,
+    units = "in", height = 23, width = 18
+)
+# Explore whether data is still undigitized
+# TO DO: Requires manual data cleaning for question 29
+
 
 ## Analyze Section 12: Data Sharing
 # TO DO
@@ -1223,3 +1303,5 @@ result_plot_skill_gaps
 result_caption_plot_skill_gaps
 result_plot_training_needs
 result_caption_plot_training_needs
+result_plot_digitization
+result_caption_plot_digitization
