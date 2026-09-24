@@ -759,7 +759,9 @@ result_num_does_engagement <- paste0(
     ", including: ",
     combine_words(organizations_do_engagement)
 )
-# Investigate types of community engagement most often done (Q19)
+# Map communities most often engaged with
+# TO DO: Requires manual data cleaning for question 18
+# Investigate types of community engagement most often done
 engagement_types_fixed_order <- c(
     "Education On Fire Management", "Illegal Wildlife Trade",
     "Protected Areas And Ecosystem Benefits", "Community Governance And Participation",
@@ -806,7 +808,7 @@ result_plot_engagement_types <- ggplot(df_engagement_types, aes(x = n, y = engag
     )
 result_caption_plot_engagement_types <- paste0(
     "Figure 8. Bar chart of how many surveyed organizations (n = ",
-    unique_organizations, ") most often do different types of community engagement.",
+    length(organizations_do_engagement), ") most often do different types of community engagement.",
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_engagement_types.jpeg", result_plot_engagement_types,
@@ -814,7 +816,19 @@ ggsave("outputs/result_plot_engagement_types.jpeg", result_plot_engagement_types
 )
 
 ## Analyze Section 9: Collaboration & Challenges
-# TO DO
+# See how many organizations do collaboration
+num_does_collaboration <- round(sum(df$collaboration == "Yes", na.rm = TRUE), 2)
+organizations_do_collaboration <- filter(df, df$collaboration == "Yes")$organizationName
+result_num_does_collaboration <- paste0(
+    "The number of organizations doing collaboration is ",
+    num_does_collaboration,
+    ", including: ",
+    combine_words(organizations_do_collaboration)
+)
+# Make connection diagram between organizations that collaborate
+# TO DO: Requires manual data cleaning for question 20
+# Examine major challenges for data collection
+# TO DO: Requires manual data cleaning for question 21
 
 ## Analyze Section 10: Technology & Skill Gaps
 # TO DO
@@ -857,3 +871,4 @@ result_num_does_patrol_data
 num_does_engagement
 result_plot_engagement_types
 result_caption_plot_engagement_types
+result_num_does_collaboration
