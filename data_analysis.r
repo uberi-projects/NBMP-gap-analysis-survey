@@ -31,6 +31,16 @@ fun_wrap_two_lines <- function(labels) {
         )
     }, character(1), USE.NAMES = FALSE)
 }
+fun_any_not_no <- function(x) {
+    # TRUE if a response contains any option other than "No"
+    vapply(x, function(val) {
+        if (is.na(val) || str_trim(val) == "") {
+            return(FALSE)
+        }
+        opts <- str_trim(str_split(val, ";")[[1]])
+        any(opts != "No")
+    }, logical(1))
+}
 
 ## Clean Data ---------------------------------------------------
 # Remove duplicates
@@ -103,15 +113,18 @@ fun_build_other_counts <- function(df, other_field_map) {
         response_counts <- tibble(response = cleaned) %>% count(response, name = "n")
         if (is.na(level2)) {
             if (is_new_taxon) {
+                # General write-in responses stand on their own as level 1 categories,
+                # rather than nesting under a generic "Other" summary bar.
                 rows[[length(rows) + 1]] <- tibble(
-                    level1 = level1, level2 = "", level3 = "", depth = 1, n = length(cleaned),
-                    is_other = TRUE
+                    level1 = response_counts$response, level2 = "", level3 = "",
+                    depth = 1, n = response_counts$n, is_other = TRUE
+                )
+            } else {
+                rows[[length(rows) + 1]] <- tibble(
+                    level1 = level1, level2 = response_counts$response, level3 = "",
+                    depth = 2, n = response_counts$n, is_other = TRUE
                 )
             }
-            rows[[length(rows) + 1]] <- tibble(
-                level1 = level1, level2 = response_counts$response, level3 = "",
-                depth = 2, n = response_counts$n, is_other = TRUE
-            )
         } else {
             rows[[length(rows) + 1]] <- tibble(
                 level1 = level1, level2 = level2, level3 = response_counts$response,
@@ -164,6 +177,20 @@ subtaxon_orders <- list(
 fun_build_rows <- function(counts_taxa, taxon_order, subtaxon_orders = list(), base_width = 0.9, shrink = 0.55) {
     rows <- list()
     for (t in taxon_order) {
+        if (t == "Other") {
+            # Expand the "Other" placeholder into standalone bars for each
+            # general write-in response, rather than a single nested bar.
+            other_rows <- counts_taxa %>%
+                filter(depth == 1, is_other, !(level1 %in% taxon_order)) %>%
+                arrange(desc(n))
+            for (i in seq_len(nrow(other_rows))) {
+                rows[[length(rows) + 1]] <- tibble(
+                    category = other_rows$level1[i], n = other_rows$n[i], depth = 1,
+                    width = base_width, family = other_rows$level1[i], is_other = TRUE
+                )
+            }
+            next
+        }
         top_row <- counts_taxa %>% filter(level1 == t, depth == 1)
         if (nrow(top_row) == 0) next # skip taxa nobody selected
         rows[[length(rows) + 1]] <- tibble(
@@ -762,6 +789,7 @@ result_num_does_engagement <- paste0(
 # Map communities most often engaged with
 # TO DO: Requires manual data cleaning for question 18
 # Investigate types of community engagement most often done
+# TO DO: This requires a lot of cleaning in the data
 engagement_types_fixed_order <- c(
     "Education On Fire Management", "Illegal Wildlife Trade",
     "Protected Areas And Ecosystem Benefits", "Community Governance And Participation",
@@ -831,7 +859,324 @@ result_num_does_collaboration <- paste0(
 # TO DO: Requires manual data cleaning for question 21
 
 ## Analyze Section 10: Technology & Skill Gaps
-# TO DO
+# Determine how many participants are seeing the section
+num_sees_section10 <- length(with(
+    df,
+    doesMonitoring %in% "Yes" |
+        fun_any_not_no(ecosystemHealthData) |
+        habitatRestoration %in% "Yes" |
+        fun_any_not_no(pollutionData) |
+        invasiveSpecies %in% "Yes" |
+        ecosystemServices %in% "Yes" |
+        communityEcosystemServices %in% "Yes" |
+        fun_any_not_no(climateResiliency)
+))
+# Investigate types of data tools most often used
+# TO DO: This requires a lot of cleaning in the data
+data_tools_fixed_order <- c(
+    "Printed Datasheets", "Smart",
+    "Kobotoolbox", "Survey123"
+)
+df_data_tools <- df %>%
+    select(dataTools) %>%
+    separate_rows(dataTools, sep = ";\\s*") %>%
+    mutate(dataTools = fun_clean_text(dataTools)) %>%
+    filter(!is.na(dataTools), dataTools != "Other") %>%
+    group_by(dataTools) %>%
+    summarise(n = n(), .groups = "drop") %>%
+    mutate(is_other = FALSE)
+data_tools_other <- fun_clean_text(df$dataToolsOther)
+data_tools_other <- data_tools_other[!is.na(data_tools_other)]
+df_data_tools_other <- tibble(dataTools = data_tools_other) %>%
+    count(dataTools, name = "n") %>%
+    mutate(is_other = TRUE)
+df_data_tools <- bind_rows(df_data_tools, df_data_tools_other)
+data_tools_order <- rev(c(
+    data_tools_fixed_order,
+    sort(unique(df_data_tools_other$dataTools))
+))
+df_data_tools <- df_data_tools %>%
+    mutate(
+        dataTools = factor(dataTools, levels = data_tools_order),
+        fill_category = if_else(is_other, "other", "normal")
+    )
+result_plot_data_tools <- ggplot(df_data_tools, aes(x = n, y = dataTools, fill = fill_category)) +
+    geom_col(orientation = "y", color = "black") +
+    scale_fill_manual(
+        values = c("normal" = "#382e6b", "other" = "#456b2e"),
+        guide = "none"
+    ) +
+    scale_y_discrete(labels = fun_wrap_two_lines) +
+    labs(
+        x = "Number of responses", y = "Tool Type"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_text(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+result_caption_plot_data_tools <- paste0(
+    "Figure 8. Bar chart of how many surveyed organizations (n = ",
+    num_sees_section10, ") use certain data collection tools.",
+    " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
+)
+ggsave("outputs/result_plot_data_tools.jpeg", result_plot_data_tools,
+    units = "in", height = 23, width = 18
+)
+# Investigate technological gaps
+# TO DO: This requires a lot of cleaning in the data
+tech_gaps_fixed_order <- c(
+    "Lack Of Smart Devices", "Lack Of Survey Equipment",
+    "Lack Of Drones For Mapping", "Lack Of Cloud Storage"
+)
+counts_tech_gaps <- df %>%
+    select(techGaps) %>%
+    separate_rows(techGaps, sep = ";\\s*") %>%
+    mutate(techGaps = fun_clean_text(techGaps)) %>%
+    filter(!is.na(techGaps)) %>%
+    count(techGaps, name = "n") %>%
+    transmute(level1 = techGaps, level2 = "", level3 = "", depth = 1, n, is_other = FALSE)
+tech_gaps_other_field_map <- tribble(
+    ~column, ~level1, ~level2, ~is_new_taxon,
+    "techGapsOther", "Other", NA_character_, TRUE,
+    "surveyEquipmentSpecify", "Lack Of Survey Equipment", NA_character_, FALSE
+)
+counts_tech_gaps <- bind_rows(counts_tech_gaps, fun_build_other_counts(df, tech_gaps_other_field_map))
+tech_gaps_order <- c(tech_gaps_fixed_order, "Other", "None")
+df_tech_gaps_plot <- fun_build_rows(counts_tech_gaps, tech_gaps_order) %>%
+    mutate(
+        depth = factor(depth),
+        fill_group = case_when(
+            category == "None" ~ "none",
+            is_other ~ paste0("other_", depth),
+            TRUE ~ as.character(depth)
+        )
+    )
+df_tech_gaps_plot <- df_tech_gaps_plot %>%
+    mutate(
+        touch_step = width / 2 + lag(width) / 2,
+        step = case_when(
+            row_number() == 1 ~ 0,
+            family != lag(family) ~ touch_step + var_family_gap,
+            TRUE ~ touch_step
+        ),
+        y_pos = -cumsum(step)
+    )
+df_tech_gaps_plot <- df_tech_gaps_plot %>%
+    mutate(category_label = paste0(
+        "<span style='font-size:", label_size_pt[as.character(depth)], "pt'>",
+        str_replace_all(fun_wrap_two_lines(category), "\n", "<br>"), "</span>"
+    ))
+result_plot_tech_gaps <- ggplot(df_tech_gaps_plot, aes(x = n, y = y_pos, width = width, fill = fill_group)) +
+    geom_col(orientation = "y", color = "black") +
+    scale_fill_manual(
+        values = c(
+            "1" = "#382e6b", "2" = "#766da7",
+            "other_1" = "#456b2e", "other_2" = "#729a5a",
+            "none" = "#6b4b2e"
+        ),
+        guide = "none"
+    ) +
+    scale_y_continuous(
+        breaks = df_tech_gaps_plot$y_pos, labels = df_tech_gaps_plot$category_label,
+        expand = expansion(add = var_family_gap)
+    ) +
+    labs(
+        x = "Number of responses", y = "Technological Gap"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_markdown(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+result_caption_plot_tech_gaps <- paste0(
+    "Figure 9. Bar chart of how many surveyed organizations (n = ",
+    num_sees_section10,
+    ") report different technological gaps, with taxon-specific free-text responses nested under their related gap and general write-in gaps shown as their own standalone bars. ",
+    " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
+)
+ggsave("outputs/result_plot_tech_gaps.jpeg", result_plot_tech_gaps,
+    units = "in", height = 23, width = 18
+)
+# Examine data processing software
+# TO DO: Requires manual data cleaning for question 24
+# Examine missing data processing software and subscriptions
+# TO DO: Requires manual data cleaning for question 25
+# Examine technical/training skill gaps
+# TO DO: This requires a lot of cleaning in the data
+skill_gaps_fixed_order <- c(
+    "Limited Data Analysis Skills", "Limited Gis Access", "Limited Technical Support",
+    "High Staff Turnover Leading To Constant Retraining Needs",
+    "Limited Technical Report Writing Skills",
+    "Limited Skills For Publishing In Peer-Review Journals",
+    "Limited Project Development And Management Skills"
+)
+counts_skill_gaps <- df %>%
+    select(skillGaps) %>%
+    separate_rows(skillGaps, sep = ";\\s*") %>%
+    mutate(skillGaps = fun_clean_text(skillGaps)) %>%
+    filter(!is.na(skillGaps)) %>%
+    count(skillGaps, name = "n") %>%
+    transmute(level1 = skillGaps, level2 = "", level3 = "", depth = 1, n, is_other = FALSE)
+skill_gaps_other_field_map <- tribble(
+    ~column, ~level1, ~level2, ~is_new_taxon,
+    "skillGapsOther", "Other", NA_character_, TRUE
+)
+counts_skill_gaps <- bind_rows(counts_skill_gaps, fun_build_other_counts(df, skill_gaps_other_field_map))
+skill_gaps_order <- c(skill_gaps_fixed_order, "Other", "None")
+df_skill_gaps_plot <- fun_build_rows(counts_skill_gaps, skill_gaps_order) %>%
+    mutate(
+        depth = factor(depth),
+        fill_group = case_when(
+            category == "None" ~ "none",
+            is_other ~ paste0("other_", depth),
+            TRUE ~ as.character(depth)
+        )
+    )
+df_skill_gaps_plot <- df_skill_gaps_plot %>%
+    mutate(
+        touch_step = width / 2 + lag(width) / 2,
+        step = case_when(
+            row_number() == 1 ~ 0,
+            family != lag(family) ~ touch_step + var_family_gap,
+            TRUE ~ touch_step
+        ),
+        y_pos = -cumsum(step)
+    )
+df_skill_gaps_plot <- df_skill_gaps_plot %>%
+    mutate(category_label = paste0(
+        "<span style='font-size:", label_size_pt[as.character(depth)], "pt'>",
+        str_replace_all(fun_wrap_two_lines(category), "\n", "<br>"), "</span>"
+    ))
+result_plot_skill_gaps <- ggplot(df_skill_gaps_plot, aes(x = n, y = y_pos, width = width, fill = fill_group)) +
+    geom_col(orientation = "y", color = "black") +
+    scale_fill_manual(
+        values = c(
+            "1" = "#382e6b", "2" = "#766da7",
+            "other_1" = "#456b2e", "other_2" = "#729a5a",
+            "none" = "#6b4b2e"
+        ),
+        guide = "none"
+    ) +
+    scale_y_continuous(
+        breaks = df_skill_gaps_plot$y_pos, labels = df_skill_gaps_plot$category_label,
+        expand = expansion(add = var_family_gap)
+    ) +
+    labs(
+        x = "Number of responses", y = "Skill Gap"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_markdown(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+result_caption_plot_skill_gaps <- paste0(
+    "Figure 10. Bar chart of how many surveyed organizations (n = ",
+    num_sees_section10,
+    ") report different technical/training skill gaps.",
+    " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
+)
+ggsave("outputs/result_plot_skill_gaps.jpeg", result_plot_skill_gaps,
+    units = "in", height = 23, width = 18
+)
+# Investigate training by staff needed
+# TO DO: This requires a lot of cleaning in the data
+training_needs_fixed_order <- c(
+    "Technical Training", "Research And Monitoring Development", "Equipment Operation",
+    "Software", "Data Cleaning And Entering (For Existing Databases Or Systems)",
+    "Data Interpretation And Analysis", "Technical And Scientific Report Writing"
+)
+df_long_training_needs <- select(df, trainingNeeds) %>%
+    separate_rows(trainingNeeds, sep = ";\\s*") %>%
+    mutate(trainingNeeds = str_trim(trainingNeeds)) %>%
+    filter(trainingNeeds != "")
+levels_split_training_needs <- str_split_fixed(df_long_training_needs$trainingNeeds, " - ", 2)
+df_long_training_needs <- df_long_training_needs %>%
+    mutate(
+        level1 = str_trim(levels_split_training_needs[, 1]),
+        level2 = str_trim(levels_split_training_needs[, 2]),
+        level3 = "",
+        depth  = 1 + (level2 != ""),
+        level1 = fun_clean_text(level1),
+        level2 = fun_clean_text(level2),
+        level3 = fun_clean_text(level3)
+    )
+counts_training_needs <- df_long_training_needs %>%
+    count(level1, level2, level3, depth, name = "n") %>%
+    mutate(is_other = FALSE)
+training_needs_other_field_map <- tribble(
+    ~column, ~level1, ~level2, ~is_new_taxon,
+    "trainingNeedsOther", "Other", NA_character_, TRUE,
+    "technicalTrainingSpecify", "Technical Training", NA_character_, FALSE
+)
+counts_training_needs <- bind_rows(counts_training_needs, fun_build_other_counts(df, training_needs_other_field_map))
+subtaxon_order_software <- c(
+    "Data Processing Software", "Data Analysis Software",
+    "Geospatial Software", "Equipment Operation Software"
+)
+training_needs_order <- c(training_needs_fixed_order, "Other", "None")
+df_training_needs_plot <- fun_build_rows(
+    counts_training_needs, training_needs_order,
+    subtaxon_orders = list("Software" = subtaxon_order_software)
+) %>%
+    mutate(
+        depth = factor(depth),
+        fill_group = case_when(
+            category == "None" ~ "none",
+            is_other ~ paste0("other_", depth),
+            TRUE ~ as.character(depth)
+        )
+    )
+df_training_needs_plot <- df_training_needs_plot %>%
+    mutate(
+        touch_step = width / 2 + lag(width) / 2,
+        step = case_when(
+            row_number() == 1 ~ 0,
+            family != lag(family) ~ touch_step + var_family_gap,
+            TRUE ~ touch_step
+        ),
+        y_pos = -cumsum(step)
+    )
+df_training_needs_plot <- df_training_needs_plot %>%
+    mutate(category_label = paste0(
+        "<span style='font-size:", label_size_pt[as.character(depth)], "pt'>",
+        str_replace_all(fun_wrap_two_lines(category), "\n", "<br>"), "</span>"
+    ))
+result_plot_training_needs <- ggplot(df_training_needs_plot, aes(x = n, y = y_pos, width = width, fill = fill_group)) +
+    geom_col(orientation = "y", color = "black") +
+    scale_fill_manual(
+        values = c(
+            "1" = "#382e6b", "2" = "#766da7",
+            "other_1" = "#456b2e", "other_2" = "#729a5a",
+            "none" = "#6b4b2e"
+        ),
+        guide = "none"
+    ) +
+    scale_y_continuous(
+        breaks = df_training_needs_plot$y_pos, labels = df_training_needs_plot$category_label,
+        expand = expansion(add = var_family_gap)
+    ) +
+    labs(
+        x = "Number of responses", y = "Training Need"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_markdown(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+result_caption_plot_training_needs <- paste0(
+    "Figure 11. Bar chart of how many surveyed organizations (n = ",
+    num_sees_section10,
+    ") report different staff training needs.",
+    " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
+)
+ggsave("outputs/result_plot_training_needs.jpeg", result_plot_training_needs,
+    units = "in", height = 23, width = 18
+)
 
 ## Analyze Section 11: Data Management
 # TO DO
@@ -872,3 +1217,9 @@ num_does_engagement
 result_plot_engagement_types
 result_caption_plot_engagement_types
 result_num_does_collaboration
+result_plot_tech_gaps
+result_caption_plot_tech_gaps
+result_plot_skill_gaps
+result_caption_plot_skill_gaps
+result_plot_training_needs
+result_caption_plot_training_needs
