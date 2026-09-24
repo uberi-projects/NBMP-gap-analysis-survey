@@ -1260,9 +1260,171 @@ ggsave("outputs/result_plot_digitization.jpeg", result_plot_digitization,
 # Explore whether data is still undigitized
 # TO DO: Requires manual data cleaning for question 29
 
-
 ## Analyze Section 12: Data Sharing
-# TO DO
+# Determine how many participants are seeing the section
+num_sees_section12 <- length(with(
+    df,
+    doesMonitoring %in% "Yes" |
+        fun_any_not_no(ecosystemHealthData) |
+        habitatRestoration %in% "Yes" |
+        fun_any_not_no(pollutionData) |
+        invasiveSpecies %in% "Yes" |
+        ecosystemServices %in% "Yes" |
+        communityEcosystemServices %in% "Yes" |
+        fun_any_not_no(climateResiliency)
+))
+# See if participants submit their reports to the GoB
+num_does_report_submission <- round(sum(df$govReports == "Yes" | df$govReports == "No", na.rm = TRUE), 2)
+organizations_do_report_submission <- filter(df, df$govReports == "Yes")$organizationName
+organizations_do_no_report_submission <- filter(df, df$govReports == "No")$organizationName
+organizations_do_no_report_at_all <- filter(df, df$govReports == "We do not do reporting")$organizationName
+result_num_does_report_submission <- paste0(
+    "The number of organizations that do reporting is ",
+    num_does_report_submission,
+    ". Organizations that submit their reports to the Government of Belize include: ",
+    combine_words(organizations_do_report_submission),
+    ". Organizations that do not submit their reports to the Government of Belize include: ",
+    combine_words(organizations_do_no_report_submission),
+    ". Organizations that do no report writing include: ",
+    combine_words(organizations_do_no_report_at_all)
+)
+# See if participants publish their reports
+num_does_report_publish <- round(sum(df$publishOnline == "Yes", na.rm = TRUE), 2)
+organizations_do_report_publish <- filter(df, df$publishOnline == "Yes")$organizationName
+result_num_does_report_publish <- paste0(
+    "The number of organizations that publish their reports online is ",
+    num_does_report_publish,
+    ", including: ",
+    combine_words(organizations_do_report_publish)
+)
+# See how often participants publish their reports
+df_publish_freq <- df %>%
+    select(organizationName, publishOnlineFrequency) %>%
+    group_by(publishOnlineFrequency) %>%
+    summarize(n = n()) %>%
+    filter(publishOnlineFrequency != "") %>%
+    mutate(publishFreqCombo = paste0(n, " responded ", publishOnlineFrequency))
+result_freq_publish_online <- paste0(
+    "These organizations were then asked how frequently they publish these reports. ",
+    combine_words(df_publish_freq$publishFreqCombo), "."
+)
+# See if participants publish their papers
+num_does_paper_publish <- round(sum(df$publishPapers == "Yes", na.rm = TRUE), 2)
+organizations_do_paper_publish <- filter(df, df$publishPapers == "Yes")$organizationName
+result_num_does_paper_publish <- paste0(
+    "The number of organizations that publish peer-reviewed papers is ",
+    num_does_paper_publish,
+    ", including: ",
+    combine_words(organizations_do_paper_publish)
+)
+# See how often participants publish peer-reviewed papers
+df_paper_publish_freq <- df %>%
+    select(organizationName, publishPapersFrequency) %>%
+    group_by(publishPapersFrequency) %>%
+    summarize(n = n()) %>%
+    filter(publishPapersFrequency != "") %>%
+    mutate(publishFreqCombo = paste0(n, " responded ", publishPapersFrequency))
+result_freq_publish_paper <- paste0(
+    "These organizations were then asked how frequently they publish these papers. ",
+    combine_words(df_paper_publish_freq$publishFreqCombo), "."
+)
+# See if participants have a public data dashboard
+df_data_dashboard <- df %>%
+    select(organizationName, publicDashboard) %>%
+    group_by(publicDashboard) %>%
+    summarize(n = n()) %>%
+    filter(publicDashboard != "")
+result_num_data_dashboard <- paste0(
+    "Organizations were asked whether they have a public data dashboard which their data can be viewed on. ",
+    filter(df_data_dashboard, publicDashboard == "Yes")$n,
+    " responded that they do, and ",
+    filter(df_data_dashboard, publicDashboard == "No")$n,
+    " responded that they do not."
+)
+# See if participants share datasets to organizations
+# TO DO: Requires manual data cleaning for question 34
+df_data_share <- df %>%
+    select(organizationName, shareData) %>%
+    group_by(shareData) %>%
+    summarize(n = n()) %>%
+    filter(shareData != "")
+df_data_share_recipients <- df %>%
+    select(shareDataWhom) %>%
+    group_by(shareDataWhom) %>%
+    summarise(n = n()) %>%
+    filter(shareDataWhom != "") %>%
+    mutate(shareDataWhomQuote = paste0('"', shareDataWhom, '"'))
+data_share_recipients <- combine_words(unique(df_data_share_recipients$shareDataWhomQuote))
+result_num_data_share <- paste0(
+    "Organizations were asked whether they share data outside their organization. ",
+    filter(df_data_share, shareData == "Yes")$n,
+    " responded that they do, and ",
+    filter(df_data_share, shareData == "No")$n,
+    " responded that they do not. Responses on who the data is shared to include: ",
+    data_share_recipients
+)
+# See if participants share datasets to repositories
+# TO DO: Requires manual data cleaning for question 35
+df_data_share_repository <- df %>%
+    select(organizationName, onlineRepos) %>%
+    group_by(onlineRepos) %>%
+    summarize(n = n()) %>%
+    filter(onlineRepos != "")
+df_data_share_repository_identities <- df %>%
+    select(onlineReposWhichOnes) %>%
+    group_by(onlineReposWhichOnes) %>%
+    summarise(n = n()) %>%
+    filter(onlineReposWhichOnes != "") %>%
+    mutate(onlineReposWhichOnesQuote = paste0('"', onlineReposWhichOnes, '"'))
+data_share_repository_identities <- combine_words(unique(df_data_share_repository_identities$onlineReposWhichOnesQuote))
+result_num_data_share_repository <- paste0(
+    "Organizations were asked whether they share data to any repositories. ",
+    filter(df_data_share_repository, onlineRepos == "Yes")$n,
+    " responded that they do, and ",
+    filter(df_data_share_repository, onlineRepos == "No")$n,
+    " responded that they do not. Responses on which repositories are shared to includes: ",
+    data_share_repository_identities
+)
+# Organize data sharing responses
+num_does_report_writing_no <- sum(df$govReports == "We do not do reporting", na.rm = TRUE)
+num_does_report_submission_no <- length(organizations_do_no_report_submission)
+num_does_report_publish_no <- sum(df$publishOnline == "No", na.rm = TRUE)
+num_does_paper_publish_no <- sum(df$publishPapers == "No", na.rm = TRUE)
+result_df_data_sharing_collated <- tibble(
+    `Sharing Method` = c(
+        "Writing Reports",
+        "Submitting Reports to the GoB",
+        "Publishing Reports",
+        "Publishing Papers",
+        "Using Public Dashboard",
+        "Sharing Data Directly with Others",
+        "Share Data on Repositories"
+    ),
+    yes = c(
+        num_does_report_submission,
+        length(organizations_do_report_submission),
+        num_does_report_publish,
+        num_does_paper_publish,
+        filter(df_data_dashboard, publicDashboard == "Yes")$n,
+        filter(df_data_share, shareData == "Yes")$n,
+        filter(df_data_share_repository, onlineRepos == "Yes")$n
+    ),
+    no = c(
+        num_does_report_writing_no,
+        num_does_report_submission_no,
+        num_does_report_publish_no,
+        num_does_paper_publish_no,
+        filter(df_data_dashboard, publicDashboard == "No")$n,
+        filter(df_data_share, shareData == "No")$n,
+        filter(df_data_share_repository, onlineRepos == "No")$n
+    )
+) %>%
+    mutate(
+        Yes = paste0(yes, " - ", round(yes / (yes + no) * 100, 1), "%"),
+        No = paste0(no, " - ", round(no / (yes + no) * 100, 1), "%")
+    ) %>%
+    select(`Sharing Method`, Yes, No)
+write.csv(result_df_data_sharing_collated, "outputs/result_df_data_sharing_collated.csv")
 
 ## Analyze Section 13: National Biodiversity Coordination
 # TO DO
@@ -1271,37 +1433,47 @@ ggsave("outputs/result_plot_digitization.jpeg", result_plot_digitization,
 # TO DO
 
 ## Present Results
-result_unique_organizations
-result_proportion_does_biodiversity_monitoring
+cat(result_unique_organizations)
+cat(result_proportion_does_biodiversity_monitoring)
 result_plot_taxa
-result_caption_plot_taxa
+cat(result_caption_plot_taxa)
 result_plot_ecosystems
-result_caption_plot_ecosystems
+cat(result_caption_plot_ecosystems)
 result_plot_ecosystem_health
-result_caption_plot_ecosystem_health
-result_num_does_habitat_restoration_studying
+cat(result_caption_plot_ecosystem_health)
+cat(result_num_does_habitat_restoration_studying)
 result_plot_pollution
-result_caption_plot_pollution
-result_num_does_invasive_species_studying
+cat(result_caption_plot_pollution)
+cat(result_num_does_invasive_species_studying)
 result_plot_ecosystem_services
-result_caption_plot_ecosystem_services
-result_num_does_comm_services_relations_studying
-result_num_does_climate_resiliency
-result_num_does_enforcement
+cat(result_caption_plot_ecosystem_services)
+cat(result_num_does_comm_services_relations_studying)
+cat(result_num_does_climate_resiliency)
+cat(result_num_does_enforcement)
 result_plot_enforcement_activities
-result_plot_enforcement_activities
+cat(result_caption_plot_enforcement_activities)
 result_plot_illegal_activities
-result_caption_plot_illegal_activities
-result_num_does_patrol_data
-num_does_engagement
+cat(result_caption_plot_illegal_activities)
+cat(result_num_does_patrol_data)
+cat(result_num_does_engagement)
 result_plot_engagement_types
-result_caption_plot_engagement_types
-result_num_does_collaboration
+cat(result_caption_plot_engagement_types)
+cat(result_num_does_collaboration)
+result_plot_data_tools
+cat(result_caption_plot_data_tools)
 result_plot_tech_gaps
-result_caption_plot_tech_gaps
+cat(result_caption_plot_tech_gaps)
 result_plot_skill_gaps
-result_caption_plot_skill_gaps
+cat(result_caption_plot_skill_gaps)
 result_plot_training_needs
-result_caption_plot_training_needs
+cat(result_caption_plot_training_needs)
 result_plot_digitization
-result_caption_plot_digitization
+cat(result_caption_plot_digitization)
+cat(result_num_does_report_submission)
+cat(result_num_does_report_publish)
+cat(result_freq_publish_online)
+cat(result_num_does_paper_publish)
+cat(result_freq_publish_paper)
+cat(result_num_data_dashboard)
+cat(result_num_data_share)
+result_df_data_sharing_collated
