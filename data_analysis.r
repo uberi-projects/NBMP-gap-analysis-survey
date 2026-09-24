@@ -15,6 +15,22 @@ fun_clean_text <- function(x) {
     x <- na_if(x, "")
     str_to_title(x)
 }
+fun_wrap_two_lines <- function(labels) {
+    vapply(labels, function(label) {
+        if (is.na(label) || !str_detect(label, "\\s")) {
+            return(label)
+        }
+        words <- str_split(label, " ")[[1]]
+        # length of the label if joined through each word, used to find the midpoint word
+        cum_len <- cumsum(nchar(words) + 1) - 1
+        split_after <- which.min(abs(cum_len - nchar(label) / 2))
+        split_after <- max(1, min(split_after, length(words) - 1))
+        paste0(
+            paste(words[seq_len(split_after)], collapse = " "), "\n",
+            paste(words[(split_after + 1):length(words)], collapse = " ")
+        )
+    }, character(1), USE.NAMES = FALSE)
+}
 
 ## Clean Data ---------------------------------------------------
 # Remove duplicates
@@ -734,7 +750,68 @@ result_num_does_patrol_data <- paste0(
 )
 
 ## Analyze Section 8: Mainstreaming
-# TO DO
+# See how many organizations do engagement
+num_does_engagement <- round(sum(df$communityEngagement == "Yes", na.rm = TRUE), 2)
+organizations_do_engagement <- filter(df, df$communityEngagement == "Yes")$organizationName
+result_num_does_engagement <- paste0(
+    "The number of organizations doing community engagement is ",
+    num_does_engagement,
+    ", including: ",
+    combine_words(organizations_do_engagement)
+)
+# Investigate types of community engagement most often done (Q19)
+engagement_types_fixed_order <- c(
+    "Education On Fire Management", "Illegal Wildlife Trade",
+    "Protected Areas And Ecosystem Benefits", "Community Governance And Participation",
+    "Project Development And Implementation"
+)
+df_engagement_types <- df %>%
+    select(engagementTypes) %>%
+    separate_rows(engagementTypes, sep = ";\\s*") %>%
+    mutate(engagementTypes = fun_clean_text(engagementTypes)) %>%
+    filter(!is.na(engagementTypes), engagementTypes != "Other") %>%
+    group_by(engagementTypes) %>%
+    summarise(n = n(), .groups = "drop") %>%
+    mutate(is_other = FALSE)
+engagement_types_other <- fun_clean_text(df$engagementTypesOther)
+engagement_types_other <- engagement_types_other[!is.na(engagement_types_other)]
+df_engagement_types_other <- tibble(engagementTypes = engagement_types_other) %>%
+    count(engagementTypes, name = "n") %>%
+    mutate(is_other = TRUE)
+df_engagement_types <- bind_rows(df_engagement_types, df_engagement_types_other)
+engagement_types_order <- rev(c(
+    engagement_types_fixed_order,
+    sort(unique(df_engagement_types_other$engagementTypes))
+))
+df_engagement_types <- df_engagement_types %>%
+    mutate(
+        engagementTypes = factor(engagementTypes, levels = engagement_types_order),
+        fill_category = if_else(is_other, "other", "normal")
+    )
+result_plot_engagement_types <- ggplot(df_engagement_types, aes(x = n, y = engagementTypes, fill = fill_category)) +
+    geom_col(orientation = "y", color = "black") +
+    scale_fill_manual(
+        values = c("normal" = "#382e6b", "other" = "#456b2e"),
+        guide = "none"
+    ) +
+    scale_y_discrete(labels = fun_wrap_two_lines) +
+    labs(
+        x = "Number of responses", y = "Engagement Type"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_text(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+result_caption_plot_engagement_types <- paste0(
+    "Figure 8. Bar chart of how many surveyed organizations (n = ",
+    unique_organizations, ") most often do different types of community engagement.",
+    " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
+)
+ggsave("outputs/result_plot_engagement_types.jpeg", result_plot_engagement_types,
+    units = "in", height = 23, width = 18
+)
 
 ## Analyze Section 9: Collaboration & Challenges
 # TO DO
@@ -777,3 +854,6 @@ result_plot_enforcement_activities
 result_plot_illegal_activities
 result_caption_plot_illegal_activities
 result_num_does_patrol_data
+num_does_engagement
+result_plot_engagement_types
+result_caption_plot_engagement_types
