@@ -1427,7 +1427,60 @@ result_df_data_sharing_collated <- tibble(
 write.csv(result_df_data_sharing_collated, "outputs/result_df_data_sharing_collated.csv")
 
 ## Analyze Section 13: National Biodiversity Coordination
-# TO DO
+# See if participants are involved in national working groups
+# TO DO: Requires manual data cleaning for question 37
+df_working_group_member <- df %>%
+    select(organizationName, workingGroupsInvolved) %>%
+    group_by(workingGroupsInvolved) %>%
+    summarize(n = n()) %>%
+    filter(workingGroupsInvolved != "")
+df_working_group_member_identities <- df %>%
+    select(workingGroupsListText) %>%
+    group_by(workingGroupsListText) %>%
+    summarise(n = n()) %>%
+    filter(workingGroupsListText != "") %>%
+    mutate(workingGroupsListTextQuote = paste0('"', workingGroupsListText, '"'))
+working_group_member_identities <- combine_words(unique(df_working_group_member_identities$workingGroupsListTextQuote))
+result_num_working_group_member <- paste0(
+    "Organizations were asked whether they are involved in any biodiversity national working groups. ",
+    filter(df_working_group_member, workingGroupsInvolved == "Yes")$n,
+    " responded that they do, and ",
+    filter(df_working_group_member, workingGroupsInvolved == "No")$n,
+    " responded that they do not. Responses on which working groups includes: ",
+    working_group_member_identities
+)
+# See which organizations lead which national working groups
+df_working_group_leader <- df %>%
+    filter(workingGroupsLeading != "No" & workingGroupsLeading != "") %>%
+    select(organizationName, workingGroupsLeading, workingGroupsLeadingListText) %>%
+    mutate(workingGroupLeaderOrgs = paste0(organizationName, " leads ", workingGroupsLeadingListText))
+result_working_group_leaders <- paste0(
+    "Some organizations run these working groups. ",
+    combine_words(df_working_group_leader$workingGroupLeaderOrgs),
+    "."
+)
+# See if participants are involved in task forces
+# TO DO: Requires manual data cleaning for question 37
+df_task_force_member <- df %>%
+    select(organizationName, taskForceInvolved) %>%
+    group_by(taskForceInvolved) %>%
+    summarize(n = n()) %>%
+    filter(taskForceInvolved != "")
+df_task_force_member_identities <- df %>%
+    select(taskForceListText) %>%
+    group_by(taskForceListText) %>%
+    summarise(n = n()) %>%
+    filter(taskForceListText != "") %>%
+    mutate(taskForceListTextQuote = paste0('"', taskForceListText, '"'))
+task_force_member_identities <- combine_words(unique(df_task_force_member_identities$taskForceListTextQuote))
+result_num_task_force_member <- paste0(
+    "Organizations were asked whether they are involved in any biodiversity task forces. ",
+    filter(df_task_force_member, taskForceInvolved == "Yes")$n,
+    " responded that they do, and ",
+    filter(df_task_force_member, taskForceInvolved == "No")$n,
+    " responded that they do not. Responses on which task forces includes: ",
+    task_force_member_identities
+)
 
 ## Analyze Section 14: Significance & Interest
 # TO DO
@@ -1477,3 +1530,6 @@ cat(result_freq_publish_paper)
 cat(result_num_data_dashboard)
 cat(result_num_data_share)
 result_df_data_sharing_collated
+cat(result_num_working_group_member)
+cat(result_working_group_leaders)
+cat(result_num_task_force_member)
