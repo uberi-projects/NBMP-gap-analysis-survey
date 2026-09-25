@@ -48,10 +48,13 @@ df <- df %>%
     select(-timestamp) %>%
     distinct()
 
+## Set Figure Number Variable ---------------------------------------------------
+fig_num <- 0
+
 ## Analyze Section 2: Organization Information
 # Determine which organizations participated and how many
-unique_organizations <- nrow(df)
 unique_organization_names <- unique(df$organizationName)
+unique_organizations <- length(unique_organization_names)
 result_unique_organizations <- paste0(
     "Participating organizations totaled ",
     unique_organizations,
@@ -98,7 +101,7 @@ other_field_map <- tribble(
     "plantsOther", "Plants", NA_character_, FALSE,
     "freshwaterMacroSpecify", "Freshwater Macroinvertebrate", NA_character_, FALSE,
     "amphibiansSpecify", "Amphibians", NA_character_, FALSE,
-    "marineFishOther", "Fish", "Marine fish", FALSE
+    "marineFishOther", "Fish", "Marine Fish", FALSE
 )
 fun_build_other_counts <- function(df, other_field_map) {
     rows <- list()
@@ -268,8 +271,9 @@ result_plot_taxa <- ggplot(df_long_taxa_plot, aes(x = n, y = y_pos, width = widt
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_taxa <- paste0(
-    "Figure 1. Bar chart of how many surveyed organizations (n = ",
+    "Figure ", fig_num, ". Bar chart of how many surveyed organizations (n = ",
     unique_organizations,
     ") survey each biodiversity grouping, with parent groupings attached to lower-level children groupings. ",
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
@@ -305,8 +309,9 @@ result_plot_ecosystems <- ggplot(df_ecosystems, aes(x = n, y = ecosystems)) +
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_ecosystems <- paste0(
-    "Figure 2. Bar chart of how many surveyed organizations (n = ",
+    "Figure ", fig_num, ". Bar chart of how many surveyed organizations (n = ",
     unique_organizations, ") survey each ecosystem."
 )
 ggsave("outputs/result_plot_ecosystems.jpeg", result_plot_ecosystems,
@@ -368,8 +373,9 @@ result_plot_ecosystem_health <- ggplot(df_ecosystem_health, aes(x = n, y = ecosy
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_ecosystem_health <- paste0(
-    "Figure 3. Bar chart of how many surveyed organizations (n = ",
+    "Figure ", fig_num, ". Bar chart of how many surveyed organizations (n = ",
     unique_organizations,
     ") collect different types of ecosystem health data.",
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
@@ -435,8 +441,9 @@ result_plot_pollution <- ggplot(df_pollution, aes(x = n, y = pollutionData, fill
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_pollution <- paste0(
-    "Figure 4. Bar chart of how many surveyed organizations (n = ",
+    "Figure ", fig_num, ". Bar chart of how many surveyed organizations (n = ",
     unique_organizations, ") collect different types of pollution data.",
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
@@ -510,8 +517,9 @@ result_plot_ecosystem_services <- ggplot(df_ecosystem_services, aes(x = n, y = e
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_ecosystem_services <- paste0(
-    "Figure 5. Bar chart of how many surveyed organizations (n = ",
+    "Figure ", fig_num, ". Bar chart of how many surveyed organizations (n = ",
     unique_organizations, ") collect different types of ecosystem services data.",
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
@@ -643,8 +651,9 @@ result_plot_enforcement_activities <- ggplot(df_long_enforcement_plot, aes(x = n
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_enforcement_activities <- paste0(
-    "Figure 6. Bar chart of enforcement activities (n = ",
+    "Figure ", fig_num, ". Bar chart of enforcement activities (n = ",
     length(organizations_do_enforcement), ") done by those that do enforcement,",
     " with parent groupings (e.g., Incident Response) attached to lower-level children groupings.",
     " Parent bars reflect the number of organizations selecting at least one child activity in that grouping."
@@ -738,8 +747,9 @@ result_plot_illegal_activities <- ggplot(df_long_illegal_activities_plot, aes(x 
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_illegal_activities <- paste0(
-    "Figure 7. Bar chart of illegal activities (n = ",
+    "Figure ", fig_num, ". Bar chart of illegal activities (n = ",
     length(organizations_do_enforcement), ") encountered by those that do enforcement,",
     " with parent groupings (e.g., Wildlife Extraction) attached to lower-level children groupings."
 )
@@ -834,8 +844,9 @@ result_plot_engagement_types <- ggplot(df_engagement_types, aes(x = n, y = engag
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_engagement_types <- paste0(
-    "Figure 8. Bar chart of how many surveyed organizations (n = ",
+    "Figure ", fig_num, ". Bar chart of how many surveyed organizations (n = ",
     length(organizations_do_engagement), ") most often do different types of community engagement.",
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
@@ -916,8 +927,9 @@ result_plot_data_tools <- ggplot(df_data_tools, aes(x = n, y = dataTools, fill =
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_data_tools <- paste0(
-    "Figure 8. Bar chart of how many surveyed organizations (n = ",
+    "Figure ", fig_num, ". Bar chart of how many surveyed organizations (n = ",
     num_sees_section10, ") use certain data collection tools.",
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
@@ -991,8 +1003,9 @@ result_plot_tech_gaps <- ggplot(df_tech_gaps_plot, aes(x = n, y = y_pos, width =
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_tech_gaps <- paste0(
-    "Figure 9. Bar chart of how many surveyed organizations (n = ",
+    "Figure ", fig_num, ". Bar chart of how many surveyed organizations (n = ",
     num_sees_section10,
     ") report different technological gaps, with taxon-specific free-text responses nested under their related gap and general write-in gaps shown as their own standalone bars. ",
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
@@ -1073,8 +1086,9 @@ result_plot_skill_gaps <- ggplot(df_skill_gaps_plot, aes(x = n, y = y_pos, width
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_skill_gaps <- paste0(
-    "Figure 10. Bar chart of how many surveyed organizations (n = ",
+    "Figure ", fig_num, ". Bar chart of how many surveyed organizations (n = ",
     num_sees_section10,
     ") report different technical/training skill gaps.",
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
@@ -1168,8 +1182,9 @@ result_plot_training_needs <- ggplot(df_training_needs_plot, aes(x = n, y = y_po
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_training_needs <- paste0(
-    "Figure 11. Bar chart of how many surveyed organizations (n = ",
+    "Figure ", fig_num, ". Bar chart of how many surveyed organizations (n = ",
     num_sees_section10,
     ") report different staff training needs.",
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
@@ -1248,8 +1263,9 @@ result_plot_digitization <- ggplot(df_digitization_plot, aes(x = n, y = y_pos, w
         axis.text.x = element_text(size = 22),
         axis.title = element_text(size = 25)
     )
+fig_num <- fig_num + 1
 result_caption_plot_digitization <- paste0(
-    "Figure 12. Bar chart of how many surveyed organizations (n = ",
+    "Figure ", fig_num, ". Bar chart of how many surveyed organizations (n = ",
     num_sees_section11,
     ") digitize their monitoring data using each method.",
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
