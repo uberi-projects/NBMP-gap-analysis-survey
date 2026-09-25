@@ -7,7 +7,7 @@ library(ggpubr)
 library(ggtext)
 
 ## Load Data ---------------------------------------------------
-df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Responses.csv")
+df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Responses - Cleaned.csv")
 
 ## Define Functions ---------------------------------------------------
 fun_clean_text <- function(x) {
