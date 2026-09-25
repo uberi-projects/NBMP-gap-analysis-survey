@@ -1460,7 +1460,7 @@ result_working_group_leaders <- paste0(
     "."
 )
 # See if participants are involved in task forces
-# TO DO: Requires manual data cleaning for question 37
+# TO DO: Requires manual data cleaning for question 39
 df_task_force_member <- df %>%
     select(organizationName, taskForceInvolved) %>%
     group_by(taskForceInvolved) %>%
@@ -1483,7 +1483,85 @@ result_num_task_force_member <- paste0(
 )
 
 ## Analyze Section 14: Significance & Interest
+# List species of cultural significance
+# TO DO: Requires manual data cleaning for question 40
+df_species_culturally_significant <- df %>%
+    select(culturalSpecies) %>%
+    filter(culturalSpecies != "No" & culturalSpecies != "")
+list_species_culturally_significant <- combine_words(df_species_culturally_significant$culturalSpecies)
+result_list_species_culturally_significant <- paste0(
+    "Species of cultural significance to Belize were reported as ",
+    list_species_culturally_significant,
+    "."
+)
+# List species of economical significance
+# TO DO: Requires manual data cleaning for question 40
+df_species_economically_significant <- df %>%
+    select(economicSpecies) %>%
+    filter(economicSpecies != "No" & economicSpecies != "")
+list_species_economically_significant <- combine_words(df_species_economically_significant$economicSpecies)
+result_list_species_economically_significant <- paste0(
+    "Species of economic significance to Belize were reported as ",
+    list_species_economically_significant,
+    "."
+)
+# Investigate specific species concerns
 # TO DO
+# List species of future interest
+# TO DO: Requires manual data cleaning for question 43
+df_species_future_interest <- df %>%
+    select(futureMonitoring) %>%
+    filter(futureMonitoring != "No" & futureMonitoring != "")
+list_species_future_interest <- combine_words(df_species_future_interest$futureMonitoring)
+result_list_species_future_interest <- paste0(
+    "Species of future monitoring interest to organizations were reported as ",
+    list_species_future_interest,
+    "."
+)
+# List species of monitoring gap
+# TO DO: Requires manual data cleaning for question 44
+df_species_monitoring_gap <- df %>%
+    select(speciesMonitoringGap) %>%
+    filter(speciesMonitoringGap != "No" & speciesMonitoringGap != "")
+list_species_monitoring_gap <- combine_words(df_species_monitoring_gap$speciesMonitoringGap)
+result_list_species_monitoring_gap <- paste0(
+    "Species with a significant monitoring gap were reported as ",
+    list_species_monitoring_gap,
+    "."
+)
+# List species of monitoring importance
+# TO DO: Requires manual data cleaning for question 44
+df_species_monitoring_importance <- df %>%
+    select(speciesMonitoringImportance) %>%
+    filter(speciesMonitoringImportance != "No" & speciesMonitoringImportance != "")
+list_species_monitoring_importance <- combine_words(df_species_monitoring_importance$speciesMonitoringImportance)
+result_list_species_monitoring_importance <- paste0(
+    "Species with a significant monitoring importance were reported as ",
+    list_species_monitoring_importance,
+    "."
+)
+# List area of monitoring gap
+# TO DO: Requires manual data cleaning for question 44
+df_area_monitoring_gap <- df %>%
+    select(areaMonitoringGap) %>%
+    filter(areaMonitoringGap != "No" & areaMonitoringGap != "")
+list_area_monitoring_gap <- combine_words(df_area_monitoring_gap$areaMonitoringGap)
+result_list_area_monitoring_gap <- paste0(
+    "Areas with a significant monitoring gap were reported as ",
+    list_area_monitoring_gap,
+    "."
+)
+# List area of monitoring importance
+# TO DO: Requires manual data cleaning for question 44
+df_area_monitoring_importance <- df %>%
+    select(areaMonitoringImportance) %>%
+    filter(areaMonitoringImportance != "No" & areaMonitoringImportance != "")
+list_area_monitoring_importance <- combine_words(df_area_monitoring_importance$areaMonitoringImportance)
+result_list_area_monitoring_importance <- paste0(
+    "Areas with a significant monitoring importance were reported as ",
+    list_area_monitoring_importance,
+    "."
+)
 
 ## Present Results
 cat(result_unique_organizations)
@@ -1533,3 +1611,10 @@ result_df_data_sharing_collated
 cat(result_num_working_group_member)
 cat(result_working_group_leaders)
 cat(result_num_task_force_member)
+cat(result_list_species_culturally_significant)
+cat(result_list_species_economically_significant)
+cat(result_list_species_future_interest)
+cat(result_list_species_monitoring_gap)
+cat(result_list_species_monitoring_importance)
+cat(result_list_area_monitoring_gap)
+cat(result_list_area_monitoring_importance)
