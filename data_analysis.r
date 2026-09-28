@@ -67,8 +67,9 @@ fun_parse_end_year <- function(years_text, current_year) {
     }, integer(1), USE.NAMES = FALSE)
 }
 fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_label) {
-    df_summary <- df_long %>%
-        filter(!is.na(startYear) & !is.na(endYear)) %>%
+    df_filtered <- df_long %>%
+        filter(!is.na(startYear) & !is.na(endYear))
+    df_summary <- df_filtered %>%
         group_by({{ group_col }}) %>%
         summarise(
             startYear = min(startYear),
@@ -105,7 +106,7 @@ fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_lab
             legend.text = element_text(size = 14),
             legend.title = element_text(size = 16)
         )
-    list(data = df_summary, plot = plot)
+    list(data = df_summary, plot = plot, nProjects = nrow(df_filtered))
 }
 
 ## Clean Data ---------------------------------------------------
@@ -436,7 +437,7 @@ result_plot_long_term_monitoring_orgs <- long_term_monitoring_timeline_org$plot
 fig_num <- fig_num + 1
 result_caption_plot_long_term_monitoring_orgs <- paste0(
     "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by organization (n = ",
-    nrow(long_term_monitoring_timeline_org$data), " organizations). Each bar spans that organization's earliest reported ",
+    long_term_monitoring_timeline_org$nProjects, " projects). Each bar spans that organization's earliest reported ",
     "project start year to its latest end year, and is colored by whether it has at least one ",
     "still-ongoing project."
 )
@@ -450,7 +451,7 @@ result_plot_long_term_monitoring_taxa <- long_term_monitoring_timeline_taxon$plo
 fig_num <- fig_num + 1
 result_caption_plot_long_term_monitoring_taxa <- paste0(
     "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by species/taxon monitored (n = ",
-    nrow(long_term_monitoring_timeline_taxon$data), " reported taxa). Each bar spans that taxon's earliest reported project ",
+    long_term_monitoring_timeline_taxon$nProjects, " projects). Each bar spans that taxon's earliest reported project ",
     "start year to its latest end year, and is colored by whether it has at least one still-ongoing project."
 )
 ggsave("outputs/result_plot_long_term_monitoring_taxa.jpeg", result_plot_long_term_monitoring_taxa,
@@ -463,7 +464,7 @@ result_plot_long_term_monitoring_methods <- long_term_monitoring_timeline_method
 fig_num <- fig_num + 1
 result_caption_plot_long_term_monitoring_methods <- paste0(
     "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by method used (n = ",
-    nrow(long_term_monitoring_timeline_method$data), " reported methods). Each bar spans that method's earliest reported project ",
+    long_term_monitoring_timeline_method$nProjects, " projects). Each bar spans that method's earliest reported project ",
     "start year to its latest end year, and is colored by whether it has at least one still-ongoing project."
 )
 ggsave("outputs/result_plot_long_term_monitoring_methods.jpeg", result_plot_long_term_monitoring_methods,
@@ -476,7 +477,7 @@ result_plot_long_term_monitoring_locations <- long_term_monitoring_timeline_loca
 fig_num <- fig_num + 1
 result_caption_plot_long_term_monitoring_locations <- paste0(
     "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by location (n = ",
-    nrow(long_term_monitoring_timeline_location$data), " reported locations). Each bar spans that location's earliest reported ",
+    long_term_monitoring_timeline_location$nProjects, " projects). Each bar spans that location's earliest reported ",
     "project start year to its latest end year, and is colored by whether it has at least one still-ongoing ",
     "project."
 )
