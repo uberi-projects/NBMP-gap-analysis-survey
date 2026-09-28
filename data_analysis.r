@@ -7,7 +7,7 @@ library(ggpubr)
 library(ggtext)
 
 ## Load Data ---------------------------------------------------
-df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Responses - Cleaned.csv")
+df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Cleaned.csv")
 
 ## Define Functions ---------------------------------------------------
 fun_clean_text <- function(x) {
@@ -21,7 +21,6 @@ fun_wrap_two_lines <- function(labels) {
             return(label)
         }
         words <- str_split(label, " ")[[1]]
-        # length of the label if joined through each word, used to find the midpoint word
         cum_len <- cumsum(nchar(words) + 1) - 1
         split_after <- which.min(abs(cum_len - nchar(label) / 2))
         split_after <- max(1, min(split_after, length(words) - 1))
@@ -32,7 +31,6 @@ fun_wrap_two_lines <- function(labels) {
     }, character(1), USE.NAMES = FALSE)
 }
 fun_any_not_no <- function(x) {
-    # TRUE if a response contains any option other than "No"
     vapply(x, function(val) {
         if (is.na(val) || str_trim(val) == "") {
             return(FALSE)
@@ -41,8 +39,79 @@ fun_any_not_no <- function(x) {
         any(opts != "No")
     }, logical(1))
 }
+fun_parse_start_year <- function(years_text) {
+    vapply(years_text, function(val) {
+        if (is.na(val) || str_trim(val) == "") {
+            return(NA_integer_)
+        }
+        nums <- as.integer(str_extract_all(val, "\\d{4}")[[1]])
+        if (length(nums) == 0) {
+            return(NA_integer_)
+        }
+        min(nums)
+    }, integer(1), USE.NAMES = FALSE)
+}
+fun_parse_end_year <- function(years_text, current_year) {
+    vapply(years_text, function(val) {
+        if (is.na(val) || str_trim(val) == "") {
+            return(NA_integer_)
+        }
+        nums <- as.integer(str_extract_all(val, "\\d{4}")[[1]])
+        if (str_detect(str_to_lower(val), "present|onwards|ongoing")) {
+            return(max(c(nums, current_year)))
+        }
+        if (length(nums) == 0) {
+            return(NA_integer_)
+        }
+        max(nums)
+    }, integer(1), USE.NAMES = FALSE)
+}
+fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_label) {
+    df_summary <- df_long %>%
+        filter(!is.na(startYear) & !is.na(endYear)) %>%
+        group_by({{ group_col }}) %>%
+        summarise(
+            startYear = min(startYear),
+            endYear = max(endYear),
+            nProjects = n(),
+            status = case_when(
+                any(ongoing == "Yes") ~ "Yes",
+                any(ongoing == "No") ~ "No",
+                TRUE ~ "Unclear"
+            ),
+            .groups = "drop"
+        ) %>%
+        arrange(desc(startYear)) %>%
+        mutate({{ group_col }} := fct_inorder({{ group_col }}))
+    plot <- ggplot(df_summary, aes(
+        y = {{ group_col }}, x = startYear, xend = endYear, yend = {{ group_col }}, color = status
+    )) +
+        geom_segment(linewidth = 6) +
+        scale_color_manual(
+            values = c("Yes" = "#382e6b", "No" = "#b1abd1", "Unclear" = "#999999"),
+            name = "Any Ongoing Project?"
+        ) +
+        scale_x_continuous(
+            breaks = scales::pretty_breaks(n = 5),
+            labels = scales::label_number(big.mark = "")
+        ) +
+        scale_y_discrete(labels = fun_wrap_two_lines) +
+        labs(x = "Year", y = axis_label) +
+        theme_pubclean() +
+        theme(
+            axis.text.y = element_text(size = 14),
+            axis.text.x = element_text(size = 16),
+            axis.title = element_text(size = 18),
+            legend.text = element_text(size = 14),
+            legend.title = element_text(size = 16)
+        )
+    list(data = df_summary, plot = plot)
+}
 
 ## Clean Data ---------------------------------------------------
+# Drop invalid UTF-8 byte sequences
+df <- df %>%
+    mutate(across(where(is.character), ~ iconv(., from = "UTF-8", to = "UTF-8", sub = "")))
 # Remove duplicates
 df <- df %>%
     select(-timestamp) %>%
@@ -59,7 +128,7 @@ result_unique_organizations <- paste0(
     "Participating organizations totaled ",
     unique_organizations,
     ", including ",
-    combine_words(unique_organization_names)
+    combine_words(unique_organization_names), "."
 )
 
 ## Analyze Section 3: Biodiversity Monitoring Activities
@@ -70,7 +139,7 @@ result_proportion_does_biodiversity_monitoring <- paste0(
     "Proportion of organizations doing biodiversity monitoring is ",
     proportion_does_biodiversity_monitoring,
     ", with the following organizations reporting they do not participate in biodiversity monitoring: ",
-    combine_words(organizations_do_not_do_biodiversity_monitoring)
+    combine_words(organizations_do_not_do_biodiversity_monitoring), "."
 )
 # Examine monitoring areas for taxa
 df_long_taxa <- select(df, monitoringAreas) %>%
@@ -87,7 +156,8 @@ df_long_taxa <- df_long_taxa %>%
         depth  = 1 + (level2 != "") + (level3 != ""),
         level1 = fun_clean_text(level1),
         level2 = fun_clean_text(level2),
-        level3 = fun_clean_text(level3)
+        level3 = fun_clean_text(level3),
+        level2 = str_remove(level2, regex("\\s*\\(e\\.g\\.[^)]*\\)$", ignore_case = TRUE))
     )
 counts_taxa <- df_long_taxa %>%
     count(level1, level2, level3, depth, name = "n") %>%
@@ -110,10 +180,15 @@ fun_build_other_counts <- function(df, other_field_map) {
         level1 <- other_field_map$level1[i]
         level2 <- other_field_map$level2[i]
         is_new_taxon <- other_field_map$is_new_taxon[i]
-        cleaned <- fun_clean_text(df[[column]])
-        cleaned <- cleaned[!is.na(cleaned)]
-        if (length(cleaned) == 0) next
-        response_counts <- tibble(response = cleaned) %>% count(response, name = "n")
+        response_counts <- tibble(response = df[[column]]) %>%
+            filter(!is.na(response), str_trim(response) != "") %>%
+            # Respondents sometimes list multiple write-in answers separated by commas;
+            # treat each as its own response rather than one combined string.
+            separate_rows(response, sep = ",\\s*") %>%
+            mutate(response = fun_clean_text(response)) %>%
+            filter(!is.na(response)) %>%
+            count(response, name = "n")
+        if (nrow(response_counts) == 0) next
         if (is.na(level2)) {
             if (is_new_taxon) {
                 # General write-in responses stand on their own as level 1 categories,
@@ -145,9 +220,9 @@ taxon_order <- c(
 )
 subtaxon_order_mammals <- c(
     "Bats", "Marine Mammals", "Primates",
-    "Other Small Mammals (E.g., Hispid Cotton Rat)",
-    "Other Medium-Sized Mammals (E.g., Paca)",
-    "Other Large Mammals (E.g., Jaguars)"
+    "Other Small Mammals",
+    "Other Medium-Sized Mammals",
+    "Other Large Mammals"
 )
 subtaxon_order_fish <- c(
     "Freshwater Fish", "Marine Fish"
@@ -319,7 +394,96 @@ ggsave("outputs/result_plot_ecosystems.jpeg", result_plot_ecosystems,
 )
 
 ## Analyze Section 5: Research Projects
-# TO DO
+# Investigate long-term monitoring projects
+current_year <- as.integer(format(Sys.Date(), "%Y"))
+df_long_term_monitoring <- df %>%
+    select(organizationName, starts_with("lt")) %>%
+    pivot_longer(
+        cols = -organizationName,
+        names_to = c(".value", "projectRow"),
+        names_pattern = "^lt(Species|Sites|Years|Methods|Ongoing)_(\\d+)$"
+    ) %>%
+    filter(if_any(c(Species, Sites, Years, Methods, Ongoing), ~ !is.na(.) & str_trim(.) != "")) %>%
+    transmute(
+        organizationName,
+        speciesTaxa = str_trim(Species),
+        location = str_trim(Sites),
+        years = str_trim(Years),
+        methods = str_trim(Methods),
+        ongoing = case_when(
+            str_detect(str_to_lower(Ongoing), "^yes") ~ "Yes",
+            str_detect(str_to_lower(Ongoing), "^no") ~ "No",
+            TRUE ~ "Unclear"
+        ),
+        startYear = fun_parse_start_year(Years),
+        endYear = fun_parse_end_year(Years, current_year)
+    )
+result_df_long_term_monitoring_projects <- df_long_term_monitoring %>%
+    arrange(organizationName, startYear) %>%
+    transmute(
+        Organization = organizationName,
+        `Species / Taxa` = speciesTaxa,
+        `Location(s)` = location,
+        `Year(s)` = years,
+        Methods = methods,
+        `Still Ongoing?` = ongoing
+    )
+write.csv(result_df_long_term_monitoring_projects, "outputs/result_df_long_term_monitoring_projects.csv")
+long_term_monitoring_timeline_org <- fun_build_long_term_monitoring_timeline(
+    df_long_term_monitoring, organizationName, "Organization"
+)
+result_plot_long_term_monitoring_orgs <- long_term_monitoring_timeline_org$plot
+fig_num <- fig_num + 1
+result_caption_plot_long_term_monitoring_orgs <- paste0(
+    "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by organization (n = ",
+    nrow(long_term_monitoring_timeline_org$data), " organizations). Each bar spans that organization's earliest reported ",
+    "project start year to its latest end year, and is colored by whether it has at least one ",
+    "still-ongoing project."
+)
+ggsave("outputs/result_plot_long_term_monitoring_orgs.jpeg", result_plot_long_term_monitoring_orgs,
+    units = "in", height = 8, width = 12
+)
+long_term_monitoring_timeline_taxon <- fun_build_long_term_monitoring_timeline(
+    df_long_term_monitoring, speciesTaxa, "Species / Taxon"
+)
+result_plot_long_term_monitoring_taxa <- long_term_monitoring_timeline_taxon$plot
+fig_num <- fig_num + 1
+result_caption_plot_long_term_monitoring_taxa <- paste0(
+    "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by species/taxon monitored (n = ",
+    nrow(long_term_monitoring_timeline_taxon$data), " reported taxa). Each bar spans that taxon's earliest reported project ",
+    "start year to its latest end year, and is colored by whether it has at least one still-ongoing project."
+)
+ggsave("outputs/result_plot_long_term_monitoring_taxa.jpeg", result_plot_long_term_monitoring_taxa,
+    units = "in", height = 18, width = 14
+)
+long_term_monitoring_timeline_method <- fun_build_long_term_monitoring_timeline(
+    df_long_term_monitoring, methods, "Method"
+)
+result_plot_long_term_monitoring_methods <- long_term_monitoring_timeline_method$plot
+fig_num <- fig_num + 1
+result_caption_plot_long_term_monitoring_methods <- paste0(
+    "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by method used (n = ",
+    nrow(long_term_monitoring_timeline_method$data), " reported methods). Each bar spans that method's earliest reported project ",
+    "start year to its latest end year, and is colored by whether it has at least one still-ongoing project."
+)
+ggsave("outputs/result_plot_long_term_monitoring_methods.jpeg", result_plot_long_term_monitoring_methods,
+    units = "in", height = 16, width = 14
+)
+long_term_monitoring_timeline_location <- fun_build_long_term_monitoring_timeline(
+    df_long_term_monitoring, location, "Location"
+)
+result_plot_long_term_monitoring_locations <- long_term_monitoring_timeline_location$plot
+fig_num <- fig_num + 1
+result_caption_plot_long_term_monitoring_locations <- paste0(
+    "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by location (n = ",
+    nrow(long_term_monitoring_timeline_location$data), " reported locations). Each bar spans that location's earliest reported ",
+    "project start year to its latest end year, and is colored by whether it has at least one still-ongoing ",
+    "project."
+)
+ggsave("outputs/result_plot_long_term_monitoring_locations.jpeg", result_plot_long_term_monitoring_locations,
+    units = "in", height = 16, width = 14
+)
+# TO DO: Q5 project-based research projects (rrSpecies_0, rrSites_0, ...)
 
 ## Analyze Section 6: Ecosystem Health
 # Investigate types of data collected on ecosystem health
@@ -1586,6 +1750,15 @@ result_plot_taxa
 cat(result_caption_plot_taxa)
 result_plot_ecosystems
 cat(result_caption_plot_ecosystems)
+result_df_long_term_monitoring_projects
+result_plot_long_term_monitoring_orgs
+cat(result_caption_plot_long_term_monitoring_orgs)
+result_plot_long_term_monitoring_taxa
+cat(result_caption_plot_long_term_monitoring_taxa)
+result_plot_long_term_monitoring_methods
+cat(result_caption_plot_long_term_monitoring_methods)
+result_plot_long_term_monitoring_locations
+cat(result_caption_plot_long_term_monitoring_locations)
 result_plot_ecosystem_health
 cat(result_caption_plot_ecosystem_health)
 cat(result_num_does_habitat_restoration_studying)
