@@ -1,0 +1,2 @@
+- [ ] Clean data so not so much requires the lookup table
+- [ ] Clean and publish repository for citation in the deliverable

@@ -50,6 +50,20 @@ fun_any_not_no <- function(x) {
         any(opts != "No")
     }, logical(1))
 }
+fun_domain_status <- function(x) {
+    case_when(
+        is.na(x) | str_trim(x) == "" ~ "Not Asked",
+        x == "Yes" ~ "Yes",
+        TRUE ~ "No"
+    )
+}
+fun_domain_status_multiselect <- function(x) {
+    case_when(
+        is.na(x) | str_trim(x) == "" ~ "Not Asked",
+        fun_any_not_no(x) ~ "Yes",
+        TRUE ~ "No"
+    )
+}
 fun_parse_start_year <- function(years_text) {
     vapply(years_text, function(val) {
         if (is.na(val) || str_trim(val) == "") {
@@ -1063,9 +1077,46 @@ result_num_does_engagement <- paste0(
     combine_words(organizations_do_engagement), "."
 )
 # Map communities most often engaged with
-# TO DO: Requires manual data cleaning for question 18
+df_engagement_edges <- df %>%
+    select(organizationName, communityEngagement, engagementCommunities) %>%
+    filter(communityEngagement == "Yes", !is.na(engagementCommunities), engagementCommunities != "") %>%
+    separate_rows(engagementCommunities, sep = "\\s*[,\n]\\s*") %>%
+    mutate(engagementCommunities = str_trim(engagementCommunities)) %>%
+    filter(engagementCommunities != "") %>%
+    transmute(from = organizationName, to = engagementCommunities)
+graph_engagement <- as_tbl_graph(df_engagement_edges, directed = TRUE) %>%
+    activate(nodes) %>%
+    mutate(
+        is_respondent = name %in% df_engagement_edges$from,
+        node_degree = centrality_degree()
+    )
+result_plot_engagement_network <- ggraph(graph_engagement, layout = "fr") +
+    geom_edge_link(
+        color = "#b1abd1", alpha = 0.7, edge_width = 1,
+        arrow = grid::arrow(length = unit(6, "mm"), type = "closed"),
+        end_cap = circle(3, "mm")
+    ) +
+    geom_node_point(aes(size = node_degree, color = is_respondent)) +
+    geom_node_text(aes(label = name), repel = TRUE, size = 6, max.overlaps = 20) +
+    scale_color_manual(
+        values = c("TRUE" = "#382e6b", "FALSE" = "#456b2e"),
+        guide = "none"
+    ) +
+    scale_size_continuous(range = c(3, 10), guide = "none") +
+    theme_void()
+fig_num <- fig_num + 1
+result_caption_plot_engagement_network <- paste0(
+    "Figure ", fig_num, ". Network diagram of communities engaged by surveyed organizations (n = ",
+    length(unique(df_engagement_edges$from)),
+    " surveyed organizations reporting at least one engaged community).",
+    " Arrows point from the surveyed organization to the engaged community.",
+    " Indigo nodes are surveyed organizations and green nodes are communities named by respondents.",
+    " Node size reflects number of reported connections."
+)
+ggsave("outputs/result_plot_engagement_network.jpeg", result_plot_engagement_network,
+    units = "in", height = 18, width = 18
+)
 # Investigate types of community engagement most often done
-# TO DO: This requires a lot of cleaning in the data
 engagement_types_fixed_order <- c(
     "Education On Fire Management", "Illegal Wildlife Trade",
     "Protected Areas And Ecosystem Benefits", "Community Governance And Participation",
@@ -1166,7 +1217,33 @@ ggsave("outputs/result_plot_collaboration_network.jpeg", result_plot_collaborati
     units = "in", height = 18, width = 18
 )
 # Examine major challenges for data collection
-# TO DO: Requires manual data cleaning for question 21
+organizations_report_challenges <- filter(df, !is.na(challenges) & str_trim(challenges) != "")$organizationName
+df_challenges <- df %>%
+    select(challenges) %>%
+    separate_rows(challenges, sep = ",\\s*") %>%
+    mutate(challenges = fun_clean_text(challenges)) %>%
+    filter(!is.na(challenges), challenges != "") %>%
+    count(challenges, name = "n") %>%
+    mutate(challenges = fct_reorder(challenges, n))
+result_plot_challenges <- ggplot(df_challenges, aes(x = n, y = challenges)) +
+    geom_col(orientation = "y", color = "black", fill = "#382e6b") +
+    labs(
+        x = "Number of responses", y = "Challenge"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_text(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25)
+    )
+fig_num <- fig_num + 1
+result_caption_plot_challenges <- paste0(
+    "Figure ", fig_num, ". Bar chart of major challenges to data collection reported by surveyed organizations (n = ",
+    length(organizations_report_challenges), ")."
+)
+ggsave("outputs/result_plot_challenges.jpeg", result_plot_challenges,
+    units = "in", height = 23, width = 18
+)
 
 ## Analyze Section 10: Technology & Skill Gaps
 # Determine how many participants are seeing the section
@@ -1868,7 +1945,81 @@ result_list_species_economically_significant <- paste0(
     combine_words(df_species_economically_significant$economicSpeciesCount), "."
 )
 # Investigate specific species concerns
-# TO DO
+df_community_concerns <- df %>%
+    select(organizationName, starts_with("cc")) %>%
+    pivot_longer(
+        cols = -organizationName,
+        names_to = c(".value", "concernRow"),
+        names_pattern = "^cc(Community|District|Species|Reason)_(\\d+)$"
+    ) %>%
+    filter(if_any(c(Community, District, Species, Reason), ~ !is.na(.) & str_trim(.) != "")) %>%
+    transmute(
+        organizationName,
+        community = str_trim(Community),
+        district = str_trim(District),
+        speciesConcern = str_trim(Species),
+        reason = str_trim(Reason)
+    )
+result_df_community_concerns <- df_community_concerns %>%
+    arrange(organizationName) %>%
+    transmute(
+        Organization = organizationName,
+        Community = community,
+        District = district,
+        `Species / Taxa` = speciesConcern,
+        Reason = reason
+    )
+write.csv(result_df_community_concerns, "outputs/result_df_community_concerns.csv")
+df_concern_matrix <- df_community_concerns %>%
+    filter(!is.na(speciesConcern), speciesConcern != "", !is.na(district), district != "") %>%
+    separate_rows(district, sep = "[;,]\\s*") %>%
+    separate_rows(speciesConcern, sep = "[;,]\\s*") %>%
+    mutate(
+        speciesConcern = fun_clean_text(speciesConcern),
+        district = fun_clean_text(district)
+    ) %>%
+    filter(!is.na(speciesConcern), !is.na(district)) %>%
+    count(district, speciesConcern, name = "n")
+species_concern_order <- df_concern_matrix %>%
+    group_by(speciesConcern) %>%
+    summarise(n = sum(n), .groups = "drop") %>%
+    arrange(n) %>%
+    pull(speciesConcern)
+district_concern_order <- df_concern_matrix %>%
+    group_by(district) %>%
+    summarise(n = sum(n), .groups = "drop") %>%
+    arrange(desc(n)) %>%
+    pull(district)
+df_concern_matrix <- df_concern_matrix %>%
+    mutate(
+        speciesConcern = factor(speciesConcern, levels = species_concern_order),
+        district = factor(district, levels = district_concern_order)
+    )
+result_plot_concern_matrix <- ggplot(df_concern_matrix, aes(x = district, y = speciesConcern, fill = n)) +
+    geom_tile(color = "black") +
+    scale_fill_gradient(low = "#b1abd1", high = "#382e6b", name = "Number of\nResponses") +
+    scale_y_discrete(labels = fun_wrap_two_lines) +
+    labs(
+        x = "District", y = "Species / Taxon of Concern"
+    ) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_text(size = 22),
+        axis.text.x = element_text(size = 22),
+        axis.title = element_text(size = 25),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16)
+    )
+fig_num <- fig_num + 1
+result_caption_plot_concern_matrix <- paste0(
+    "Figure ", fig_num, ". Heatmap of species/taxa of concern to communities by district, as reported by surveyed organizations (n = ",
+    length(unique(df_community_concerns$organizationName)),
+    "). Cell color reflects the number of responses reporting that species/taxon of concern within that district; ",
+    "blank cells indicate no reported concern for that combination."
+)
+ggsave("outputs/result_plot_concern_matrix.jpeg", result_plot_concern_matrix,
+    units = "in", height = 23, width = 18
+)
 # List species of future interest
 df_species_future_interest <- df %>%
     select(organizationName, futureMonitoring) %>%
@@ -1956,6 +2107,290 @@ result_list_area_monitoring_importance <- paste0(
     combine_words(df_area_monitoring_importance$areaMonitoringImportanceCount), "."
 )
 
+## Final Section: Overall Analysis ---------------------------------------------------
+# Compare domain coverage across organizations
+domain_order <- c(
+    "Biodiversity Monitoring", "Ecosystem Health Data", "Habitat Restoration",
+    "Pollution Data", "Invasive Species", "Ecosystem Services",
+    "Community-Ecosystem Service Relations", "Climate Resiliency",
+    "Enforcement", "Community Engagement", "Collaboration",
+    "Reports To GoB", "Publishes Reports Online", "Publishes Peer-Reviewed Papers",
+    "Public Data Dashboard", "Shares Data Directly", "Shares Data To Repositories",
+    "National Working Group Member", "National Task Force Member"
+)
+df_domain_coverage <- df %>%
+    transmute(
+        organizationName,
+        `Biodiversity Monitoring` = fun_domain_status(doesMonitoring),
+        `Ecosystem Health Data` = fun_domain_status_multiselect(ecosystemHealthData),
+        `Habitat Restoration` = fun_domain_status(habitatRestoration),
+        `Pollution Data` = fun_domain_status_multiselect(pollutionData),
+        `Invasive Species` = fun_domain_status(invasiveSpecies),
+        `Ecosystem Services` = fun_domain_status(ecosystemServices),
+        `Community-Ecosystem Service Relations` = fun_domain_status(communityEcosystemServices),
+        `Climate Resiliency` = fun_domain_status_multiselect(climateResiliency),
+        `Enforcement` = fun_domain_status(doesEnforcement),
+        `Community Engagement` = fun_domain_status(communityEngagement),
+        `Collaboration` = fun_domain_status(collaboration),
+        `Reports To GoB` = fun_domain_status(govReports),
+        `Publishes Reports Online` = fun_domain_status(publishOnline),
+        `Publishes Peer-Reviewed Papers` = fun_domain_status(publishPapers),
+        `Public Data Dashboard` = fun_domain_status(publicDashboard),
+        `Shares Data Directly` = fun_domain_status(shareData),
+        `Shares Data To Repositories` = fun_domain_status(onlineRepos),
+        `National Working Group Member` = fun_domain_status(workingGroupsInvolved),
+        `National Task Force Member` = fun_domain_status(taskForceInvolved)
+    ) %>%
+    pivot_longer(-organizationName, names_to = "domain", values_to = "status")
+org_domain_order <- df_domain_coverage %>%
+    group_by(organizationName) %>%
+    summarise(nYes = sum(status == "Yes"), .groups = "drop") %>%
+    arrange(desc(nYes)) %>%
+    pull(organizationName)
+df_domain_coverage <- df_domain_coverage %>%
+    mutate(
+        organizationName = factor(organizationName, levels = org_domain_order),
+        domain = factor(domain, levels = rev(domain_order)),
+        status = factor(status, levels = c("Yes", "No", "Not Asked"))
+    )
+result_plot_domain_coverage <- ggplot(df_domain_coverage, aes(x = organizationName, y = domain, fill = status)) +
+    geom_tile(color = "white", linewidth = 0.5) +
+    scale_fill_manual(
+        values = c("Yes" = "#382e6b", "No" = "#d9d6ea", "Not Asked" = "#f2f2f2"),
+        name = "Reported?"
+    ) +
+    scale_x_discrete(labels = fun_wrap_two_lines) +
+    labs(x = "Organization", y = "Domain") +
+    theme_pubclean() +
+    theme(
+        axis.text.x = element_text(size = 11, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 14),
+        axis.title = element_text(size = 18),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16),
+        panel.grid = element_blank()
+    )
+fig_num <- fig_num + 1
+result_caption_plot_domain_coverage <- paste0(
+    "Figure ", fig_num, ". Heatmap of monitoring, enforcement, mainstreaming, and data-sharing domain coverage by organization (n = ",
+    unique_organizations,
+    "). Organizations are ordered left to right by total number of domains reported, and domains are ordered top ",
+    "to bottom to match their order of appearance in the survey. Grey tiles indicate the organization was not ",
+    "asked or did not reach that question due to survey skip logic."
+)
+ggsave("outputs/result_plot_domain_coverage.jpeg", result_plot_domain_coverage,
+    units = "in", height = 10, width = 16
+)
+# Compare species/taxa of interest ("important") to species/taxa actually studied
+important_categories <- c(
+    "Culturally Significant", "Economically Significant", "Community Concern",
+    "Monitoring Gap", "Monitoring Importance"
+)
+fun_build_variant_map <- function(df_lookup) {
+    df_lookup %>%
+        separate_rows(raw_variants, sep = ";\\s*") %>%
+        transmute(variant = str_to_upper(str_trim(raw_variants)), mapped_level1, mapped_level2)
+}
+fun_build_other_studied <- function(df, other_field_map) {
+    rows <- list()
+    for (i in seq_len(nrow(other_field_map))) {
+        column <- other_field_map$column[i]
+        level1 <- other_field_map$level1[i]
+        level2 <- other_field_map$level2[i]
+        is_new_taxon <- other_field_map$is_new_taxon[i]
+        responses <- df %>%
+            transmute(organizationName, response = .data[[column]]) %>%
+            filter(!is.na(response), str_trim(response) != "") %>%
+            separate_rows(response, sep = ",\\s*") %>%
+            mutate(response = fun_clean_text(response)) %>%
+            filter(!is.na(response))
+        if (nrow(responses) == 0) next
+        if (is_new_taxon) {
+            rows[[length(rows) + 1]] <- responses %>%
+                transmute(organizationName, text = str_to_upper(response), mapped_level1 = response, mapped_level2 = "")
+        } else if (is.na(level2)) {
+            rows[[length(rows) + 1]] <- responses %>%
+                transmute(organizationName, text = str_to_upper(response), mapped_level1 = level1, mapped_level2 = "")
+        } else {
+            rows[[length(rows) + 1]] <- responses %>%
+                transmute(organizationName, text = str_to_upper(response), mapped_level1 = level1, mapped_level2 = level2)
+        }
+    }
+    bind_rows(rows)
+}
+fun_count_matches <- function(mapped_level1_i, mapped_level2_i, raw_variants_i, df_studied) {
+    variants_i <- str_to_upper(str_trim(str_split(raw_variants_i, ";\\s*")[[1]]))
+    exact_orgs <- df_studied %>%
+        filter(text %in% variants_i) %>%
+        distinct(organizationName) %>%
+        pull(organizationName)
+    inexact_orgs <- df_studied %>%
+        filter(mapped_level1 == mapped_level1_i, mapped_level2 == mapped_level2_i, !(text %in% variants_i)) %>%
+        distinct(organizationName) %>%
+        pull(organizationName)
+    tibble(n_exact = length(exact_orgs), n_inexact = length(inexact_orgs))
+}
+df_studied_checkbox <- df %>%
+    select(organizationName, monitoringAreas) %>%
+    separate_rows(monitoringAreas, sep = ";\\s*") %>%
+    mutate(monitoringAreas = str_trim(monitoringAreas)) %>%
+    filter(monitoringAreas != "")
+levels_split_studied <- str_split_fixed(df_studied_checkbox$monitoringAreas, " - ", 3)
+df_studied_checkbox <- df_studied_checkbox %>%
+    mutate(
+        level1 = fun_clean_text(str_trim(levels_split_studied[, 1])),
+        level2 = fun_clean_text(str_trim(levels_split_studied[, 2])),
+        level2 = str_remove(level2, regex("\\s*\\(e\\.g\\.[^)]*\\)$", ignore_case = TRUE))
+    ) %>%
+    transmute(
+        organizationName,
+        text = str_to_upper(coalesce(level2, level1)),
+        mapped_level1 = level1,
+        mapped_level2 = coalesce(level2, "")
+    )
+df_studied_lookup <- read.csv("data_deposit/studied_taxa_lookup.csv")
+df_studied_variant_map <- fun_build_variant_map(df_studied_lookup)
+df_studied_projects <- bind_rows(
+    df_long_term_monitoring %>% transmute(organizationName, speciesTaxa),
+    df_research_projects %>% transmute(organizationName, speciesTaxa)
+) %>%
+    filter(!is.na(speciesTaxa), speciesTaxa != "") %>%
+    separate_rows(speciesTaxa, sep = "[;,]\\s*") %>%
+    mutate(text = str_to_upper(fun_clean_text(speciesTaxa))) %>%
+    filter(!is.na(text)) %>%
+    distinct(organizationName, text) %>%
+    left_join(df_studied_variant_map, by = c("text" = "variant")) %>%
+    filter(!is.na(mapped_level1)) %>%
+    transmute(organizationName, text, mapped_level1, mapped_level2 = coalesce(mapped_level2, ""))
+df_studied_other <- fun_build_other_studied(df, other_field_map)
+df_studied_all <- bind_rows(df_studied_checkbox, df_studied_projects, df_studied_other)
+df_species_lookup <- read.csv("data_deposit/species_taxa_lookup.csv")
+df_important_species <- df_species_lookup %>%
+    separate_rows(source_categories, sep = ";\\s*") %>%
+    mutate(source_categories = str_trim(source_categories)) %>%
+    filter(source_categories %in% important_categories) %>%
+    distinct(species_text, source_categories, mapped_level1, mapped_level2, match_type, raw_variants)
+df_important_species <- df_important_species %>%
+    mutate(
+        counts = pmap(
+            list(match_type, mapped_level1, mapped_level2, raw_variants),
+            function(match_type_i, mapped_level1_i, mapped_level2_i, raw_variants_i) {
+                if (match_type_i == "Unmapped") {
+                    tibble(n_exact = NA_integer_, n_inexact = NA_integer_)
+                } else {
+                    fun_count_matches(mapped_level1_i, mapped_level2_i, raw_variants_i, df_studied_all)
+                }
+            }
+        )
+    ) %>%
+    unnest(counts) %>%
+    mutate(
+        total_matches = coalesce(n_exact, 0L) + coalesce(n_inexact, 0L),
+        cell_type = case_when(
+            match_type == "Unmapped" ~ "Inapplicable",
+            n_exact > 0 & n_inexact > 0 ~ "Both",
+            n_exact > 0 ~ "Exact Only",
+            n_inexact > 0 ~ "Inexact Only",
+            TRUE ~ "No Match"
+        )
+    )
+species_order <- df_important_species %>%
+    distinct(species_text) %>%
+    arrange(desc(species_text)) %>%
+    pull(species_text)
+df_important_species <- df_important_species %>%
+    mutate(
+        species_text = factor(species_text, levels = species_order),
+        y_pos = as.integer(species_text),
+        source_categories = factor(source_categories, levels = important_categories),
+        x_pos = as.integer(source_categories)
+    )
+cell_half_width <- 0.45
+cell_half_height <- 0.45
+df_cells_both <- df_important_species %>%
+    filter(cell_type == "Both") %>%
+    {
+        bind_rows(
+            transmute(., species_text, y_pos, x_pos,
+                xmin = x_pos - cell_half_width, xmax = x_pos,
+                ymin = y_pos - cell_half_height, ymax = y_pos + cell_half_height,
+                fill_value = n_exact, fill_type = "Exact"
+            ),
+            transmute(., species_text, y_pos, x_pos,
+                xmin = x_pos, xmax = x_pos + cell_half_width,
+                ymin = y_pos - cell_half_height, ymax = y_pos + cell_half_height,
+                fill_value = n_inexact, fill_type = "Inexact"
+            )
+        )
+    }
+df_cells_single <- df_important_species %>%
+    filter(cell_type != "Both") %>%
+    transmute(
+        species_text, y_pos, x_pos,
+        xmin = x_pos - cell_half_width, xmax = x_pos + cell_half_width,
+        ymin = y_pos - cell_half_height, ymax = y_pos + cell_half_height,
+        fill_value = case_when(
+            cell_type == "Exact Only" ~ n_exact,
+            cell_type == "Inexact Only" ~ n_inexact,
+            TRUE ~ NA_real_
+        ),
+        fill_type = case_when(
+            cell_type == "Exact Only" ~ "Exact",
+            cell_type == "Inexact Only" ~ "Inexact",
+            cell_type == "No Match" ~ "No Match",
+            cell_type == "Inapplicable" ~ "Inapplicable"
+        )
+    )
+pal_exact <- scales::col_numeric(palette = c("#e5e1f0", "#382e6b"), domain = c(0, unique_organizations))
+pal_inexact <- scales::col_numeric(palette = c("#e1f0e3", "#2e6b45"), domain = c(0, unique_organizations))
+df_cells_final <- bind_rows(df_cells_both, df_cells_single) %>%
+    mutate(
+        hex_color = case_when(
+            fill_type == "Exact" ~ pal_exact(fill_value),
+            fill_type == "Inexact" ~ pal_inexact(fill_value),
+            fill_type == "No Match" ~ "#ffffff",
+            fill_type == "Inapplicable" ~ "#bfbfbf",
+            TRUE ~ "#ffffff"
+        )
+    )
+result_plot_important_vs_studied <- ggplot(df_cells_final) +
+    geom_rect(
+        aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = hex_color),
+        color = "grey50", linewidth = 0.15
+    ) +
+    scale_fill_identity() +
+    scale_x_continuous(
+        breaks = seq_along(important_categories), labels = important_categories,
+        expand = expansion(add = 0.6), position = "top"
+    ) +
+    scale_y_continuous(
+        breaks = seq_along(species_order), labels = species_order,
+        expand = expansion(add = 0.6)
+    ) +
+    labs(x = NULL, y = "Species / Taxon of Interest") +
+    theme_pubclean() +
+    theme(
+        axis.text.x = element_text(size = 14),
+        axis.text.y = element_text(size = 15),
+        axis.title = element_text(size = 18),
+        panel.grid = element_blank()
+    )
+fig_num <- fig_num + 1
+result_caption_plot_important_vs_studied <- paste0(
+    "Figure ", fig_num, ". Heatmap comparing species/taxa of reported interest against whether any surveyed ",
+    "organization (n = ", unique_organizations, ") actually studies that taxon, combining standard taxa ",
+    "selections, long-term monitoring projects, and one-off research projects as evidence of study. Violet ",
+    "(left half of a cell, where both are present) indicates an exact match, in which the same species/taxon ",
+    "name appears in the studied data, with darker violet reflecting more organizations. Green (right half) ",
+    "indicates an inexact match, in which the species/taxon falls within a broader studied taxonomic group, ",
+    "with darker green reflecting more organizations. White indicates no match found in studied data, and ",
+    "grey indicates the species/taxon cannot be described by the survey's taxonomy at all. Species/taxa are ",
+    "ordered top to bottom alphabetically."
+)
+ggsave("outputs/result_plot_important_vs_studied.jpeg", result_plot_important_vs_studied,
+    units = "in", height = 24, width = 20
+)
+
 ## Present Results
 cat(result_unique_organizations)
 cat(result_proportion_does_biodiversity_monitoring)
@@ -1990,11 +2425,15 @@ result_plot_illegal_activities
 cat(result_caption_plot_illegal_activities)
 cat(result_num_does_patrol_data)
 cat(result_num_does_engagement)
+result_plot_engagement_network
+cat(result_caption_plot_engagement_network)
 result_plot_engagement_types
 cat(result_caption_plot_engagement_types)
 cat(result_num_does_collaboration)
 result_plot_collaboration_network
 cat(result_caption_plot_collaboration_network)
+result_plot_challenges
+cat(result_caption_plot_challenges)
 result_plot_data_tools
 cat(result_caption_plot_data_tools)
 result_plot_tech_gaps
@@ -2021,8 +2460,15 @@ cat(result_working_group_leaders)
 cat(result_num_task_force_member)
 cat(result_list_species_culturally_significant)
 cat(result_list_species_economically_significant)
+result_df_community_concerns
+result_plot_concern_matrix
+cat(result_caption_plot_concern_matrix)
 cat(result_list_species_future_interest)
 cat(result_list_species_monitoring_gap)
 cat(result_list_species_monitoring_importance)
 cat(result_list_area_monitoring_gap)
 cat(result_list_area_monitoring_importance)
+result_plot_domain_coverage
+cat(result_caption_plot_domain_coverage)
+result_plot_important_vs_studied
+cat(result_caption_plot_important_vs_studied)
