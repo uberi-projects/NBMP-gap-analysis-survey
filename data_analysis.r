@@ -5,9 +5,20 @@ library(tidyverse)
 library(knitr)
 library(ggpubr)
 library(ggtext)
+library(tidygraph)
+library(ggraph)
 
 ## Load Data ---------------------------------------------------
 df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Cleaned.csv")
+
+## Clean Data ---------------------------------------------------
+# Drop invalid UTF-8 byte sequences
+df <- df %>%
+    mutate(across(where(is.character), ~ iconv(., from = "UTF-8", to = "UTF-8", sub = "")))
+# Remove duplicates
+df <- df %>%
+    select(-timestamp) %>%
+    distinct()
 
 ## Define Functions ---------------------------------------------------
 fun_clean_text <- function(x) {
@@ -67,9 +78,8 @@ fun_parse_end_year <- function(years_text, current_year) {
     }, integer(1), USE.NAMES = FALSE)
 }
 fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_label) {
-    df_filtered <- df_long %>%
-        filter(!is.na(startYear) & !is.na(endYear))
-    df_summary <- df_filtered %>%
+    df_summary <- df_long %>%
+        filter(!is.na(startYear) & !is.na(endYear)) %>%
         group_by({{ group_col }}) %>%
         summarise(
             startYear = min(startYear),
@@ -106,20 +116,12 @@ fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_lab
             legend.text = element_text(size = 14),
             legend.title = element_text(size = 16)
         )
-    list(data = df_summary, plot = plot, nProjects = nrow(df_filtered))
+    list(data = df_summary, plot = plot)
 }
 
-## Clean Data ---------------------------------------------------
-# Drop invalid UTF-8 byte sequences
-df <- df %>%
-    mutate(across(where(is.character), ~ iconv(., from = "UTF-8", to = "UTF-8", sub = "")))
-# Remove duplicates
-df <- df %>%
-    select(-timestamp) %>%
-    distinct()
-
-## Set Figure Number Variable ---------------------------------------------------
+## Set Fig/Table Number Variable ---------------------------------------------------
 fig_num <- 0
+table_num <- 0
 
 ## Analyze Section 2: Organization Information
 # Determine which organizations participated and how many
@@ -430,62 +432,161 @@ result_df_long_term_monitoring_projects <- df_long_term_monitoring %>%
         `Still Ongoing?` = ongoing
     )
 write.csv(result_df_long_term_monitoring_projects, "outputs/result_df_long_term_monitoring_projects.csv")
-long_term_monitoring_timeline_org <- fun_build_long_term_monitoring_timeline(
-    df_long_term_monitoring, organizationName, "Organization"
-)
-result_plot_long_term_monitoring_orgs <- long_term_monitoring_timeline_org$plot
+n_long_term_monitoring_projects <- df_long_term_monitoring %>%
+    filter(!is.na(startYear) & !is.na(endYear)) %>%
+    nrow()
+df_research_projects <- df %>%
+    select(organizationName, starts_with("rr")) %>%
+    pivot_longer(
+        cols = -organizationName,
+        names_to = c(".value", "projectRow"),
+        names_pattern = "^rr(Species|Sites|Years|Methods)_(\\d+)$"
+    ) %>%
+    filter(if_any(c(Species, Sites, Years, Methods), ~ !is.na(.) & str_trim(.) != "")) %>%
+    transmute(
+        organizationName,
+        speciesTaxa = str_trim(Species),
+        location = str_trim(Sites),
+        years = str_trim(Years),
+        methods = str_trim(Methods),
+        startYear = fun_parse_start_year(Years),
+        endYear = fun_parse_end_year(Years, current_year)
+    )
+result_df_research_projects <- df_research_projects %>%
+    arrange(organizationName) %>%
+    transmute(
+        Organization = organizationName,
+        `Species / Taxa` = speciesTaxa,
+        `Location(s)` = location,
+        `Year(s)` = years,
+        Methods = methods
+    )
+write.csv(result_df_research_projects, "outputs/result_df_research_projects.csv")
+bar_height <- 0.9
+family_gap <- 0.6
+df_org_long_term <- df_long_term_monitoring %>%
+    filter(!is.na(startYear) & !is.na(endYear)) %>%
+    group_by(organizationName) %>%
+    summarise(
+        startYear = min(startYear),
+        endYear = max(endYear),
+        .groups = "drop"
+    ) %>%
+    mutate(category = "Long-Term Monitoring")
+df_org_research <- df_research_projects %>%
+    filter(!is.na(startYear) & !is.na(endYear)) %>%
+    group_by(organizationName) %>%
+    summarise(
+        startYear = min(startYear),
+        endYear = max(endYear),
+        .groups = "drop"
+    ) %>%
+    mutate(category = "One-Off Research")
+org_order <- bind_rows(df_org_long_term, df_org_research) %>%
+    group_by(organizationName) %>%
+    summarise(minStartYear = min(startYear), .groups = "drop") %>%
+    arrange(desc(minStartYear)) %>%
+    pull(organizationName)
+df_org_timeline <- bind_rows(df_org_long_term, df_org_research) %>%
+    mutate(
+        organizationName = factor(organizationName, levels = org_order),
+        category = factor(category, levels = c("Long-Term Monitoring", "One-Off Research"))
+    ) %>%
+    arrange(organizationName, category) %>%
+    mutate(
+        step = case_when(
+            row_number() == 1 ~ 0,
+            organizationName != lag(organizationName) ~ bar_height + family_gap,
+            TRUE ~ bar_height
+        ),
+        y_pos = -cumsum(step)
+    ) %>%
+    group_by(organizationName) %>%
+    mutate(rowLabel = if_else(row_number() == 1, as.character(organizationName), "")) %>%
+    ungroup()
+result_plot_long_term_monitoring_orgs <- ggplot(df_org_timeline, aes(
+    xmin = startYear, xmax = endYear,
+    ymin = y_pos - bar_height / 2, ymax = y_pos + bar_height / 2,
+    fill = category
+)) +
+    geom_rect(color = "black") +
+    scale_fill_manual(
+        values = c("Long-Term Monitoring" = "#382e6b", "One-Off Research" = "#c97a2b"),
+        name = "Category"
+    ) +
+    scale_x_continuous(
+        breaks = scales::pretty_breaks(n = 5),
+        labels = scales::label_number(big.mark = "")
+    ) +
+    scale_y_continuous(
+        breaks = df_org_timeline$y_pos, labels = df_org_timeline$rowLabel,
+        expand = expansion(add = family_gap)
+    ) +
+    labs(x = "Year", y = NULL) +
+    theme_pubclean() +
+    theme(
+        axis.text.y = element_text(size = 14),
+        axis.text.x = element_text(size = 16),
+        axis.title = element_text(size = 18),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16)
+    )
 fig_num <- fig_num + 1
 result_caption_plot_long_term_monitoring_orgs <- paste0(
-    "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by organization (n = ",
-    long_term_monitoring_timeline_org$nProjects, " projects). Each bar spans that organization's earliest reported ",
-    "project start year to its latest end year, and is colored by whether it has at least one ",
-    "still-ongoing project."
+    "Figure ", fig_num, ". Timeline of biodiversity monitoring and research, by organization."
 )
 ggsave("outputs/result_plot_long_term_monitoring_orgs.jpeg", result_plot_long_term_monitoring_orgs,
-    units = "in", height = 8, width = 12
+    units = "in", height = 10, width = 12
 )
 long_term_monitoring_timeline_taxon <- fun_build_long_term_monitoring_timeline(
-    df_long_term_monitoring, speciesTaxa, "Species / Taxon"
+    df_long_term_monitoring %>%
+        separate_rows(speciesTaxa, sep = ",\\s*") %>%
+        mutate(speciesTaxa = fun_clean_text(speciesTaxa)),
+    speciesTaxa, "Species / Taxon"
 )
 result_plot_long_term_monitoring_taxa <- long_term_monitoring_timeline_taxon$plot
 fig_num <- fig_num + 1
 result_caption_plot_long_term_monitoring_taxa <- paste0(
     "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by species/taxon monitored (n = ",
-    long_term_monitoring_timeline_taxon$nProjects, " projects). Each bar spans that taxon's earliest reported project ",
+    n_long_term_monitoring_projects, " projects). Each bar spans that taxon's earliest reported project ",
     "start year to its latest end year, and is colored by whether it has at least one still-ongoing project."
 )
 ggsave("outputs/result_plot_long_term_monitoring_taxa.jpeg", result_plot_long_term_monitoring_taxa,
     units = "in", height = 18, width = 14
 )
 long_term_monitoring_timeline_method <- fun_build_long_term_monitoring_timeline(
-    df_long_term_monitoring, methods, "Method"
+    df_long_term_monitoring %>%
+        separate_rows(methods, sep = ",\\s*") %>%
+        mutate(methods = fun_clean_text(methods)),
+    methods, "Method"
 )
 result_plot_long_term_monitoring_methods <- long_term_monitoring_timeline_method$plot
 fig_num <- fig_num + 1
 result_caption_plot_long_term_monitoring_methods <- paste0(
     "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by method used (n = ",
-    long_term_monitoring_timeline_method$nProjects, " projects). Each bar spans that method's earliest reported project ",
+    n_long_term_monitoring_projects, " projects). Each bar spans that method's earliest reported project ",
     "start year to its latest end year, and is colored by whether it has at least one still-ongoing project."
 )
 ggsave("outputs/result_plot_long_term_monitoring_methods.jpeg", result_plot_long_term_monitoring_methods,
     units = "in", height = 16, width = 14
 )
 long_term_monitoring_timeline_location <- fun_build_long_term_monitoring_timeline(
-    df_long_term_monitoring, location, "Location"
+    df_long_term_monitoring %>%
+        separate_rows(location, sep = ",\\s*") %>%
+        mutate(location = fun_clean_text(location)),
+    location, "Location"
 )
 result_plot_long_term_monitoring_locations <- long_term_monitoring_timeline_location$plot
 fig_num <- fig_num + 1
 result_caption_plot_long_term_monitoring_locations <- paste0(
     "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by location (n = ",
-    long_term_monitoring_timeline_location$nProjects, " projects). Each bar spans that location's earliest reported ",
+    n_long_term_monitoring_projects, " projects). Each bar spans that location's earliest reported ",
     "project start year to its latest end year, and is colored by whether it has at least one still-ongoing ",
     "project."
 )
 ggsave("outputs/result_plot_long_term_monitoring_locations.jpeg", result_plot_long_term_monitoring_locations,
     units = "in", height = 16, width = 14
 )
-# TO DO: Q5 project-based research projects (rrSpecies_0, rrSites_0, ...)
-
 ## Analyze Section 6: Ecosystem Health
 # Investigate types of data collected on ecosystem health
 ecosystem_health_fixed_order <- c(
@@ -698,7 +799,7 @@ result_num_does_comm_services_relations_studying <- paste0(
     "The number of organizations collecting data on relationship between communities and ecosystem services is ",
     num_does_comm_services_relations_studying,
     ", including: ",
-    combine_words(organizations_do_comm_services_relations_studying)
+    combine_words(organizations_do_comm_services_relations_studying), "."
 )
 # See how many organizations study climate resiliency
 num_does_climate_resiliency <- round(sum(df$climateResiliency == "Yes, ecosystems" | df$climateResiliency == "Yes, communities", na.rm = TRUE), 2)
@@ -959,7 +1060,7 @@ result_num_does_engagement <- paste0(
     "The number of organizations doing community engagement is ",
     num_does_engagement,
     ", including: ",
-    combine_words(organizations_do_engagement)
+    combine_words(organizations_do_engagement), "."
 )
 # Map communities most often engaged with
 # TO DO: Requires manual data cleaning for question 18
@@ -1030,7 +1131,40 @@ result_num_does_collaboration <- paste0(
     combine_words(organizations_do_collaboration)
 )
 # Make connection diagram between organizations that collaborate
-# TO DO: Requires manual data cleaning for question 20
+df_collaboration_edges <- df %>%
+    select(organizationName, collaboration, collaborationOrgsList) %>%
+    filter(collaboration == "Yes", !is.na(collaborationOrgsList), collaborationOrgsList != "") %>%
+    separate_rows(collaborationOrgsList, sep = "\\s*[,\n]\\s*") %>%
+    mutate(collaborationOrgsList = str_trim(collaborationOrgsList)) %>%
+    filter(collaborationOrgsList != "") %>%
+    transmute(from = organizationName, to = collaborationOrgsList)
+graph_collaboration <- as_tbl_graph(df_collaboration_edges, directed = FALSE) %>%
+    activate(nodes) %>%
+    mutate(
+        is_respondent = name %in% df_collaboration_edges$from,
+        node_degree = centrality_degree()
+    )
+result_plot_collaboration_network <- ggraph(graph_collaboration, layout = "fr") +
+    geom_edge_link(color = "#b1abd1", alpha = 0.5) +
+    geom_node_point(aes(size = node_degree, color = is_respondent)) +
+    geom_node_text(aes(label = name), repel = TRUE, size = 5, max.overlaps = 20) +
+    scale_color_manual(
+        values = c("TRUE" = "#382e6b", "FALSE" = "#456b2e"),
+        guide = "none"
+    ) +
+    scale_size_continuous(range = c(3, 10), guide = "none") +
+    theme_void()
+fig_num <- fig_num + 1
+result_caption_plot_collaboration_network <- paste0(
+    "Figure ", fig_num, ". Network diagram of reported collaborations between organizations (n = ",
+    length(unique(df_collaboration_edges$from)),
+    " surveyed organizations reporting at least one collaboration).",
+    " Indigo nodes are surveyed organizations and green nodes are external collaborators named by respondents.",
+    " Node size reflects number of reported connections."
+)
+ggsave("outputs/result_plot_collaboration_network.jpeg", result_plot_collaboration_network,
+    units = "in", height = 18, width = 18
+)
 # Examine major challenges for data collection
 # TO DO: Requires manual data cleaning for question 21
 
@@ -1048,7 +1182,6 @@ num_sees_section10 <- length(with(
         fun_any_not_no(climateResiliency)
 ))
 # Investigate types of data tools most often used
-# TO DO: This requires a lot of cleaning in the data
 data_tools_fixed_order <- c(
     "Printed Datasheets", "Smart",
     "Kobotoolbox", "Survey123"
@@ -1102,7 +1235,6 @@ ggsave("outputs/result_plot_data_tools.jpeg", result_plot_data_tools,
     units = "in", height = 23, width = 18
 )
 # Investigate technological gaps
-# TO DO: This requires a lot of cleaning in the data
 tech_gaps_fixed_order <- c(
     "Lack Of Smart Devices", "Lack Of Survey Equipment",
     "Lack Of Drones For Mapping", "Lack Of Cloud Storage"
@@ -1179,9 +1311,36 @@ ggsave("outputs/result_plot_tech_gaps.jpeg", result_plot_tech_gaps,
     units = "in", height = 23, width = 18
 )
 # Examine data processing software
-# TO DO: Requires manual data cleaning for question 24
+df_complementary_software <- df %>%
+    select(complementarySoftware) %>%
+    separate_rows(complementarySoftware, sep = "[;,]\\s*") %>%
+    mutate(complementarySoftware = na_if(str_trim(complementarySoftware), "")) %>%
+    filter(!is.na(complementarySoftware)) %>%
+    count(complementarySoftware, name = "n") %>%
+    arrange(-n) %>%
+    mutate(complementarySoftwareCount = paste0(complementarySoftware, " (", n, ")"))
+result_complementary_software <- paste0(
+    "Organizations reported using a range of complementary software to operate and process data from their technological survey equipment, with reported software by number of responses including: ",
+    combine_words(df_complementary_software$complementarySoftwareCount), "."
+)
 # Examine missing data processing software and subscriptions
-# TO DO: Requires manual data cleaning for question 25
+num_missing_software <- round(sum(
+    df$missingSoftwareEquipment != "No" & !is.na(df$missingSoftwareEquipment) & df$missingSoftwareEquipment != ""
+), 2)
+df_missing_software <- df %>%
+    select(missingSoftwareEquipment) %>%
+    separate_rows(missingSoftwareEquipment, sep = "[;,]\\s*") %>%
+    mutate(missingSoftwareEquipment = na_if(str_trim(missingSoftwareEquipment), "")) %>%
+    filter(!is.na(missingSoftwareEquipment), str_to_lower(missingSoftwareEquipment) != "no") %>%
+    count(missingSoftwareEquipment, name = "n") %>%
+    arrange(-n) %>%
+    mutate(missingSoftwareEquipmentCount = paste0(missingSoftwareEquipment, " (", n, ")"))
+result_missing_software <- paste0(
+    "The number of organizations reporting missing complementary software, equipment, or technology (e.g. online subscriptions) needed to increase the success of their monitoring and research is ",
+    num_missing_software,
+    ", with reported needs by number of responses including: ",
+    combine_words(df_missing_software$missingSoftwareEquipmentCount), "."
+)
 # Examine technical/training skill gaps
 # TO DO: This requires a lot of cleaning in the data
 skill_gaps_fixed_order <- c(
@@ -1262,7 +1421,6 @@ ggsave("outputs/result_plot_skill_gaps.jpeg", result_plot_skill_gaps,
     units = "in", height = 23, width = 18
 )
 # Investigate training by staff needed
-# TO DO: This requires a lot of cleaning in the data
 training_needs_fixed_order <- c(
     "Technical Training", "Research And Monitoring Development", "Equipment Operation",
     "Software", "Data Cleaning And Entering (For Existing Databases Or Systems)",
@@ -1439,7 +1597,13 @@ ggsave("outputs/result_plot_digitization.jpeg", result_plot_digitization,
     units = "in", height = 23, width = 18
 )
 # Explore whether data is still undigitized
-# TO DO: Requires manual data cleaning for question 29
+undigitized_data_responses <- df %>%
+    filter(!is.na(undigitizedData), str_trim(undigitizedData) != "") %>%
+    pull(undigitizedData)
+result_undigitized_data <- paste0(
+    "Surveyed organizations reported the following undigitized data: ",
+    combine_words(undigitized_data_responses), "."
+)
 
 ## Analyze Section 12: Data Sharing
 # Determine how many participants are seeing the section
@@ -1462,12 +1626,7 @@ organizations_do_no_report_at_all <- filter(df, df$govReports == "We do not do r
 result_num_does_report_submission <- paste0(
     "The number of organizations that do reporting is ",
     num_does_report_submission,
-    ". Organizations that submit their reports to the Government of Belize include: ",
-    combine_words(organizations_do_report_submission),
-    ". Organizations that do not submit their reports to the Government of Belize include: ",
-    combine_words(organizations_do_no_report_submission),
-    ". Organizations that do no report writing include: ",
-    combine_words(organizations_do_no_report_at_all)
+    "."
 )
 # See if participants publish their reports
 num_does_report_publish <- round(sum(df$publishOnline == "Yes", na.rm = TRUE), 2)
@@ -1476,7 +1635,7 @@ result_num_does_report_publish <- paste0(
     "The number of organizations that publish their reports online is ",
     num_does_report_publish,
     ", including: ",
-    combine_words(organizations_do_report_publish)
+    combine_words(organizations_do_report_publish), "."
 )
 # See how often participants publish their reports
 df_publish_freq <- df %>%
@@ -1523,48 +1682,63 @@ result_num_data_dashboard <- paste0(
     " responded that they do not."
 )
 # See if participants share datasets to organizations
-# TO DO: Requires manual data cleaning for question 34
-df_data_share <- df %>%
-    select(organizationName, shareData) %>%
-    group_by(shareData) %>%
-    summarize(n = n()) %>%
-    filter(shareData != "")
-df_data_share_recipients <- df %>%
-    select(shareDataWhom) %>%
-    group_by(shareDataWhom) %>%
-    summarise(n = n()) %>%
+num_does_data_share <- round(sum(df$shareData == "Yes", na.rm = TRUE), 2)
+num_does_data_share_no <- round(sum(df$shareData == "No", na.rm = TRUE), 2)
+df_data_share_edges <- df %>%
+    select(organizationName, shareData, shareDataWhom) %>%
+    filter(shareData == "Yes", !is.na(shareDataWhom), shareDataWhom != "") %>%
+    separate_rows(shareDataWhom, sep = "\\s*[,\n]\\s*") %>%
+    mutate(shareDataWhom = str_trim(shareDataWhom)) %>%
     filter(shareDataWhom != "") %>%
-    mutate(shareDataWhomQuote = paste0('"', shareDataWhom, '"'))
-data_share_recipients <- combine_words(unique(df_data_share_recipients$shareDataWhomQuote))
-result_num_data_share <- paste0(
-    "Organizations were asked whether they share data outside their organization. ",
-    filter(df_data_share, shareData == "Yes")$n,
-    " responded that they do, and ",
-    filter(df_data_share, shareData == "No")$n,
-    " responded that they do not. Responses on who the data is shared to include: ",
-    data_share_recipients
+    transmute(from = organizationName, to = shareDataWhom)
+graph_data_share <- as_tbl_graph(df_data_share_edges, directed = TRUE) %>%
+    activate(nodes) %>%
+    mutate(
+        is_respondent = name %in% df_data_share_edges$from,
+        node_degree = centrality_degree()
+    )
+result_plot_data_share_network <- ggraph(graph_data_share, layout = "fr") +
+    geom_edge_link(
+        color = "#b1abd1", alpha = 0.7, edge_width = 1,
+        arrow = grid::arrow(length = unit(6, "mm"), type = "closed"),
+        end_cap = circle(3, "mm")
+    ) +
+    geom_node_point(aes(size = node_degree, color = is_respondent)) +
+    geom_node_text(aes(label = name), repel = TRUE, size = 8, max.overlaps = 20) +
+    scale_color_manual(
+        values = c("TRUE" = "#382e6b", "FALSE" = "#456b2e"),
+        guide = "none"
+    ) +
+    scale_size_continuous(range = c(3, 10), guide = "none") +
+    theme_void()
+fig_num <- fig_num + 1
+result_caption_plot_data_share_network <- paste0(
+    "Figure ", fig_num, ". Network diagram of reported data sharing between organizations (n = ",
+    length(unique(df_data_share_edges$from)),
+    " surveyed organizations reporting that they share data outside their organization).",
+    " Arrows point from the surveyed organization to the recipient of their shared data.",
+    " Indigo nodes are surveyed organizations and green nodes are external recipients named by respondents.",
+    " Node size reflects number of reported connections."
+)
+ggsave("outputs/result_plot_data_share_network.jpeg", result_plot_data_share_network,
+    units = "in", height = 18, width = 18
 )
 # See if participants share datasets to repositories
-# TO DO: Requires manual data cleaning for question 35
+num_does_data_share_repository <- round(sum(df$onlineRepos == "Yes", na.rm = TRUE), 2)
+num_does_data_share_repository_no <- round(sum(df$onlineRepos == "No", na.rm = TRUE), 2)
 df_data_share_repository <- df %>%
-    select(organizationName, onlineRepos) %>%
-    group_by(onlineRepos) %>%
-    summarize(n = n()) %>%
-    filter(onlineRepos != "")
-df_data_share_repository_identities <- df %>%
     select(onlineReposWhichOnes) %>%
-    group_by(onlineReposWhichOnes) %>%
-    summarise(n = n()) %>%
-    filter(onlineReposWhichOnes != "") %>%
-    mutate(onlineReposWhichOnesQuote = paste0('"', onlineReposWhichOnes, '"'))
-data_share_repository_identities <- combine_words(unique(df_data_share_repository_identities$onlineReposWhichOnesQuote))
+    separate_rows(onlineReposWhichOnes, sep = "[;,]\\s*") %>%
+    mutate(onlineReposWhichOnes = na_if(str_trim(onlineReposWhichOnes), "")) %>%
+    filter(!is.na(onlineReposWhichOnes)) %>%
+    count(onlineReposWhichOnes, name = "n") %>%
+    arrange(-n) %>%
+    mutate(onlineReposWhichOnesCount = paste0(onlineReposWhichOnes, " (", n, ")"))
 result_num_data_share_repository <- paste0(
-    "Organizations were asked whether they share data to any repositories. ",
-    filter(df_data_share_repository, onlineRepos == "Yes")$n,
-    " responded that they do, and ",
-    filter(df_data_share_repository, onlineRepos == "No")$n,
-    " responded that they do not. Responses on which repositories are shared to includes: ",
-    data_share_repository_identities
+    "The number of organizations reporting that they share data to online repositories is ",
+    num_does_data_share_repository,
+    ", with reported repositories by number of responses including: ",
+    combine_words(df_data_share_repository$onlineReposWhichOnesCount), "."
 )
 # Organize data sharing responses
 num_does_report_writing_no <- sum(df$govReports == "We do not do reporting", na.rm = TRUE)
@@ -1587,8 +1761,8 @@ result_df_data_sharing_collated <- tibble(
         num_does_report_publish,
         num_does_paper_publish,
         filter(df_data_dashboard, publicDashboard == "Yes")$n,
-        filter(df_data_share, shareData == "Yes")$n,
-        filter(df_data_share_repository, onlineRepos == "Yes")$n
+        num_does_data_share,
+        num_does_data_share_repository
     ),
     no = c(
         num_does_report_writing_no,
@@ -1596,8 +1770,8 @@ result_df_data_sharing_collated <- tibble(
         num_does_report_publish_no,
         num_does_paper_publish_no,
         filter(df_data_dashboard, publicDashboard == "No")$n,
-        filter(df_data_share, shareData == "No")$n,
-        filter(df_data_share_repository, onlineRepos == "No")$n
+        num_does_data_share_no,
+        num_does_data_share_repository_no
     )
 ) %>%
     mutate(
@@ -1605,30 +1779,29 @@ result_df_data_sharing_collated <- tibble(
         No = paste0(no, " - ", round(no / (yes + no) * 100, 1), "%")
     ) %>%
     select(`Sharing Method`, Yes, No)
+table_num <- table_num + 1
+result_caption_table_data_sharing_collated <- paste0(
+    "Table ", table_num, ". Summary of how many surveyed organizations report doing each type of data sharing activity, ",
+    "with the number and percentage of respondents answering yes and no for each activity."
+)
 write.csv(result_df_data_sharing_collated, "outputs/result_df_data_sharing_collated.csv")
 
 ## Analyze Section 13: National Biodiversity Coordination
 # See if participants are involved in national working groups
-# TO DO: Requires manual data cleaning for question 37
-df_working_group_member <- df %>%
-    select(organizationName, workingGroupsInvolved) %>%
-    group_by(workingGroupsInvolved) %>%
-    summarize(n = n()) %>%
-    filter(workingGroupsInvolved != "")
+num_does_working_group_member <- round(sum(df$workingGroupsInvolved == "Yes", na.rm = TRUE), 2)
 df_working_group_member_identities <- df %>%
     select(workingGroupsListText) %>%
-    group_by(workingGroupsListText) %>%
-    summarise(n = n()) %>%
-    filter(workingGroupsListText != "") %>%
-    mutate(workingGroupsListTextQuote = paste0('"', workingGroupsListText, '"'))
-working_group_member_identities <- combine_words(unique(df_working_group_member_identities$workingGroupsListTextQuote))
+    separate_rows(workingGroupsListText, sep = "[;,]\\s*") %>%
+    mutate(workingGroupsListText = na_if(str_trim(workingGroupsListText), "")) %>%
+    filter(!is.na(workingGroupsListText)) %>%
+    count(workingGroupsListText, name = "n") %>%
+    arrange(-n) %>%
+    mutate(workingGroupsListTextCount = paste0(workingGroupsListText, " (", n, ")"))
 result_num_working_group_member <- paste0(
-    "Organizations were asked whether they are involved in any biodiversity national working groups. ",
-    filter(df_working_group_member, workingGroupsInvolved == "Yes")$n,
-    " responded that they do, and ",
-    filter(df_working_group_member, workingGroupsInvolved == "No")$n,
-    " responded that they do not. Responses on which working groups includes: ",
-    working_group_member_identities
+    "The number of organizations reporting that they are involved in a biodiversity national working group is ",
+    num_does_working_group_member,
+    ", with reported working groups by number of responses including: ",
+    combine_words(df_working_group_member_identities$workingGroupsListTextCount), "."
 )
 # See which organizations lead which national working groups
 df_working_group_leader <- df %>%
@@ -1641,107 +1814,146 @@ result_working_group_leaders <- paste0(
     "."
 )
 # See if participants are involved in task forces
-# TO DO: Requires manual data cleaning for question 39
-df_task_force_member <- df %>%
-    select(organizationName, taskForceInvolved) %>%
-    group_by(taskForceInvolved) %>%
-    summarize(n = n()) %>%
-    filter(taskForceInvolved != "")
+num_does_task_force_member <- round(sum(df$taskForceInvolved == "Yes", na.rm = TRUE), 2)
 df_task_force_member_identities <- df %>%
     select(taskForceListText) %>%
-    group_by(taskForceListText) %>%
-    summarise(n = n()) %>%
-    filter(taskForceListText != "") %>%
-    mutate(taskForceListTextQuote = paste0('"', taskForceListText, '"'))
-task_force_member_identities <- combine_words(unique(df_task_force_member_identities$taskForceListTextQuote))
+    separate_rows(taskForceListText, sep = "[;,]\\s*") %>%
+    mutate(taskForceListText = na_if(str_trim(taskForceListText), "")) %>%
+    filter(!is.na(taskForceListText)) %>%
+    count(taskForceListText, name = "n") %>%
+    arrange(-n) %>%
+    mutate(taskForceListTextCount = paste0(taskForceListText, " (", n, ")"))
 result_num_task_force_member <- paste0(
-    "Organizations were asked whether they are involved in any biodiversity task forces. ",
-    filter(df_task_force_member, taskForceInvolved == "Yes")$n,
-    " responded that they do, and ",
-    filter(df_task_force_member, taskForceInvolved == "No")$n,
-    " responded that they do not. Responses on which task forces includes: ",
-    task_force_member_identities
+    "The number of organizations reporting that they are involved in a biodiversity task force is ",
+    num_does_task_force_member,
+    ", with reported task forces by number of responses including: ",
+    combine_words(df_task_force_member_identities$taskForceListTextCount), "."
 )
 
 ## Analyze Section 14: Significance & Interest
 # List species of cultural significance
-# TO DO: Requires manual data cleaning for question 40
+num_species_culturally_significant <- round(sum(
+    df$culturalSpecies != "No" & !is.na(df$culturalSpecies) & df$culturalSpecies != ""
+), 2)
 df_species_culturally_significant <- df %>%
     select(culturalSpecies) %>%
-    filter(culturalSpecies != "No" & culturalSpecies != "")
-list_species_culturally_significant <- combine_words(df_species_culturally_significant$culturalSpecies)
+    separate_rows(culturalSpecies, sep = "[;,]\\s*") %>%
+    mutate(culturalSpecies = na_if(str_trim(culturalSpecies), "")) %>%
+    filter(!is.na(culturalSpecies), str_to_lower(culturalSpecies) != "no") %>%
+    count(culturalSpecies, name = "n") %>%
+    arrange(-n) %>%
+    mutate(culturalSpeciesCount = paste0(culturalSpecies, " (", n, ")"))
 result_list_species_culturally_significant <- paste0(
-    "Species of cultural significance to Belize were reported as ",
-    list_species_culturally_significant,
-    "."
+    "The number of organizations reporting species of cultural significance to Belize is ",
+    num_species_culturally_significant,
+    ", with reported species by number of responses including: ",
+    combine_words(df_species_culturally_significant$culturalSpeciesCount), "."
 )
-# List species of economical significance
-# TO DO: Requires manual data cleaning for question 40
+# List species of economic significance
+num_species_economically_significant <- round(sum(
+    df$economicSpecies != "No" & !is.na(df$economicSpecies) & df$economicSpecies != ""
+), 2)
 df_species_economically_significant <- df %>%
     select(economicSpecies) %>%
-    filter(economicSpecies != "No" & economicSpecies != "")
-list_species_economically_significant <- combine_words(df_species_economically_significant$economicSpecies)
+    separate_rows(economicSpecies, sep = "[;,]\\s*") %>%
+    mutate(economicSpecies = na_if(str_trim(economicSpecies), "")) %>%
+    filter(!is.na(economicSpecies), str_to_lower(economicSpecies) != "no") %>%
+    count(economicSpecies, name = "n") %>%
+    arrange(-n) %>%
+    mutate(economicSpeciesCount = paste0(economicSpecies, " (", n, ")"))
 result_list_species_economically_significant <- paste0(
-    "Species of economic significance to Belize were reported as ",
-    list_species_economically_significant,
-    "."
+    "The number of organizations reporting species of economic significance to Belize is ",
+    num_species_economically_significant,
+    ", with reported species by number of responses including: ",
+    combine_words(df_species_economically_significant$economicSpeciesCount), "."
 )
 # Investigate specific species concerns
 # TO DO
 # List species of future interest
-# TO DO: Requires manual data cleaning for question 43
 df_species_future_interest <- df %>%
-    select(futureMonitoring) %>%
-    filter(futureMonitoring != "No" & futureMonitoring != "")
-list_species_future_interest <- combine_words(df_species_future_interest$futureMonitoring)
+    select(organizationName, futureMonitoring) %>%
+    mutate(futureMonitoring = na_if(str_trim(futureMonitoring), "")) %>%
+    filter(!is.na(futureMonitoring), str_to_lower(futureMonitoring) != "no") %>%
+    mutate(futureMonitoringQuote = paste0(organizationName, ': "', futureMonitoring, '"'))
 result_list_species_future_interest <- paste0(
-    "Species of future monitoring interest to organizations were reported as ",
-    list_species_future_interest,
-    "."
+    "Organizations reported the following regarding species of future monitoring interest: ",
+    combine_words(df_species_future_interest$futureMonitoringQuote), "."
 )
 # List species of monitoring gap
 # TO DO: Requires manual data cleaning for question 44
+num_species_monitoring_gap <- round(sum(
+    df$speciesMonitoringGap != "No" & !is.na(df$speciesMonitoringGap) & df$speciesMonitoringGap != ""
+), 2)
 df_species_monitoring_gap <- df %>%
     select(speciesMonitoringGap) %>%
-    filter(speciesMonitoringGap != "No" & speciesMonitoringGap != "")
-list_species_monitoring_gap <- combine_words(df_species_monitoring_gap$speciesMonitoringGap)
+    separate_rows(speciesMonitoringGap, sep = "[;,]\\s*") %>%
+    mutate(speciesMonitoringGap = na_if(str_trim(speciesMonitoringGap), "")) %>%
+    filter(!is.na(speciesMonitoringGap), str_to_lower(speciesMonitoringGap) != "no") %>%
+    count(speciesMonitoringGap, name = "n") %>%
+    arrange(-n) %>%
+    mutate(speciesMonitoringGapCount = paste0(speciesMonitoringGap, " (", n, ")"))
 result_list_species_monitoring_gap <- paste0(
-    "Species with a significant monitoring gap were reported as ",
-    list_species_monitoring_gap,
-    "."
+    "The number of organizations reporting a significant species monitoring gap is ",
+    num_species_monitoring_gap,
+    ", with reported species by number of responses including: ",
+    combine_words(df_species_monitoring_gap$speciesMonitoringGapCount), "."
 )
 # List species of monitoring importance
 # TO DO: Requires manual data cleaning for question 44
+num_species_monitoring_importance <- round(sum(
+    df$speciesMonitoringImportance != "No" & !is.na(df$speciesMonitoringImportance) & df$speciesMonitoringImportance != ""
+), 2)
 df_species_monitoring_importance <- df %>%
     select(speciesMonitoringImportance) %>%
-    filter(speciesMonitoringImportance != "No" & speciesMonitoringImportance != "")
-list_species_monitoring_importance <- combine_words(df_species_monitoring_importance$speciesMonitoringImportance)
+    separate_rows(speciesMonitoringImportance, sep = "[;,]\\s*") %>%
+    mutate(speciesMonitoringImportance = na_if(str_trim(speciesMonitoringImportance), "")) %>%
+    filter(!is.na(speciesMonitoringImportance), str_to_lower(speciesMonitoringImportance) != "no") %>%
+    count(speciesMonitoringImportance, name = "n") %>%
+    arrange(-n) %>%
+    mutate(speciesMonitoringImportanceCount = paste0(speciesMonitoringImportance, " (", n, ")"))
 result_list_species_monitoring_importance <- paste0(
-    "Species with a significant monitoring importance were reported as ",
-    list_species_monitoring_importance,
-    "."
+    "The number of organizations reporting a significant species monitoring importance is ",
+    num_species_monitoring_importance,
+    ", with reported species by number of responses including: ",
+    combine_words(df_species_monitoring_importance$speciesMonitoringImportanceCount), "."
 )
 # List area of monitoring gap
 # TO DO: Requires manual data cleaning for question 44
+num_area_monitoring_gap <- round(sum(
+    df$areaMonitoringGap != "No" & !is.na(df$areaMonitoringGap) & df$areaMonitoringGap != ""
+), 2)
 df_area_monitoring_gap <- df %>%
     select(areaMonitoringGap) %>%
-    filter(areaMonitoringGap != "No" & areaMonitoringGap != "")
-list_area_monitoring_gap <- combine_words(df_area_monitoring_gap$areaMonitoringGap)
+    separate_rows(areaMonitoringGap, sep = "[;,]\\s*") %>%
+    mutate(areaMonitoringGap = na_if(str_trim(areaMonitoringGap), "")) %>%
+    filter(!is.na(areaMonitoringGap), str_to_lower(areaMonitoringGap) != "no") %>%
+    count(areaMonitoringGap, name = "n") %>%
+    arrange(-n) %>%
+    mutate(areaMonitoringGapCount = paste0(areaMonitoringGap, " (", n, ")"))
 result_list_area_monitoring_gap <- paste0(
-    "Areas with a significant monitoring gap were reported as ",
-    list_area_monitoring_gap,
-    "."
+    "The number of organizations reporting a significant area monitoring gap is ",
+    num_area_monitoring_gap,
+    ", with reported areas by number of responses including: ",
+    combine_words(df_area_monitoring_gap$areaMonitoringGapCount), "."
 )
 # List area of monitoring importance
 # TO DO: Requires manual data cleaning for question 44
+num_area_monitoring_importance <- round(sum(
+    df$areaMonitoringImportance != "No" & !is.na(df$areaMonitoringImportance) & df$areaMonitoringImportance != ""
+), 2)
 df_area_monitoring_importance <- df %>%
     select(areaMonitoringImportance) %>%
-    filter(areaMonitoringImportance != "No" & areaMonitoringImportance != "")
-list_area_monitoring_importance <- combine_words(df_area_monitoring_importance$areaMonitoringImportance)
+    separate_rows(areaMonitoringImportance, sep = "[;,]\\s*") %>%
+    mutate(areaMonitoringImportance = na_if(str_trim(areaMonitoringImportance), "")) %>%
+    filter(!is.na(areaMonitoringImportance), str_to_lower(areaMonitoringImportance) != "no") %>%
+    count(areaMonitoringImportance, name = "n") %>%
+    arrange(-n) %>%
+    mutate(areaMonitoringImportanceCount = paste0(areaMonitoringImportance, " (", n, ")"))
 result_list_area_monitoring_importance <- paste0(
-    "Areas with a significant monitoring importance were reported as ",
-    list_area_monitoring_importance,
-    "."
+    "The number of organizations reporting a significant area monitoring importance is ",
+    num_area_monitoring_importance,
+    ", with reported areas by number of responses including: ",
+    combine_words(df_area_monitoring_importance$areaMonitoringImportanceCount), "."
 )
 
 ## Present Results
@@ -1760,6 +1972,7 @@ result_plot_long_term_monitoring_methods
 cat(result_caption_plot_long_term_monitoring_methods)
 result_plot_long_term_monitoring_locations
 cat(result_caption_plot_long_term_monitoring_locations)
+result_df_research_projects
 result_plot_ecosystem_health
 cat(result_caption_plot_ecosystem_health)
 cat(result_num_does_habitat_restoration_studying)
@@ -1780,6 +1993,8 @@ cat(result_num_does_engagement)
 result_plot_engagement_types
 cat(result_caption_plot_engagement_types)
 cat(result_num_does_collaboration)
+result_plot_collaboration_network
+cat(result_caption_plot_collaboration_network)
 result_plot_data_tools
 cat(result_caption_plot_data_tools)
 result_plot_tech_gaps
@@ -1796,8 +2011,11 @@ cat(result_freq_publish_online)
 cat(result_num_does_paper_publish)
 cat(result_freq_publish_paper)
 cat(result_num_data_dashboard)
-cat(result_num_data_share)
+result_plot_data_share_network
+cat(result_caption_plot_data_share_network)
+cat(result_num_data_share_repository)
 result_df_data_sharing_collated
+cat(result_caption_table_data_sharing_collated)
 cat(result_num_working_group_member)
 cat(result_working_group_leaders)
 cat(result_num_task_force_member)
