@@ -816,9 +816,9 @@ result_num_does_comm_services_relations_studying <- paste0(
     combine_words(organizations_do_comm_services_relations_studying), "."
 )
 # See how many organizations study climate resiliency
-num_does_climate_resiliency <- round(sum(df$climateResiliency == "Yes, ecosystems" | df$climateResiliency == "Yes, communities", na.rm = TRUE), 2)
-organizations_do_climate_resiliency_ecosystems <- filter(df, df$climateResiliency == "Yes, ecosystems")$organizationName
-organizations_do_climate_resiliency_communities <- filter(df, df$climateResiliency == "Yes, communities")$organizationName
+num_does_climate_resiliency <- round(sum(fun_any_not_no(df$climateResiliency)), 2)
+organizations_do_climate_resiliency_ecosystems <- filter(df, str_detect(df$climateResiliency, fixed("Yes, ecosystems")))$organizationName
+organizations_do_climate_resiliency_communities <- filter(df, str_detect(df$climateResiliency, fixed("Yes, communities")))$organizationName
 result_num_does_climate_resiliency <- paste0(
     "The number of organizations collecting data on climate resiliency is ",
     num_does_climate_resiliency,
