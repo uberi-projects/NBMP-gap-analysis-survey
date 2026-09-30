@@ -6,6 +6,9 @@
 /data_deposit/*
 !/data_deposit/.gitkeep
 
+# Auto-generated default graphics device output from batch R runs
+Rplots.pdf
+
 # History files
 .Rhistory
 .Rapp.history

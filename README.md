@@ -2,35 +2,32 @@
 
 This repository hosts the HTML code for the National Biodiversity Monitoring Program (NBMP) stakeholder gap analysis survey deployment. The survey is taken through the deployment URL on GitHub Pages, and responses collected using a Google Sheet, connected through a custom Google app.
 
-The code for the HTML survey was written with support from Codex and Claude Code, with oversight and testing by the UB-ERI team. The data analysis was fully written by the UB-ERI team, without the assistance of AI tools. 
+The code for the HTML survey was written with support from Codex and Claude Code (Sonnet 5), with oversight and testing by the UB-ERI team. The data analysis script was conceptualized, written, and run by the UB-ERI team, with the assistance of Claude Code (Sonnet 5) in reviewing and auditing code as needed.
 
 
 ## Files
-- .gitignore defines which local files and folders should not be committed to the repository (in this case, generated outputs and local-only data).
 - code.gs includes the Google Apps Script that receives submissions and appends them to the response spreadsheet. It must be bound to that Google Sheet and deployed as a Web App. It writes to the tab named in its `SHEET_NAME` constant (default `Responses`), falling back to the first tab, and uses `LockService` so simultaneous submissions are written one at a time. Opening the deployment URL in a browser (a GET) returns `{"status":"ok"}` as a quick liveness check.
-- default_headers.csv lists the recommended headers to use in the target response Google Sheet. These should be added to the Google Sheet before collecting responses.
-- data_analysis.r stores R code to analyze any response data exports found in the data_deposit folder and produce outputs in the outputs folder. (NOT YET IMPLEMENTED)
-- index.html is the survey HTML. The deployment URL for the Google Apps Script on your response spreadsheet must be set in one place: the `SUBMIT_URL` constant just above the submit handler in `index.html` (search for `const SUBMIT_URL`).
-
+- default_headers.csv lists the recommended headers to use in the target response Google Sheet. These should be added to the Google Sheet before collecting responses so that the order of response columns is logical. Though any additional columns needed will be automatically appending as surveys come through.
+- data_analysis.r stores R code to analyze any response data export found in the data_deposit folder with the name "UB-ERI Gap Analysis – Responses - Cleaned.csv" and produce outputs in the outputs folder.
+- index.html is the survey HTML. The deployment URL for the Google Apps Script on the response spreadsheet must be set in one place: the `SUBMIT_URL` constant just above the submit handler in `index.html`.
+- wireframe.md contains a shareable wireframe for the survey, including survey question order and options, and skip logic. This is shareable with partners to communicate survey methods.
 
 ## Folders
-- assets/ — image assets referenced by index.html, all shown together in one logo row on the Welcome screen: `logo-ub-eri.jpg`, `logo-nbio.jpg`, `logo-project.png`, and `logo_collection_iucn.jpg` (the funding-partner strip: German Cooperation, KfW, IUCN, CCAD, SICA). The row wraps to extra lines only when the screen is too narrow to fit it.
-- data_deposit/ — this is the location that any response data exports to be used for analysis should be manually placed prior to running data_analysis.r.
-- outputs/ — this is the location that any analysis products will be created.
+- assets/ — image assets referenced by index.html
+- data_deposit/ — this is the location that response data exports to be used for analysis should be manually placed prior to running data_analysis.r.
+- outputs/ — this is the location that any analysis products will be created and stored.
 
 
 ## Technical Description
 
 ### Survey Structure Overview
 
-The survey consists of **14 sections** (numbered 0-13) containing **45 questions** total:
-
-- **Section 0:** Introduction (no questions, informational only)
+- **Section 0:** Introduction
 - **Section 1:** Organization Information (organization name)
 - **Section 2:** Biodiversity Monitoring Activities (Questions 1-2)
 - **Section 3:** Ecosystems (Question 3) - *conditionally skipped*
 - **Section 4:** Research Projects (Questions 4-5) - *conditionally skipped*
-- **Section 5:** Ecosystem Health (Questions 6-12) - *everyone answers*
+- **Section 5:** Ecosystem Health (Questions 6-12)
 - **Section 6:** Enforcement (Questions 13-16) - *conditionally shown*
 - **Section 7:** Mainstreaming (Questions 17-19) - *conditionally shown*
 - **Section 8:** Collaboration & Challenges (Questions 20-21) - *conditionally skipped*
@@ -40,37 +37,13 @@ The survey consists of **14 sections** (numbered 0-13) containing **45 questions
 - **Section 12:** National Biodiversity Coordination (Questions 37-39)
 - **Section 13:** Significance & Interest (Questions 40-45)
 
-### Conditional Logic & Skip Patterns
+### Conditional Logic
 
-The survey implements skip logic based on respondent answers:
-
-#### Skip Logic 1: Biodiversity Monitoring Sections (Sections 3-4)
-- **Trigger:** If respondent answers "No" to Question 1 ("Does your organization do biodiversity monitoring?")
-- **Behavior:** Sections 3-4 are automatically skipped
-- **Implementation:** `shouldSkipMonitoringSections()` function checks for "No" answer and navigation functions skip these sections
-
-#### Skip Logic 2: Data Collection Sections (Sections 8-11)
-- **Trigger:** If respondent does NOT collect any data (biodiversity OR ecosystem health data)
-- **Behavior:** Sections 8-11 (Collaboration, Technology, Data Management, Data Sharing) are automatically skipped
-- **Implementation:** `collectsAnyData()` function checks:
-  - Biodiversity monitoring (Question 1 = "Yes")
-  - Ecosystem health data (Question 6 = "Yes")
-  - Habitat restoration data (Question 7 = "Yes")
-  - Pollution data (Question 8, any except "No")
-  - Invasive species data (Question 9 = "Yes")
-  - Ecosystem services data (Question 10 = "Yes")
-  - Community ecosystem services data (Question 11 = "Yes")
-  - Climate resiliency data (Question 12, any except "No")
-- **Result:** If ANY of these are true, respondent must answer Sections 8-11
-
-#### Skip Logic 3: GBIF Question (Question 36)
-- **Trigger:** Only shown if respondent does biodiversity monitoring (Question 1 = "Yes")
-- **Behavior:** Question 36 is hidden if they don't do biodiversity monitoring
-- **Implementation:** `toggleGbifQuestion()` function conditionally displays/hides the question
+The survey implements conditional skip logic based on respondent answers, which is communicated in detail in wireframe.md
 
 ### Toggle Functions
 
-The survey uses **33 toggle functions** to show/hide conditional content based on user selections. Key toggle patterns:
+The survey uses toggle functions to show/hide conditional content based on user selections. Key toggle patterns:
 
 - **Nested checkbox groups:** Selecting a parent checkbox reveals sub-options (e.g., "Mammals" reveals specific mammal types)
 - **Follow-up questions:** Answering "Yes" reveals additional detail questions (e.g., "Do you collaborate?" → "With whom?")
@@ -100,14 +73,16 @@ All toggle functions are called in `restoreProgress()` to ensure conditional fie
 
 3. **default_headers.csv** (Schema Definition)
    - Defines the exact column structure for the response spreadsheet
-   - **Must match** the `name` attributes of form fields in index.html
+   - Matches the `name` attributes of form fields in index.html
    - Contains 145 columns total (including timestamp)
    - Column order matters: data is written to columns in the order headers appear
-   - Dynamic fields use underscore notation: `ltSpecies_0`, `ltSpecies_1`, ... for table rows. Columns for rows 0-4 are pre-provisioned; if a respondent adds a 6th row or more, `code.gs` appends the extra columns (`ltSpecies_5`, ...) to the end of the sheet automatically (see Dynamic Tables below)
+   - Dynamic fields use underscore notation: `ltSpecies_0`, `ltSpecies_1`, ... for table rows.
 
-#### Critical Field Naming Convention
+### Making Changes to the Survey
 
-Form field `name` attributes in HTML **must exactly match** column headers in the spreadsheet:
+#### Following the Field Naming Convention
+
+Form field `name` attributes in HTML must  match column headers in the spreadsheet. For example:
 
 ```html
 <!-- HTML form field -->
@@ -123,13 +98,11 @@ For dynamic table rows that users can add:
 <!-- CSV headers: ltSpecies_0, ltSpecies_1, ltSpecies_2 -->
 ```
 
-### Making Changes to the Survey
-
 #### Adding a New Question
 
 1. **In index.html:**
    - Add the question HTML in the appropriate section
-   - Give the question's `<label>` a `class="question-label"` attribute — **do not add a number prefix**; numbering is automatic (see below)
+   - Give the question's `<label>` a `class="question-label"` attribute
    - Add any necessary toggle functions if the question is conditional
    - Add the toggle function call to `restoreProgress()` if conditional
    - Update validation logic in `nextSection()` if required
@@ -139,8 +112,7 @@ For dynamic table rows that users can add:
    - Ensure the name matches the HTML `name` attribute exactly
 
 3. **In Google Sheets:**
-   - Add the new column header(s) to match the CSV
-   - Position matters: columns should match the CSV order
+   - Add the new column header(s) to match the CSV in the proper position
 
 #### Adding a New Section
 
@@ -165,19 +137,9 @@ Skip logic is controlled in three key functions in index.html:
 
 To modify skip behavior, update the conditional checks in these functions.
 
-#### Question Numbering
+#### Updating Question Numbering
 
-Question numbers are generated automatically — they are not written into the HTML. On page load, a JavaScript one-liner (see the Init block in `index.html`) finds every `<label class="question-label">` in document order and assigns a `data-question-number` attribute (1, 2, 3, …). A CSS `::before` rule then displays that number before the label text.
-
-This means:
-- Adding, removing, or reordering questions renumbers everything automatically.
-- When writing a question label, use `class="question-label"` with no number prefix:
-
-```html
-<label class="question-label">Does your organization do biodiversity monitoring?</label>
-```
-
-CSS counters were intentionally not used here because the survey shows one section at a time via `display: none`, which causes CSS counters to reset per visible section.
+Question numbers are generated automatically in the order questions appear. On page load, a JavaScript one-liner (see the Init block in `index.html`) finds every `<label class="question-label">` in document order and assigns a `data-question-number` attribute (1, 2, 3, …). A CSS `::before` rule then displays that number before the label text.
 
 #### Adding Conditional Display Logic
 
@@ -201,28 +163,18 @@ function toggleMyNewField() {
 
 ### Dynamic Tables
 
-The survey includes three dynamic tables where users can add rows. Each table starts
-with one row and the respondent can add **an unlimited number** via the "Add Row"
-button (there is no cap — respondents are expected to list every project/concern they
-have).
+The survey includes dynamic tables where users can add rows. Each table starts
+with one row and the respondent can add an unlimited number via the "Add Row"
+button. For example:
 
-- **Long-term monitoring projects** (Section 4): Fields `ltSpecies_N`, `ltSites_N`, `ltYears_N`, `ltMethods_N`, `ltOngoing_N`
-- **Recent research projects** (Section 4): Fields `rrSpecies_N`, `rrSites_N`, `rrYears_N`, `rrMethods_N`
-- **Community species concerns** (Section 13): Fields `ccCommunity_N`, `ccDistrict_N`, `ccSpecies_N`, `ccReason_N`
+**Long-term monitoring projects** (Section 4): Fields `ltSpecies_N`, `ltSites_N`, `ltYears_N`, `ltMethods_N`, `ltOngoing_N`
 
-`N` starts at 0. `default_headers.csv` pre-provisions columns for rows 0-4. If a
-respondent adds a 6th row or beyond, `code.gs` appends the new columns
-(`ltSpecies_5`, `ltSites_5`, ...) to the right-hand end of the sheet on the first
-submission that needs them, and fills them in. No data is lost, but those overflow
-columns are added in first-seen order rather than pre-grouped.
-
-**For analysis:** read these table columns by header name, not by fixed position —
-the three tables are variable-width.
+`N` starts at 0. `default_headers.csv` pre-provisions columns for rows 0-4. If a respondent adds a 6th row or beyond, `code.gs` appends the new columns
+(`ltSpecies_5`, `ltSites_5`, ...) to the right-hand end of the sheet on the first submission that needs them, and fills them in.
 
 To change how many rows are pre-provisioned, add or remove `_N` column sets in
 `default_headers.csv` and the sheet's header row (keeping each table's columns
-grouped and contiguous). No `index.html` change is needed — the "Add Row" buttons
-already generate unlimited `_N` field names.
+grouped and contiguous). No `index.html` change is needed.
 
 ### Form State Persistence
 
@@ -230,10 +182,9 @@ The survey automatically saves progress to browser localStorage:
 - Saves after each section navigation
 - Restores on page reload using `restoreProgress()`
 - Data remains until the save is confirmed by the server, the respondent clicks "Start Over" (see below), or the user clears browser data
-- **Important:** Data is saved locally only; responses aren't sent to Google Sheets until "Finish" is clicked
-- On "Finish" the response is POSTed to the Apps Script web app. localStorage is cleared only after the server confirms the save (`{"status":"success"}`); if the request fails or times out, an error with a **Retry** button is shown and the answers are kept
+- Data is saved locally only; responses aren't sent to Google Sheets until "Finish" is clicked. On "Finish" the response is POSTed to the Apps Script web app. localStorage is cleared only after the server confirms the save (`{"status":"success"}`); if the request fails or times out, an error with a Retry button is shown and the answers are kept
 
-The **"Start Over"** button (next to "Previous" in the navigation bar) lets a respondent discard their session. It opens a confirmation dialog; on "Yes" it clears the saved localStorage state, resets the form, and reloads the page so the survey restarts from the beginning. "Cancel" closes the dialog with no change. Handled by `openStartOver()` / `closeStartOver()` / `confirmStartOver()` in `index.html`.
+The "Start Over" button (next to "Previous" in the navigation bar) lets a respondent discard their session. It opens a confirmation dialog; on "Yes" it clears the saved localStorage state, resets the form, and reloads the page so the survey restarts from the beginning. "Cancel" closes the dialog with no change. Handled by `openStartOver()` / `closeStartOver()` / `confirmStartOver()` in `index.html`.
 
 ### Deployment Checklist
 
@@ -244,5 +195,5 @@ When deploying or updating the survey:
 3. Copy headers from default_headers.csv into row 1 of the response tab, and name that tab `Responses` (or update `SHEET_NAME` in code.gs to match its name)
 4. Paste code.gs into the sheet-bound Apps Script project and deploy as a Web App (Execute as: Me; Who has access: Anyone). Re-deploy (new version) after any code.gs change
 5. Open the `/exec` URL in a browser — it should show `{"status":"ok"}`
-6. Submit the form once from the live (GitHub Pages) URL; confirm the row lands in the spreadsheet AND the "Thank you" screen appears. If an error message shows instead, the web app is unreachable or not deployed with "Anyone" access — fix before sending the survey out
-7. Verify skip logic works correctly for all paths through the survey
+6. Submit the form once from the live (GitHub Pages) URL; confirm the row lands in the spreadsheet AND the "Thank you" screen appears. If an error message shows instead, the web app is unreachable or not deployed with "Anyone" access
+7. Verify skip logic works correctly for all paths through the survey if skip logic was edited

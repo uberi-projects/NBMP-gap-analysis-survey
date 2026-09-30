@@ -1,1 +1,0 @@
-Never commit to repository, that is for the user to do

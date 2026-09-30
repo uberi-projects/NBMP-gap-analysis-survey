@@ -137,7 +137,7 @@ fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_lab
 fig_num <- 0
 table_num <- 0
 
-## Analyze Section 2: Organization Information
+## Analyze Section 1: Organization Information
 # Determine which organizations participated and how many
 unique_organization_names <- unique(df$organizationName)
 unique_organizations <- length(unique_organization_names)
@@ -148,7 +148,7 @@ result_unique_organizations <- paste0(
     combine_words(unique_organization_names), "."
 )
 
-## Analyze Section 3: Biodiversity Monitoring Activities
+## Analyze Section 2: Biodiversity Monitoring Activities
 # Determine the proportion of organizations that do biodiveristy monitoring, and which don't
 proportion_does_biodiversity_monitoring <- round(mean(df$doesMonitoring == "Yes", na.rm = TRUE), 2)
 organizations_do_not_do_biodiversity_monitoring <- filter(df, df$doesMonitoring == "No")$organizationName
@@ -199,8 +199,6 @@ fun_build_other_counts <- function(df, other_field_map) {
         is_new_taxon <- other_field_map$is_new_taxon[i]
         response_counts <- tibble(response = df[[column]]) %>%
             filter(!is.na(response), str_trim(response) != "") %>%
-            # Respondents sometimes list multiple write-in answers separated by commas;
-            # treat each as its own response rather than one combined string.
             separate_rows(response, sep = ",\\s*") %>%
             mutate(response = fun_clean_text(response)) %>%
             filter(!is.na(response)) %>%
@@ -208,8 +206,6 @@ fun_build_other_counts <- function(df, other_field_map) {
         if (nrow(response_counts) == 0) next
         if (is.na(level2)) {
             if (is_new_taxon) {
-                # General write-in responses stand on their own as level 1 categories,
-                # rather than nesting under a generic "Other" summary bar.
                 rows[[length(rows) + 1]] <- tibble(
                     level1 = response_counts$response, level2 = "", level3 = "",
                     depth = 1, n = response_counts$n, is_other = TRUE
@@ -273,8 +269,6 @@ fun_build_rows <- function(counts_taxa, taxon_order, subtaxon_orders = list(), b
     rows <- list()
     for (t in taxon_order) {
         if (t == "Other") {
-            # Expand the "Other" placeholder into standalone bars for each
-            # general write-in response, rather than a single nested bar.
             other_rows <- counts_taxa %>%
                 filter(depth == 1, is_other, !(level1 %in% taxon_order)) %>%
                 arrange(desc(n))
@@ -374,7 +368,7 @@ ggsave("outputs/result_plot_taxa.jpeg", result_plot_taxa,
     units = "in", height = 23, width = 18
 )
 
-## Analyze Section 4: Ecosystems
+## Analyze Section 3: Ecosystems
 # Examine monitoring ecosystems
 ecosystems_order <- c(
     "Open Sea", "Deep Reef", "Coral Reef", "Lagoon",
@@ -410,7 +404,7 @@ ggsave("outputs/result_plot_ecosystems.jpeg", result_plot_ecosystems,
     units = "in", height = 23, width = 18
 )
 
-## Analyze Section 5: Research Projects
+## Analyze Section 4: Research Projects
 # Investigate long-term monitoring projects
 current_year <- as.integer(format(Sys.Date(), "%Y"))
 df_long_term_monitoring <- df %>%
@@ -601,7 +595,7 @@ result_caption_plot_long_term_monitoring_locations <- paste0(
 ggsave("outputs/result_plot_long_term_monitoring_locations.jpeg", result_plot_long_term_monitoring_locations,
     units = "in", height = 16, width = 14
 )
-## Analyze Section 6: Ecosystem Health
+## Analyze Section 5: Ecosystem Health
 # Investigate types of data collected on ecosystem health
 ecosystem_health_fixed_order <- c(
     "Species Richness", "Presence/Absence Of Indicator Or Target Species", "Population Size",
@@ -829,7 +823,7 @@ result_num_does_climate_resiliency <- paste0(
     " focused on ecosystems."
 )
 
-## Analyze Section 7: Enforcement
+## Analyze Section 6: Enforcement
 # See how many organizations do enforcement
 num_does_enforcement <- round(sum(df$doesEnforcement == "Yes", na.rm = TRUE), 2)
 organizations_do_enforcement <- filter(df, df$doesEnforcement == "Yes")$organizationName
@@ -1066,7 +1060,7 @@ result_num_does_patrol_data <- paste0(
     combine_words(df_patrol_datatypes$patrolDataTypesCount), "."
 )
 
-## Analyze Section 8: Mainstreaming
+## Analyze Section 7: Mainstreaming
 # See how many organizations do engagement
 num_does_engagement <- round(sum(df$communityEngagement == "Yes", na.rm = TRUE), 2)
 organizations_do_engagement <- filter(df, df$communityEngagement == "Yes")$organizationName
@@ -1171,7 +1165,7 @@ ggsave("outputs/result_plot_engagement_types.jpeg", result_plot_engagement_types
     units = "in", height = 23, width = 18
 )
 
-## Analyze Section 9: Collaboration & Challenges
+## Analyze Section 8: Collaboration & Challenges
 # See how many organizations do collaboration
 num_does_collaboration <- round(sum(df$collaboration == "Yes", na.rm = TRUE), 2)
 organizations_do_collaboration <- filter(df, df$collaboration == "Yes")$organizationName
@@ -1245,7 +1239,7 @@ ggsave("outputs/result_plot_challenges.jpeg", result_plot_challenges,
     units = "in", height = 23, width = 18
 )
 
-## Analyze Section 10: Technology & Skill Gaps
+## Analyze Section 9: Technology & Skill Gaps
 # Determine how many participants are seeing the section
 num_sees_section10 <- length(with(
     df,
@@ -1419,7 +1413,6 @@ result_missing_software <- paste0(
     combine_words(df_missing_software$missingSoftwareEquipmentCount), "."
 )
 # Examine technical/training skill gaps
-# TO DO: This requires a lot of cleaning in the data
 skill_gaps_fixed_order <- c(
     "Limited Data Analysis Skills", "Limited Gis Access", "Limited Technical Support",
     "High Staff Turnover Leading To Constant Retraining Needs",
@@ -1593,7 +1586,7 @@ ggsave("outputs/result_plot_training_needs.jpeg", result_plot_training_needs,
     units = "in", height = 23, width = 18
 )
 
-## Analyze Section 11: Data Management
+## Analyze Section 10: Data Management
 # Determine how many participants are seeing the section
 num_sees_section11 <- length(with(
     df,
@@ -1682,7 +1675,7 @@ result_undigitized_data <- paste0(
     combine_words(undigitized_data_responses), "."
 )
 
-## Analyze Section 12: Data Sharing
+## Analyze Section 11: Data Sharing
 # Determine how many participants are seeing the section
 num_sees_section12 <- length(with(
     df,
@@ -1863,7 +1856,7 @@ result_caption_table_data_sharing_collated <- paste0(
 )
 write.csv(result_df_data_sharing_collated, "outputs/result_df_data_sharing_collated.csv")
 
-## Analyze Section 13: National Biodiversity Coordination
+## Analyze Section 12: National Biodiversity Coordination
 # See if participants are involved in national working groups
 num_does_working_group_member <- round(sum(df$workingGroupsInvolved == "Yes", na.rm = TRUE), 2)
 df_working_group_member_identities <- df %>%
@@ -1907,7 +1900,7 @@ result_num_task_force_member <- paste0(
     combine_words(df_task_force_member_identities$taskForceListTextCount), "."
 )
 
-## Analyze Section 14: Significance & Interest
+## Analyze Section 13: Significance & Interest
 # List species of cultural significance
 num_species_culturally_significant <- round(sum(
     df$culturalSpecies != "No" & !is.na(df$culturalSpecies) & df$culturalSpecies != ""
@@ -2031,7 +2024,6 @@ result_list_species_future_interest <- paste0(
     combine_words(df_species_future_interest$futureMonitoringQuote), "."
 )
 # List species of monitoring gap
-# TO DO: Requires manual data cleaning for question 44
 num_species_monitoring_gap <- round(sum(
     df$speciesMonitoringGap != "No" & !is.na(df$speciesMonitoringGap) & df$speciesMonitoringGap != ""
 ), 2)
@@ -2050,7 +2042,6 @@ result_list_species_monitoring_gap <- paste0(
     combine_words(df_species_monitoring_gap$speciesMonitoringGapCount), "."
 )
 # List species of monitoring importance
-# TO DO: Requires manual data cleaning for question 44
 num_species_monitoring_importance <- round(sum(
     df$speciesMonitoringImportance != "No" & !is.na(df$speciesMonitoringImportance) & df$speciesMonitoringImportance != ""
 ), 2)
@@ -2069,7 +2060,6 @@ result_list_species_monitoring_importance <- paste0(
     combine_words(df_species_monitoring_importance$speciesMonitoringImportanceCount), "."
 )
 # List area of monitoring gap
-# TO DO: Requires manual data cleaning for question 44
 num_area_monitoring_gap <- round(sum(
     df$areaMonitoringGap != "No" & !is.na(df$areaMonitoringGap) & df$areaMonitoringGap != ""
 ), 2)
@@ -2088,7 +2078,6 @@ result_list_area_monitoring_gap <- paste0(
     combine_words(df_area_monitoring_gap$areaMonitoringGapCount), "."
 )
 # List area of monitoring importance
-# TO DO: Requires manual data cleaning for question 44
 num_area_monitoring_importance <- round(sum(
     df$areaMonitoringImportance != "No" & !is.na(df$areaMonitoringImportance) & df$areaMonitoringImportance != ""
 ), 2)
@@ -2181,7 +2170,7 @@ result_caption_plot_domain_coverage <- paste0(
 ggsave("outputs/result_plot_domain_coverage.jpeg", result_plot_domain_coverage,
     units = "in", height = 10, width = 16
 )
-# Compare species/taxa of interest ("important") to species/taxa actually studied
+# Compare species/taxa of interest to species/taxa actually studied
 important_categories <- c(
     "Culturally Significant", "Economically Significant", "Community Concern",
     "Monitoring Gap", "Monitoring Importance"
@@ -2217,7 +2206,6 @@ fun_build_other_studied <- function(df, other_field_map) {
         }
     }
     bind_rows(rows)
-}
 fun_count_matches <- function(mapped_level1_i, mapped_level2_i, raw_variants_i, df_studied) {
     variants_i <- str_to_upper(str_trim(str_split(raw_variants_i, ";\\s*")[[1]]))
     exact_orgs <- df_studied %>%
