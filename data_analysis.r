@@ -2171,6 +2171,11 @@ ggsave("outputs/result_plot_domain_coverage.jpeg", result_plot_domain_coverage,
     units = "in", height = 10, width = 16
 )
 # Compare species/taxa of interest to species/taxa actually studied
+# Requires two manually-curated lookup tables in data_deposit/ (gitignored, not
+# included in the repo): studied_taxa_lookup.csv and species_taxa_lookup.csv.
+# See README.md "Species/Taxa Lookup Tables" for what they are and how to build
+# them. Without them, this block errors out here, but every output above this
+# point will already have been produced.
 important_categories <- c(
     "Culturally Significant", "Economically Significant", "Community Concern",
     "Monitoring Gap", "Monitoring Importance"
@@ -2206,6 +2211,7 @@ fun_build_other_studied <- function(df, other_field_map) {
         }
     }
     bind_rows(rows)
+}
 fun_count_matches <- function(mapped_level1_i, mapped_level2_i, raw_variants_i, df_studied) {
     variants_i <- str_to_upper(str_trim(str_split(raw_variants_i, ";\\s*")[[1]]))
     exact_orgs <- df_studied %>%
