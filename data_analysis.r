@@ -130,6 +130,9 @@ fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_lab
 df <- df %>%
     select(-timestamp) %>%
     distinct()
+# Exclude test data
+df <- df %>%
+    filter(organizationName != "TEST")
 # Standardize organizationName values using lookup table df_lookup_orgs
 df_lookup_orgs_long <- df_lookup_orgs %>%
     separate_rows(raw_variants, sep = ";") %>%
@@ -141,11 +144,8 @@ df <- df %>%
     mutate(organizationName = coalesce(organization_name, organizationName)) %>%
     select(-organization_name)
 
-
-
-
 ## Set Fig/Table Number Variable ---------------------------------------------------
-fig_num() <- 0
+fig_num <- 0
 table_num <- 0
 
 ## Analyze Section 1: Organization Information
