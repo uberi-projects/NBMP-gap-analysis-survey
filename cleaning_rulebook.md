@@ -11,4 +11,7 @@ Relevant columns: `organizationName`, `collaborationOrgsList`, `shareDataWhom`
 
 Organization names should be spelled out and presented as their official name. `lookup_tables\organizations_lookup.csv` is used in `data_analysis.r` to automatically assign organization names where possible. All other values are manually mapped to one of the valid organizations in the lookup table. Values from these rows that cannot be mapped to one of the valid organization in the lookup table are handled individually:
 
+### 2. Monitoring areas
+Relevant columns:  `marineFishOther`, `marineInvertebratesOther`, `freshwaterMacroSpecify`, `terrestrialInvertebratesOther`,	`amphibiansSpecify`, `reptilesOther`, `plantsOther`, `monitoringAreasOther`
 
+Custom supplied monitoring area names should be grouped and irrelavant responses excluded. Responses are changed to title case to group similar responses and irrelevant responses are excluded or tidied, including: "We have a watershed monitoring program," (excluded), "various lizard species" (tidied to "lizards"), "Benthic for marine" (tidied to "marine benthic"), and "Pine trees (fire effects monitoring in savannah)" (tidied to "pine trees").
