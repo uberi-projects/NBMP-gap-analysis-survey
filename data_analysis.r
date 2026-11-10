@@ -9,12 +9,9 @@ library(tidygraph)
 library(ggraph)
 
 ## Load Data ---------------------------------------------------
-df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Cleaned.csv")
+df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Processed.csv")
 
 ## Clean Data ---------------------------------------------------
-# Drop invalid UTF-8 byte sequences
-df <- df %>%
-    mutate(across(where(is.character), ~ iconv(., from = "UTF-8", to = "UTF-8", sub = "")))
 # Remove duplicates
 df <- df %>%
     select(-timestamp) %>%
