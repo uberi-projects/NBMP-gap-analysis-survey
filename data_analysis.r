@@ -201,42 +201,21 @@ other_field_map <- tribble(
     "amphibiansSpecify", "Amphibians", NA_character_, FALSE,
     "marineFishOther", "Fish", "Marine Fish", FALSE
 )
-fun_build_other_counts <- function(df, other_field_map) {
-    rows <- list()
-    for (i in seq_len(nrow(other_field_map))) {
-        column <- other_field_map$column[i]
-        level1 <- other_field_map$level1[i]
-        level2 <- other_field_map$level2[i]
-        is_new_taxon <- other_field_map$is_new_taxon[i]
-        response_counts <- tibble(response = df[[column]]) %>%
-            filter(!is.na(response), str_trim(response) != "") %>%
-            separate_rows(response, sep = ",\\s*") %>%
-            mutate(response = fun_clean_text(response)) %>%
-            filter(!is.na(response)) %>%
-            count(response, name = "n")
-        if (nrow(response_counts) == 0) next
-        if (is.na(level2)) {
-            if (is_new_taxon) {
-                rows[[length(rows) + 1]] <- tibble(
-                    level1 = response_counts$response, level2 = "", level3 = "",
-                    depth = 1, n = response_counts$n, is_other = TRUE
-                )
-            } else {
-                rows[[length(rows) + 1]] <- tibble(
-                    level1 = level1, level2 = response_counts$response, level3 = "",
-                    depth = 2, n = response_counts$n, is_other = TRUE
-                )
-            }
-        } else {
-            rows[[length(rows) + 1]] <- tibble(
-                level1 = level1, level2 = level2, level3 = response_counts$response,
-                depth = 3, n = response_counts$n, is_other = TRUE
-            )
-        }
-    }
-    bind_rows(rows)
-}
-counts_taxa <- bind_rows(counts_taxa, fun_build_other_counts(df, other_field_map))
+counts_other <- other_field_map %>%
+    mutate(response = map(column, ~ df[[.x]])) %>%
+    unnest_longer(response) %>%
+    separate_rows(response, sep = ",\\s*") %>%
+    mutate(response = fun_clean_text(response)) %>%
+    filter(!is.na(response)) %>%
+    count(level1, level2, is_new_taxon, response, name = "n") %>%
+    transmute(
+        depth = case_when(is_new_taxon ~ 1, is.na(level2) ~ 2, TRUE ~ 3),
+        level3 = if_else(depth == 3, response, ""),
+        level2 = case_when(depth == 1 ~ "", depth == 2 ~ response, TRUE ~ level2),
+        level1 = if_else(depth == 1, response, level1),
+        n, is_other = TRUE
+    )
+counts_taxa <- bind_rows(counts_taxa, counts_other)
 taxon_order <- c(
     "Birds", "Mammals", "Fish", "Marine Invertebrates",
     "Freshwater Macroinvertebrate", "Terrestrial Macroinvertebrates",
@@ -276,57 +255,30 @@ subtaxon_orders <- list(
     "Reptiles" = subtaxon_order_reptiles,
     "Plants" = subtaxon_order_plants
 )
-fun_build_rows <- function(counts_taxa, taxon_order, subtaxon_orders = list(), base_width = 0.9, shrink = 0.55) {
-    rows <- list()
-    for (t in taxon_order) {
-        if (t == "Other") {
-            other_rows <- counts_taxa %>%
-                filter(depth == 1, is_other, !(level1 %in% taxon_order)) %>%
-                arrange(desc(n))
-            for (i in seq_len(nrow(other_rows))) {
-                rows[[length(rows) + 1]] <- tibble(
-                    category = other_rows$level1[i], n = other_rows$n[i], depth = 1,
-                    width = base_width, family = other_rows$level1[i], is_other = TRUE
-                )
-            }
-            next
-        }
-        top_row <- counts_taxa %>% filter(level1 == t, depth == 1)
-        if (nrow(top_row) == 0) next # skip taxa nobody selected
-        rows[[length(rows) + 1]] <- tibble(
-            category = t, n = top_row$n, depth = 1, width = base_width, family = t,
-            is_other = top_row$is_other
-        )
-        children <- counts_taxa %>% filter(level1 == t, depth == 2)
-        subtaxon_order <- subtaxon_orders[[t]]
-        if (!is.null(subtaxon_order)) {
-            children <- children %>% arrange(match(level2, subtaxon_order), desc(n))
-        } else {
-            children <- children %>% arrange(desc(n))
-        }
-        for (i in seq_len(nrow(children))) {
-            child <- children$level2[i]
-            rows[[length(rows) + 1]] <- tibble(
-                category = child, n = children$n[i], depth = 2, width = base_width * shrink, family = t,
-                is_other = children$is_other[i]
-            )
-            grandchildren <- counts_taxa %>%
-                filter(level1 == t, level2 == child, depth == 3) %>%
-                arrange(desc(n))
-            for (j in seq_len(nrow(grandchildren))) {
-                rows[[length(rows) + 1]] <- tibble(
-                    category = grandchildren$level3[j], n = grandchildren$n[j],
-                    depth = 3, width = base_width * shrink^2, family = t,
-                    is_other = grandchildren$is_other[j]
-                )
-            }
-        }
-    }
-    bind_rows(rows)
-}
-df_long_taxa_plot <- fun_build_rows(counts_taxa, taxon_order, subtaxon_orders) %>%
-    mutate(
+df_subtaxon_rank <- imap_dfr(subtaxon_orders, ~ tibble(level1 = .y, level2 = .x, sub_rank = seq_along(.x)))
+df_long_taxa_plot <- counts_taxa %>%
+    mutate(family_name = if_else(level1 %in% taxon_order, level1, "Other")) %>%
+    filter(family_name != "Other" | (depth == 1 & is_other)) %>%
+    group_by(level1) %>%
+    filter(any(depth == 1)) %>% # skip taxa nobody selected
+    mutate(n1 = n[depth == 1][1]) %>%
+    group_by(level1, level2) %>%
+    mutate(n2 = if_else(level2 == "", NA_integer_, n[depth == 2][1])) %>%
+    ungroup() %>%
+    left_join(df_subtaxon_rank, by = c("level1", "level2")) %>%
+    arrange(
+        match(family_name, taxon_order),
+        if_else(family_name == "Other", -n1, 0L), level1,
+        depth > 1, sub_rank, desc(n2), level2,
+        depth > 2, desc(n)
+    ) %>%
+    transmute(
+        category = case_when(depth == 1 ~ level1, depth == 2 ~ level2, TRUE ~ level3),
+        n,
         depth = factor(depth),
+        width = 0.9 * 0.55^(as.integer(depth) - 1), # bars shrink at each level
+        family = level1,
+        is_other,
         fill_group = if_else(is_other, paste0("other_", depth), as.character(depth))
     )
 var_family_gap <- 0.5
