@@ -11,12 +11,6 @@ library(ggraph)
 ## Load Data ---------------------------------------------------
 df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Processed.csv")
 
-## Clean Data ---------------------------------------------------
-# Remove duplicates
-df <- df %>%
-    select(-timestamp) %>%
-    distinct()
-
 ## Define Functions ---------------------------------------------------
 fun_clean_text <- function(x) {
     x <- str_trim(x)
@@ -129,6 +123,12 @@ fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_lab
         )
     list(data = df_summary, plot = plot)
 }
+
+## Clean Data ---------------------------------------------------
+# Remove duplicates
+df <- df %>%
+    select(-timestamp) %>%
+    distinct()
 
 ## Set Fig/Table Number Variable ---------------------------------------------------
 fig_num <- 0
