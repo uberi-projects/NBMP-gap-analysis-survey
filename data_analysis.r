@@ -10,6 +10,7 @@ library(ggraph)
 
 ## Load Data ---------------------------------------------------
 df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Processed.csv")
+df_lookup_orgs <- read.csv("lookup_tables/organizations_lookup.csv")
 
 ## Define Functions ---------------------------------------------------
 fun_clean_text <- function(x) {
@@ -129,9 +130,22 @@ fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_lab
 df <- df %>%
     select(-timestamp) %>%
     distinct()
+# Standardize organizationName values using lookup table df_lookup_orgs
+df_lookup_orgs_long <- df_lookup_orgs %>%
+    separate_rows(raw_variants, sep = ";") %>%
+    mutate(raw_variants = str_trim(raw_variants)) %>%
+    filter(raw_variants != "")
+df <- df %>%
+    mutate(organizationName = str_trim(organizationName)) %>%
+    left_join(df_lookup_orgs_long, by = c("organizationName" = "raw_variants")) %>%
+    mutate(organizationName = coalesce(organization_name, organizationName)) %>%
+    select(-organization_name)
+
+
+
 
 ## Set Fig/Table Number Variable ---------------------------------------------------
-fig_num <- 0
+fig_num() <- 0
 table_num <- 0
 
 ## Analyze Section 1: Organization Information
