@@ -11,6 +11,7 @@ library(ggraph)
 ## Load Data ---------------------------------------------------
 df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Processed.csv")
 df_lookup_orgs <- read.csv("lookup_tables/organizations_lookup.csv")
+df_lookup_sites <- read.csv("lookup_tables/sites_lookup.csv")
 
 ## Define Functions ---------------------------------------------------
 fun_clean_text <- function(x) {
@@ -143,6 +144,18 @@ df <- df %>%
     left_join(df_lookup_orgs_long, by = c("organizationName" = "raw_variants")) %>%
     mutate(organizationName = coalesce(organization_name, organizationName)) %>%
     select(-organization_name)
+# Standardize rrSites_# and ltSites_# values using lookup table df_lookup_sites
+df_lookup_sites_long <- df_lookup_sites %>%
+    separate_rows(raw_variants, sep = ";") %>%
+    mutate(raw_variants = str_trim(raw_variants)) %>%
+    filter(raw_variants != "")
+sites_map <- deframe(select(df_lookup_sites_long, raw_variants, site_name))
+df <- df %>%
+    mutate(across(matches("^(lt|rr)Sites_\\d+$"), ~ map_chr(str_split(.x, "[,;]"), function(sites) {
+        sites <- str_trim(sites)
+        sites <- sites[!is.na(sites) & sites != ""]
+        paste(unique(coalesce(sites_map[sites], sites)), collapse = ", ")
+    })))
 
 ## Set Fig/Table Number Variable ---------------------------------------------------
 fig_num <- 0
