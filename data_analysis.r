@@ -508,7 +508,7 @@ result_plot_long_term_monitoring_orgs <- ggplot(df_org_timeline, aes(
         breaks = df_org_timeline$y_pos, labels = df_org_timeline$rowLabel,
         expand = expansion(add = family_gap)
     ) +
-    coord_cartesian(xlim = c(current_year - 5, current_year)) + # survey asked about the last 5 years
+    coord_cartesian(xlim = c(current_year - 5, current_year)) +
     labs(x = "Year", y = NULL) +
     theme_pubclean() +
     theme(
