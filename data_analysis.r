@@ -12,6 +12,7 @@ library(ggraph)
 df <- read.csv("data_deposit/UB-ERI Gap Analysis – Responses - Processed.csv")
 df_lookup_orgs <- read.csv("lookup_tables/organizations_lookup.csv")
 df_lookup_sites <- read.csv("lookup_tables/sites_lookup.csv")
+df_lookup_communities <- read.csv("lookup_tables/communities_lookup.csv")
 
 ## Define Functions ---------------------------------------------------
 fun_clean_text <- function(x) {
@@ -157,6 +158,18 @@ df <- df %>%
         sites <- sites[!is.na(sites) & sites != ""]
         paste(unique(coalesce(sites_map[sites], sites)), collapse = ", ")
     })))
+# Standardize engagementCommunities values using lookup table df_lookup_communities
+df_lookup_communities_long <- df_lookup_communities %>%
+    separate_rows(raw_variants, sep = ";") %>%
+    mutate(raw_variants = str_trim(raw_variants)) %>%
+    filter(raw_variants != "")
+communities_map <- deframe(select(df_lookup_communities_long, raw_variants, community_name))
+df <- df %>%
+    mutate(engagementCommunities = map_chr(str_split(engagementCommunities, "[,\n]"), function(communities) {
+        communities <- str_trim(communities)
+        communities <- communities[!is.na(communities) & communities != ""]
+        paste(unique(coalesce(communities_map[communities], communities)), collapse = ", ")
+    }))
 
 ## Set Fig/Table Number Variable ---------------------------------------------------
 fig_num <- 0
@@ -699,7 +712,7 @@ df_ecosystem_services <- df %>%
     group_by(ecosystemServicesTypes) %>%
     summarise(n = n(), .groups = "drop") %>%
     mutate(is_other = FALSE)
-ecosystem_services_other <- fun_clean_text(df$ecosystemServicesOther)
+ecosystem_services_other <- fun_clean_text(unlist(str_split(df$ecosystemServicesOther, ",")))
 ecosystem_services_other <- ecosystem_services_other[!is.na(ecosystem_services_other)]
 df_ecosystem_services_other <- tibble(ecosystemServicesTypes = ecosystem_services_other) %>%
     count(ecosystemServicesTypes, name = "n") %>%
