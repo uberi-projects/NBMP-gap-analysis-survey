@@ -84,7 +84,7 @@ fun_parse_end_year <- function(years_text, current_year) {
         max(nums)
     }, integer(1), USE.NAMES = FALSE)
 }
-fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_label) {
+fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_label, wrap_labels = TRUE) {
     df_summary <- df_long %>%
         filter(!is.na(startYear) & !is.na(endYear)) %>%
         group_by({{ group_col }}) %>%
@@ -113,7 +113,8 @@ fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_lab
             breaks = scales::pretty_breaks(n = 5),
             labels = scales::label_number(big.mark = "")
         ) +
-        scale_y_discrete(labels = fun_wrap_two_lines) +
+        scale_y_discrete(labels = if (wrap_labels) fun_wrap_two_lines else waiver()) +
+        coord_cartesian(xlim = c(current_year - 5, current_year)) + # survey asked about the last 5 years
         labs(x = "Year", y = axis_label) +
         theme_pubclean() +
         theme(
@@ -133,7 +134,7 @@ df <- df %>%
     distinct()
 # Exclude test data
 df <- df %>%
-    filter(organizationName != "TEST")
+    filter(str_trim(organizationName) != "TEST")
 # Standardize organizationName values using lookup table df_lookup_orgs
 df_lookup_orgs_long <- df_lookup_orgs %>%
     separate_rows(raw_variants, sep = ";") %>%
@@ -466,12 +467,9 @@ df_org_research <- df_research_projects %>%
         .groups = "drop"
     ) %>%
     mutate(category = "One-Off Research")
-org_order <- bind_rows(df_org_long_term, df_org_research) %>%
-    group_by(organizationName) %>%
-    summarise(minStartYear = min(startYear), .groups = "drop") %>%
-    arrange(desc(minStartYear)) %>%
-    pull(organizationName)
+org_order <- sort(unique(df$organizationName))
 df_org_timeline <- bind_rows(df_org_long_term, df_org_research) %>%
+    complete(organizationName = org_order, category = c("Long-Term Monitoring", "One-Off Research")) %>% # every org gets both rows, empty if no projects
     mutate(
         organizationName = factor(organizationName, levels = org_order),
         category = factor(category, levels = c("Long-Term Monitoring", "One-Off Research"))
@@ -491,12 +489,16 @@ df_org_timeline <- bind_rows(df_org_long_term, df_org_research) %>%
 result_plot_long_term_monitoring_orgs <- ggplot(df_org_timeline, aes(
     xmin = startYear, xmax = endYear,
     ymin = y_pos - bar_height / 2, ymax = y_pos + bar_height / 2,
-    fill = category
+    fill = category, color = category
 )) +
-    geom_rect(color = "black") +
+    geom_rect(na.rm = TRUE) +
     scale_fill_manual(
         values = c("Long-Term Monitoring" = "#382e6b", "One-Off Research" = "#c97a2b"),
-        name = "Category"
+        name = "Category", na.translate = FALSE
+    ) +
+    scale_color_manual(
+        values = c("Long-Term Monitoring" = "#382e6b", "One-Off Research" = "#c97a2b"),
+        name = "Category", na.translate = FALSE
     ) +
     scale_x_continuous(
         breaks = scales::pretty_breaks(n = 5),
@@ -506,6 +508,7 @@ result_plot_long_term_monitoring_orgs <- ggplot(df_org_timeline, aes(
         breaks = df_org_timeline$y_pos, labels = df_org_timeline$rowLabel,
         expand = expansion(add = family_gap)
     ) +
+    coord_cartesian(xlim = c(current_year - 5, current_year)) + # survey asked about the last 5 years
     labs(x = "Year", y = NULL) +
     theme_pubclean() +
     theme(
@@ -522,43 +525,12 @@ result_caption_plot_long_term_monitoring_orgs <- paste0(
 ggsave("outputs/result_plot_long_term_monitoring_orgs.jpeg", result_plot_long_term_monitoring_orgs,
     units = "in", height = 10, width = 12
 )
-long_term_monitoring_timeline_taxon <- fun_build_long_term_monitoring_timeline(
-    df_long_term_monitoring %>%
-        separate_rows(speciesTaxa, sep = ",\\s*") %>%
-        mutate(speciesTaxa = fun_clean_text(speciesTaxa)),
-    speciesTaxa, "Species / Taxon"
-)
-result_plot_long_term_monitoring_taxa <- long_term_monitoring_timeline_taxon$plot
-fig_num <- fig_num + 1
-result_caption_plot_long_term_monitoring_taxa <- paste0(
-    "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by species/taxon monitored (n = ",
-    n_long_term_monitoring_projects, " projects). Each bar spans that taxon's earliest reported project ",
-    "start year to its latest end year, and is colored by whether it has at least one still-ongoing project."
-)
-ggsave("outputs/result_plot_long_term_monitoring_taxa.jpeg", result_plot_long_term_monitoring_taxa,
-    units = "in", height = 18, width = 14
-)
-long_term_monitoring_timeline_method <- fun_build_long_term_monitoring_timeline(
-    df_long_term_monitoring %>%
-        separate_rows(methods, sep = ",\\s*") %>%
-        mutate(methods = fun_clean_text(methods)),
-    methods, "Method"
-)
-result_plot_long_term_monitoring_methods <- long_term_monitoring_timeline_method$plot
-fig_num <- fig_num + 1
-result_caption_plot_long_term_monitoring_methods <- paste0(
-    "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by method used (n = ",
-    n_long_term_monitoring_projects, " projects). Each bar spans that method's earliest reported project ",
-    "start year to its latest end year, and is colored by whether it has at least one still-ongoing project."
-)
-ggsave("outputs/result_plot_long_term_monitoring_methods.jpeg", result_plot_long_term_monitoring_methods,
-    units = "in", height = 16, width = 14
-)
 long_term_monitoring_timeline_location <- fun_build_long_term_monitoring_timeline(
     df_long_term_monitoring %>%
         separate_rows(location, sep = ",\\s*") %>%
-        mutate(location = fun_clean_text(location)),
-    location, "Location"
+        filter(location != ""),
+    location, "Location",
+    wrap_labels = FALSE
 )
 result_plot_long_term_monitoring_locations <- long_term_monitoring_timeline_location$plot
 fig_num <- fig_num + 1
