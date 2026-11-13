@@ -35,6 +35,50 @@ fun_wrap_two_lines <- function(labels) {
         )
     }, character(1), USE.NAMES = FALSE)
 }
+fun_build_other_counts <- function(df, other_field_map) {
+    other_field_map %>%
+        mutate(response = map(column, ~ df[[.x]])) %>%
+        unnest_longer(response) %>%
+        separate_rows(response, sep = ",\\s*") %>%
+        mutate(response = fun_clean_text(response)) %>%
+        filter(!is.na(response)) %>%
+        count(level1, level2, is_new_taxon, response, name = "n") %>%
+        transmute(
+            depth = case_when(is_new_taxon ~ 1, is.na(level2) ~ 2, TRUE ~ 3),
+            level3 = if_else(depth == 3, response, ""),
+            level2 = case_when(depth == 1 ~ "", depth == 2 ~ response, TRUE ~ level2),
+            level1 = if_else(depth == 1, response, level1),
+            n, is_other = TRUE
+        )
+}
+fun_build_rows <- function(counts, family_order, subtaxon_orders = list(), base_width = 0.9, shrink = 0.55) {
+    df_subtaxon_rank <- bind_rows(
+        tibble(level1 = character(), level2 = character(), sub_rank = integer()),
+        imap_dfr(subtaxon_orders, ~ tibble(level1 = .y, level2 = .x, sub_rank = seq_along(.x)))
+    )
+    counts %>%
+        mutate(family_name = if_else(level1 %in% family_order, level1, "Other")) %>%
+        filter(family_name %in% family_order, family_name != "Other" | (depth == 1 & is_other)) %>%
+        group_by(level1) %>%
+        filter(any(depth == 1)) %>%
+        mutate(n1 = n[depth == 1][1]) %>%
+        group_by(level1, level2) %>%
+        mutate(n2 = if_else(level2 == "", NA, n[depth == 2][1])) %>%
+        ungroup() %>%
+        left_join(df_subtaxon_rank, by = c("level1", "level2")) %>%
+        arrange(
+            match(family_name, family_order),
+            if_else(family_name == "Other", -n1, 0), level1,
+            depth > 1, sub_rank, desc(n2), level2,
+            depth > 2, desc(n)
+        ) %>%
+        transmute(
+            category = case_when(depth == 1 ~ level1, depth == 2 ~ level2, TRUE ~ level3),
+            n, depth,
+            width = base_width * shrink^(depth - 1), # bars shrink at each level
+            family = level1, is_other
+        )
+}
 fun_any_not_no <- function(x) {
     vapply(x, function(val) {
         if (is.na(val) || str_trim(val) == "") {
@@ -146,6 +190,7 @@ df <- df %>%
     left_join(df_lookup_orgs_long, by = c("organizationName" = "raw_variants")) %>%
     mutate(organizationName = coalesce(organization_name, organizationName)) %>%
     select(-organization_name)
+org_acronyms <- deframe(select(filter(df_lookup_orgs, organization_acronym != ""), organization_name, organization_acronym))
 # Standardize rrSites_# and ltSites_# values using lookup table df_lookup_sites
 df_lookup_sites_long <- df_lookup_sites %>%
     separate_rows(raw_variants, sep = ";") %>%
@@ -170,6 +215,14 @@ df <- df %>%
         communities <- communities[!is.na(communities) & communities != ""]
         paste(unique(coalesce(communities_map[communities], communities)), collapse = ", ")
     }))
+# Standardize collaborationOrgsList and shareDataWhom values using lookup table df_lookup_orgs
+orgs_map <- deframe(select(df_lookup_orgs_long, raw_variants, organization_name))
+df <- df %>%
+    mutate(across(c(collaborationOrgsList, shareDataWhom), ~ map_chr(str_split(.x, "[,;\n]"), function(orgs) {
+        orgs <- str_trim(orgs)
+        orgs <- orgs[!is.na(orgs) & orgs != ""]
+        paste(unique(coalesce(orgs_map[orgs], orgs)), collapse = "; ")
+    })))
 
 ## Set Fig/Table Number Variable ---------------------------------------------------
 fig_num <- 0
@@ -228,21 +281,7 @@ other_field_map <- tribble(
     "amphibiansSpecify", "Amphibians", NA_character_, FALSE,
     "marineFishOther", "Fish", "Marine Fish", FALSE
 )
-counts_other <- other_field_map %>%
-    mutate(response = map(column, ~ df[[.x]])) %>%
-    unnest_longer(response) %>%
-    separate_rows(response, sep = ",\\s*") %>%
-    mutate(response = fun_clean_text(response)) %>%
-    filter(!is.na(response)) %>%
-    count(level1, level2, is_new_taxon, response, name = "n") %>%
-    transmute(
-        depth = case_when(is_new_taxon ~ 1, is.na(level2) ~ 2, TRUE ~ 3),
-        level3 = if_else(depth == 3, response, ""),
-        level2 = case_when(depth == 1 ~ "", depth == 2 ~ response, TRUE ~ level2),
-        level1 = if_else(depth == 1, response, level1),
-        n, is_other = TRUE
-    )
-counts_taxa <- bind_rows(counts_taxa, counts_other)
+counts_taxa <- bind_rows(counts_taxa, fun_build_other_counts(df, other_field_map))
 taxon_order <- c(
     "Birds", "Mammals", "Fish", "Marine Invertebrates",
     "Freshwater Macroinvertebrate", "Terrestrial Macroinvertebrates",
@@ -282,30 +321,9 @@ subtaxon_orders <- list(
     "Reptiles" = subtaxon_order_reptiles,
     "Plants" = subtaxon_order_plants
 )
-df_subtaxon_rank <- imap_dfr(subtaxon_orders, ~ tibble(level1 = .y, level2 = .x, sub_rank = seq_along(.x)))
-df_long_taxa_plot <- counts_taxa %>%
-    mutate(family_name = if_else(level1 %in% taxon_order, level1, "Other")) %>%
-    filter(family_name != "Other" | (depth == 1 & is_other)) %>%
-    group_by(level1) %>%
-    filter(any(depth == 1)) %>% # skip taxa nobody selected
-    mutate(n1 = n[depth == 1][1]) %>%
-    group_by(level1, level2) %>%
-    mutate(n2 = if_else(level2 == "", NA_integer_, n[depth == 2][1])) %>%
-    ungroup() %>%
-    left_join(df_subtaxon_rank, by = c("level1", "level2")) %>%
-    arrange(
-        match(family_name, taxon_order),
-        if_else(family_name == "Other", -n1, 0L), level1,
-        depth > 1, sub_rank, desc(n2), level2,
-        depth > 2, desc(n)
-    ) %>%
-    transmute(
-        category = case_when(depth == 1 ~ level1, depth == 2 ~ level2, TRUE ~ level3),
-        n,
+df_long_taxa_plot <- fun_build_rows(counts_taxa, taxon_order, subtaxon_orders) %>%
+    mutate(
         depth = factor(depth),
-        width = 0.9 * 0.55^(as.integer(depth) - 1), # bars shrink at each level
-        family = level1,
-        is_other,
         fill_group = if_else(is_other, paste0("other_", depth), as.character(depth))
     )
 var_family_gap <- 0.5
@@ -1048,11 +1066,11 @@ graph_engagement <- as_tbl_graph(df_engagement_edges, directed = TRUE) %>%
 result_plot_engagement_network <- ggraph(graph_engagement, layout = "fr") +
     geom_edge_link(
         color = "#b1abd1", alpha = 0.7, edge_width = 1,
-        arrow = grid::arrow(length = unit(6, "mm"), type = "closed"),
+        arrow = grid::arrow(length = unit(3, "mm"), type = "closed"),
         end_cap = circle(3, "mm")
     ) +
     geom_node_point(aes(size = node_degree, color = is_respondent)) +
-    geom_node_text(aes(label = name), repel = TRUE, size = 6, max.overlaps = 20) +
+    geom_node_text(aes(label = coalesce(org_acronyms[name], name)), repel = TRUE, size = 6, max.overlaps = 20) +
     scale_color_manual(
         values = c("TRUE" = "#382e6b", "FALSE" = "#456b2e"),
         guide = "none"
@@ -1140,22 +1158,26 @@ result_num_does_collaboration <- paste0(
 df_collaboration_edges <- df %>%
     select(organizationName, collaboration, collaborationOrgsList) %>%
     filter(collaboration == "Yes", !is.na(collaborationOrgsList), collaborationOrgsList != "") %>%
-    separate_rows(collaborationOrgsList, sep = "\\s*[,\n]\\s*") %>%
+    separate_rows(collaborationOrgsList, sep = ";\\s*") %>%
     mutate(collaborationOrgsList = str_trim(collaborationOrgsList)) %>%
     filter(collaborationOrgsList != "") %>%
     transmute(from = organizationName, to = collaborationOrgsList)
 graph_collaboration <- as_tbl_graph(df_collaboration_edges, directed = FALSE) %>%
     activate(nodes) %>%
     mutate(
-        is_respondent = name %in% df_collaboration_edges$from,
+        node_group = case_when(
+            name %in% df_collaboration_edges$from ~ "yes",
+            name %in% df$organizationName ~ "no",
+            TRUE ~ "external"
+        ),
         node_degree = centrality_degree()
     )
 result_plot_collaboration_network <- ggraph(graph_collaboration, layout = "fr") +
     geom_edge_link(color = "#b1abd1", alpha = 0.5) +
-    geom_node_point(aes(size = node_degree, color = is_respondent)) +
-    geom_node_text(aes(label = name), repel = TRUE, size = 5, max.overlaps = 20) +
+    geom_node_point(aes(size = node_degree, color = node_group)) +
+    geom_node_text(aes(label = coalesce(org_acronyms[name], name)), repel = TRUE, size = 5, max.overlaps = 20) +
     scale_color_manual(
-        values = c("TRUE" = "#382e6b", "FALSE" = "#456b2e"),
+        values = c("yes" = "#382e6b", "no" = "#6b4b2e", "external" = "#456b2e"),
         guide = "none"
     ) +
     scale_size_continuous(range = c(3, 10), guide = "none") +
@@ -1165,7 +1187,8 @@ result_caption_plot_collaboration_network <- paste0(
     "Figure ", fig_num, ". Network diagram of reported collaborations between organizations (n = ",
     length(unique(df_collaboration_edges$from)),
     " surveyed organizations reporting at least one collaboration).",
-    " Indigo nodes are surveyed organizations and green nodes are external collaborators named by respondents.",
+    " Indigo nodes are surveyed organizations reporting collaborations, brown nodes are surveyed organizations that",
+    " reported no collaborations, and green nodes are external collaborators named by respondents.",
     " Node size reflects number of reported connections."
 )
 ggsave("outputs/result_plot_collaboration_network.jpeg", result_plot_collaboration_network,
@@ -1718,14 +1741,18 @@ num_does_data_share_no <- round(sum(df$shareData == "No", na.rm = TRUE), 2)
 df_data_share_edges <- df %>%
     select(organizationName, shareData, shareDataWhom) %>%
     filter(shareData == "Yes", !is.na(shareDataWhom), shareDataWhom != "") %>%
-    separate_rows(shareDataWhom, sep = "\\s*[,\n]\\s*") %>%
+    separate_rows(shareDataWhom, sep = ";\\s*") %>%
     mutate(shareDataWhom = str_trim(shareDataWhom)) %>%
     filter(shareDataWhom != "") %>%
     transmute(from = organizationName, to = shareDataWhom)
 graph_data_share <- as_tbl_graph(df_data_share_edges, directed = TRUE) %>%
     activate(nodes) %>%
     mutate(
-        is_respondent = name %in% df_data_share_edges$from,
+        node_group = case_when(
+            name %in% df_data_share_edges$from ~ "yes",
+            name %in% df$organizationName ~ "no",
+            TRUE ~ "external"
+        ),
         node_degree = centrality_degree()
     )
 result_plot_data_share_network <- ggraph(graph_data_share, layout = "fr") +
@@ -1734,10 +1761,10 @@ result_plot_data_share_network <- ggraph(graph_data_share, layout = "fr") +
         arrow = grid::arrow(length = unit(6, "mm"), type = "closed"),
         end_cap = circle(3, "mm")
     ) +
-    geom_node_point(aes(size = node_degree, color = is_respondent)) +
-    geom_node_text(aes(label = name), repel = TRUE, size = 8, max.overlaps = 20) +
+    geom_node_point(aes(size = node_degree, color = node_group)) +
+    geom_node_text(aes(label = coalesce(org_acronyms[name], name)), repel = TRUE, size = 8, max.overlaps = 20) +
     scale_color_manual(
-        values = c("TRUE" = "#382e6b", "FALSE" = "#456b2e"),
+        values = c("yes" = "#382e6b", "no" = "#6b4b2e", "external" = "#456b2e"),
         guide = "none"
     ) +
     scale_size_continuous(range = c(3, 10), guide = "none") +
@@ -1748,7 +1775,8 @@ result_caption_plot_data_share_network <- paste0(
     length(unique(df_data_share_edges$from)),
     " surveyed organizations reporting that they share data outside their organization).",
     " Arrows point from the surveyed organization to the recipient of their shared data.",
-    " Indigo nodes are surveyed organizations and green nodes are external recipients named by respondents.",
+    " Indigo nodes are surveyed organizations that share data, brown nodes are surveyed organizations that reported",
+    " not sharing data, and green nodes are external recipients named by respondents.",
     " Node size reflects number of reported connections."
 )
 ggsave("outputs/result_plot_data_share_network.jpeg", result_plot_data_share_network,
@@ -2132,11 +2160,6 @@ ggsave("outputs/result_plot_domain_coverage.jpeg", result_plot_domain_coverage,
     units = "in", height = 10, width = 16
 )
 # Compare species/taxa of interest to species/taxa actually studied
-# Requires two manually-curated lookup tables in data_deposit/ (gitignored, not
-# included in the repo): studied_taxa_lookup.csv and species_taxa_lookup.csv.
-# See README.md "Species/Taxa Lookup Tables" for what they are and how to build
-# them. Without them, this block errors out here, but every output above this
-# point will already have been produced.
 important_categories <- c(
     "Culturally Significant", "Economically Significant", "Community Concern",
     "Monitoring Gap", "Monitoring Importance"
@@ -2356,10 +2379,6 @@ cat(result_caption_plot_ecosystems)
 result_df_long_term_monitoring_projects
 result_plot_long_term_monitoring_orgs
 cat(result_caption_plot_long_term_monitoring_orgs)
-result_plot_long_term_monitoring_taxa
-cat(result_caption_plot_long_term_monitoring_taxa)
-result_plot_long_term_monitoring_methods
-cat(result_caption_plot_long_term_monitoring_methods)
 result_plot_long_term_monitoring_locations
 cat(result_caption_plot_long_term_monitoring_locations)
 result_df_research_projects
