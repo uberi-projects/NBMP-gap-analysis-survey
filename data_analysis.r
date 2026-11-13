@@ -1572,24 +1572,28 @@ num_sees_section11 <- length(with(
         fun_any_not_no(climateResiliency)
 ))
 # Investigate how data is digitized
-digitization_fixed_order <- c("Excel/Google Sheets", "Data Portals")
+digitization_fixed_order <- c("Excel/Google Sheets", "Data portals", "Never digitizes")
 counts_digitization <- df %>%
     select(digitization) %>%
     separate_rows(digitization, sep = ";\\s*") %>%
-    mutate(digitization = fun_clean_text(digitization)) %>%
+    mutate(digitization = na_if(str_trim(digitization), "")) %>%
     filter(!is.na(digitization)) %>%
     count(digitization, name = "n") %>%
     transmute(level1 = digitization, level2 = "", level3 = "", depth = 1, n, is_other = FALSE)
 digitization_other_field_map <- tribble(
     ~column, ~level1, ~level2, ~is_new_taxon,
-    "digitizationPortals", "Data Portals", NA_character_, FALSE
+    "digitizationPortals", "Data portals", NA_character_, FALSE
 )
 counts_digitization <- bind_rows(counts_digitization, fun_build_other_counts(df, digitization_other_field_map))
 digitization_order <- digitization_fixed_order
 df_digitization_plot <- fun_build_rows(counts_digitization, digitization_order) %>%
     mutate(
         depth = factor(depth),
-        fill_group = if_else(is_other, paste0("other_", depth), as.character(depth))
+        fill_group = case_when(
+            category == "Never digitizes" ~ "none",
+            is_other ~ paste0("other_", depth),
+            TRUE ~ as.character(depth)
+        )
     )
 df_digitization_plot <- df_digitization_plot %>%
     mutate(
@@ -1603,15 +1607,15 @@ df_digitization_plot <- df_digitization_plot %>%
     )
 df_digitization_plot <- df_digitization_plot %>%
     mutate(category_label = paste0(
-        "<span style='font-size:", label_size_pt[as.character(depth)], "pt'>",
-        str_replace_all(fun_wrap_two_lines(category), "\n", "<br>"), "</span>"
+        "<span style='font-size:", label_size_pt[as.character(depth)], "pt'>", category, "</span>"
     ))
 result_plot_digitization <- ggplot(df_digitization_plot, aes(x = n, y = y_pos, width = width, fill = fill_group)) +
     geom_col(orientation = "y", color = "black") +
     scale_fill_manual(
         values = c(
             "1" = "#382e6b", "2" = "#766da7",
-            "other_1" = "#456b2e", "other_2" = "#729a5a"
+            "other_1" = "#456b2e", "other_2" = "#729a5a",
+            "none" = "#6b4b2e"
         ),
         guide = "none"
     ) +
