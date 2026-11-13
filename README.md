@@ -1,26 +1,39 @@
 # NBMP Gap Analysis Survey [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23066736.svg)](https://doi.org/10.5281/zenodo.23066736)
 
-
 This repository hosts the HTML code for the National Biodiversity Monitoring Program (NBMP) stakeholder gap analysis survey deployment. The survey is taken through the deployment URL on GitHub Pages, and responses collected using a Google Sheet, connected through a custom Google app.
 
-The code for the HTML survey was written with support from Codex and Claude Code (Sonnet 5), with oversight and testing by the UB-ERI team. The data analysis script was conceptualized, written, and run by the UB-ERI team, with the assistance of Claude Code (Sonnet 5) in reviewing and auditing code as needed.
-
+The code for the HTML survey was written with support from Codex and Claude Code (Sonnet 5), with oversight and testing by the UB-ERI team. The data analysis script was conceptualized, written, and run by the UB-ERI team, with the assistance of Claude Code (Sonnet 5) in reviewing and auditing code as needed and managing the cleaning rulebook.
 
 ## Files
+
+- citation.CFF contains the citation metadata for this repository (Zenodo DOI, version, authors).
+- cleaning_rulebook.md defines how the raw survey export is cleaned before analysis: which steps are automated in data_analysis.r (e.g. lookup-table standardization, test/duplicate row filtering) and the rules for manual cleaning of free-text columns.
 - code.gs includes the Google Apps Script that receives submissions and appends them to the response spreadsheet. It must be bound to that Google Sheet and deployed as a Web App. It writes to the tab named in its `SHEET_NAME` constant (default `Responses`), falling back to the first tab, and uses `LockService` so simultaneous submissions are written one at a time. Opening the deployment URL in a browser (a GET) returns `{"status":"ok"}` as a quick liveness check.
 - default_headers.csv lists the recommended headers to use in the target response Google Sheet. These should be added to the Google Sheet before collecting responses so that the order of response columns is logical. Though any additional columns needed will be automatically appending as surveys come through.
-- data_analysis.r stores R code to analyze any response data export found in the data_deposit folder with the name "UB-ERI Gap Analysis – Responses - Cleaned.csv" and produce outputs in the outputs folder. It also uses the lookup tables in lookup_tables/ (see "Species/Taxa Lookup Tables" below).
+- data_analysis.r stores R code to analyze any response data export found in the data_deposit folder with the name "UB-ERI Gap Analysis – Responses - Processed.csv" (the raw export after manual cleaning per cleaning_rulebook.md) and produce outputs in the outputs folder. After its automated cleaning steps it writes "UB-ERI Gap Analysis – Responses - Cleaned.csv" to outputs/ (same columns as the input, with duplicates and test rows removed and names standardized). It also uses the lookup tables in lookup_tables/ (see "Lookup Tables" below).
 - index.html is the survey HTML. The deployment URL for the Google Apps Script on the response spreadsheet must be set in one place: the `SUBMIT_URL` constant just above the submit handler in `index.html`.
 - wireframe.md contains a shareable wireframe for the survey, including survey question order and options, and skip logic. This is shareable with partners to communicate survey methods.
 
 ## Folders
+
 - assets/ — image assets referenced by index.html
 - data_deposit/ — this is the location that response data exports to be used for analysis should be manually placed prior to running data_analysis.r.
 - lookup_tables/ — git-tracked mapping tables used by data_analysis.r to standardize organizations, sites, communities and species/taxa.
 - outputs/ — this is the location that any analysis products will be created and stored.
 
+## Lookup Tables
 
-## Species/Taxa Lookup Tables (Optional)
+### Organization, Site and Community Lookup Tables (Required)
+
+`data_analysis.r` reads `organizations_lookup.csv`, `sites_lookup.csv` and `communities_lookup.csv` from `lookup_tables/` at the start of the script, so they must be present for it to run. They standardize free-text names in the responses:
+
+- `organizations_lookup.csv` — standardizes `organizationName`, `collaborationOrgsList` and `shareDataWhom`. Columns: `organization_type`, `organization_name` (official name), `raw_variants`, `organization_acronym` (short label used in plots; may be blank).
+- `sites_lookup.csv` — standardizes `ltSites_N` and `rrSites_N`. Columns: `site_type`, `site_name`, `raw_variants`.
+- `communities_lookup.csv` — standardizes `engagementCommunities`. Columns: `community_type`, `community_name`, `raw_variants`.
+
+`raw_variants` is a semicolon-separated list of exact-text variants (trimmed, case-sensitive) that are replaced with the standardized name. Values with no match are left unchanged.
+
+### Species/Taxa Lookup Tables (Optional)
 
 `data_analysis.r` optionally reads two more files from `lookup_tables/`: `studied_taxa_lookup.csv` and `species_taxa_lookup.csv`. They are manually-curated mapping tables committed alongside the code. They're only used for the final figure comparing species/taxa of interest against what's actually studied; without them the script errors out at that step, but every other output will already have been produced by then.
 
@@ -31,8 +44,7 @@ They exist because respondents describe species/taxa in free text (monitoring/re
 - `mapped_level1` / `mapped_level2` — the checkbox taxonomy node this maps to; blank if unmapped.
 - `match_type` — `Exact` (matches a checkbox option verbatim), `Broader Group` (a specific instance of a broader checkbox category), or `Unmapped` (doesn't fit the taxonomy).
 - `needs_review`, `notes` — manual QA columns; not read by the script.
-- `species_taxa_lookup.csv` only — `source_categories`: semicolon-separated list of which "important species" question(s) this row came from. Must match one of the `important_categories` values in `data_analysis.r` (Culturally Significant, Economically Significant, Community Concern, Monitoring Gap, Monitoring Importance) to appear in the comparison figure.
-
+- `species_taxa_lookup.csv` only — `source_categories`: semicolon-separated list of which "important species" question(s) this row came from. Must match one of the `important_categories` values in `data_analysis.r` (Culturally Significant, Economically Significant, Community Concern, Monitoring Gap) to appear in the comparison figure.
 
 ## Technical Description
 
@@ -72,13 +84,14 @@ All toggle functions are called in `restoreProgress()` to ensure conditional fie
 #### HTML → Google Apps Script → Google Sheets
 
 1. **index.html** (Frontend)
+
    - Contains the complete survey form with all questions
    - Implements client-side validation, skip logic, and conditional display
    - Saves progress to browser localStorage for session persistence
    - On submission, serializes all form data into JSON format
    - Sends data via POST request to the Google Apps Script web app URL
-
 2. **code.gs** (Backend - Google Apps Script)
+
    - Deployed as a web app attached to the target Google Sheets response spreadsheet
    - Receives POST requests from the HTML form
    - Parses incoming JSON data
@@ -86,8 +99,8 @@ All toggle functions are called in `restoreProgress()` to ensure conditional fie
    - Serializes concurrent submissions with `LockService` so rows can't collide
    - Appends new row with timestamp and all response data
    - Returns `{"status":"success"}` (or `{"status":"error", ...}`) to the HTML form, which the form reads to confirm the save
-
 3. **default_headers.csv** (Schema Definition)
+
    - Defines the exact column structure for the response spreadsheet
    - Matches the `name` attributes of form fields in index.html
    - Contains 145 columns total (including timestamp)
@@ -109,6 +122,7 @@ organizationName
 ```
 
 For dynamic table rows that users can add:
+
 ```html
 <!-- HTML generates: name="ltSpecies_0", name="ltSpecies_1", name="ltSpecies_2" -->
 <!-- CSV headers: ltSpecies_0, ltSpecies_1, ltSpecies_2 -->
@@ -117,29 +131,30 @@ For dynamic table rows that users can add:
 #### Adding a New Question
 
 1. **In index.html:**
+
    - Add the question HTML in the appropriate section
    - Give the question's `<label>` a `class="question-label"` attribute
    - Add any necessary toggle functions if the question is conditional
    - Add the toggle function call to `restoreProgress()` if conditional
    - Update validation logic in `nextSection()` if required
-
 2. **In default_headers.csv:**
+
    - Add the new field name(s) to the CSV in the appropriate position
    - Ensure the name matches the HTML `name` attribute exactly
-
 3. **In Google Sheets:**
+
    - Add the new column header(s) to match the CSV in the proper position
 
 #### Adding a New Section
 
 1. **In index.html:**
+
    - Add new section div with correct `data-section` number
    - Add section comment: `<!-- Section X: Section Name -->`
    - Renumber all subsequent sections
    - Update all questions in subsequent sections
    - Add section to conditional skip logic if needed (in `nextSection()`, `prevSection()`)
    - Update `totalSections` span if needed (though JavaScript calculates this dynamically)
-
 2. **CSV/Sheets:** Add any new fields as described above
 
 #### Modifying Skip Logic
@@ -160,6 +175,7 @@ Question numbers are generated automatically in the order questions appear. On p
 #### Adding Conditional Display Logic
 
 1. Create a toggle function:
+
 ```javascript
 function toggleMyNewField() {
     const triggerChecked = document.querySelector('input[name="triggerField"][value="Yes"]')?.checked;
@@ -171,6 +187,7 @@ function toggleMyNewField() {
 ```
 
 2. Add `onchange` handler to the trigger field:
+
 ```html
 <input type="radio" name="triggerField" value="Yes" onchange="toggleMyNewField()">
 ```
@@ -195,6 +212,7 @@ grouped and contiguous). No `index.html` change is needed.
 ### Form State Persistence
 
 The survey automatically saves progress to browser localStorage:
+
 - Saves after each section navigation
 - Restores on page reload using `restoreProgress()`
 - Data remains until the save is confirmed by the server, the respondent clicks "Start Over" (see below), or the user clears browser data
