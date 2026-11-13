@@ -173,10 +173,9 @@ fun_build_long_term_monitoring_timeline <- function(df_long, group_col, axis_lab
 }
 
 ## Clean Data ---------------------------------------------------
-# Remove duplicates
+# Remove duplicates (ignoring timestamp; keeps the first timestamp of each duplicate set)
 df <- df %>%
-    select(-timestamp) %>%
-    distinct()
+    distinct(across(-timestamp), .keep_all = TRUE)
 # Exclude test data
 df <- df %>%
     filter(str_trim(organizationName) != "TEST")
@@ -187,7 +186,7 @@ df_lookup_orgs_long <- df_lookup_orgs %>%
     filter(raw_variants != "")
 df <- df %>%
     mutate(organizationName = str_trim(organizationName)) %>%
-    left_join(df_lookup_orgs_long, by = c("organizationName" = "raw_variants")) %>%
+    left_join(select(df_lookup_orgs_long, raw_variants, organization_name), by = c("organizationName" = "raw_variants")) %>%
     mutate(organizationName = coalesce(organization_name, organizationName)) %>%
     select(-organization_name)
 org_acronyms <- deframe(select(filter(df_lookup_orgs, organization_acronym != ""), organization_name, organization_acronym))
@@ -223,6 +222,9 @@ df <- df %>%
         orgs <- orgs[!is.na(orgs) & orgs != ""]
         paste(unique(coalesce(orgs_map[orgs], orgs)), collapse = "; ")
     })))
+# Export fully cleaned data for sharing with partners (UTF-8 with BOM so Excel reads accents correctly)
+write_excel_csv(df, "outputs/UB-ERI Gap Analysis – Responses - Cleaned.csv", na = "")
+df <- select(df, -timestamp)
 
 ## Set Fig/Table Number Variable ---------------------------------------------------
 fig_num <- 0
