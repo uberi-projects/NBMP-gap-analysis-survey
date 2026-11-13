@@ -1479,7 +1479,7 @@ df_long_training_needs <- select(df, trainingNeeds) %>%
 levels_split_training_needs <- str_split_fixed(df_long_training_needs$trainingNeeds, " - ", 2)
 df_long_training_needs <- df_long_training_needs %>%
     mutate(
-        level1 = str_trim(str_remove(levels_split_training_needs[, 1], "\\(.*\\)")), # drop bracketed qualifier
+        level1 = str_trim(str_remove(levels_split_training_needs[, 1], "\\(.*\\)")),
         level2 = str_trim(levels_split_training_needs[, 2]),
         level3 = "",
         depth  = 1 + (level2 != "")
