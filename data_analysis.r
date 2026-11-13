@@ -40,7 +40,7 @@ fun_build_other_counts <- function(df, other_field_map) {
         mutate(response = map(column, ~ df[[.x]])) %>%
         unnest_longer(response) %>%
         separate_rows(response, sep = ",\\s*") %>%
-        mutate(response = fun_clean_text(response)) %>%
+        mutate(response = na_if(str_trim(response), "")) %>%
         filter(!is.na(response)) %>%
         count(level1, level2, is_new_taxon, response, name = "n") %>%
         transmute(
@@ -1237,28 +1237,21 @@ num_sees_section10 <- length(with(
         fun_any_not_no(climateResiliency)
 ))
 # Investigate types of data tools most often used
-data_tools_fixed_order <- c(
-    "Printed Datasheets", "Smart",
-    "Kobotoolbox", "Survey123"
-)
 df_data_tools <- df %>%
     select(dataTools) %>%
     separate_rows(dataTools, sep = ";\\s*") %>%
-    mutate(dataTools = fun_clean_text(dataTools)) %>%
-    filter(!is.na(dataTools), dataTools != "Other") %>%
+    mutate(dataTools = str_trim(dataTools)) %>%
+    filter(!is.na(dataTools), dataTools != "", dataTools != "Other") %>%
     group_by(dataTools) %>%
     summarise(n = n(), .groups = "drop") %>%
     mutate(is_other = FALSE)
-data_tools_other <- fun_clean_text(df$dataToolsOther)
-data_tools_other <- data_tools_other[!is.na(data_tools_other)]
+data_tools_other <- str_trim(unlist(str_split(df$dataToolsOther, ",")))
+data_tools_other <- data_tools_other[!is.na(data_tools_other) & data_tools_other != ""]
 df_data_tools_other <- tibble(dataTools = data_tools_other) %>%
     count(dataTools, name = "n") %>%
     mutate(is_other = TRUE)
 df_data_tools <- bind_rows(df_data_tools, df_data_tools_other)
-data_tools_order <- rev(c(
-    data_tools_fixed_order,
-    sort(unique(df_data_tools_other$dataTools))
-))
+data_tools_order <- unique(arrange(df_data_tools, n, desc(dataTools))$dataTools)
 df_data_tools <- df_data_tools %>%
     mutate(
         dataTools = factor(dataTools, levels = data_tools_order),
@@ -1291,20 +1284,20 @@ ggsave("outputs/result_plot_data_tools.jpeg", result_plot_data_tools,
 )
 # Investigate technological gaps
 tech_gaps_fixed_order <- c(
-    "Lack Of Smart Devices", "Lack Of Survey Equipment",
-    "Lack Of Drones For Mapping", "Lack Of Cloud Storage"
+    "Lack of smart devices", "Lack of survey equipment",
+    "Lack of drones for mapping", "Lack of cloud storage"
 )
 counts_tech_gaps <- df %>%
     select(techGaps) %>%
     separate_rows(techGaps, sep = ";\\s*") %>%
-    mutate(techGaps = fun_clean_text(techGaps)) %>%
+    mutate(techGaps = na_if(str_trim(techGaps), "")) %>%
     filter(!is.na(techGaps)) %>%
     count(techGaps, name = "n") %>%
     transmute(level1 = techGaps, level2 = "", level3 = "", depth = 1, n, is_other = FALSE)
 tech_gaps_other_field_map <- tribble(
     ~column, ~level1, ~level2, ~is_new_taxon,
     "techGapsOther", "Other", NA_character_, TRUE,
-    "surveyEquipmentSpecify", "Lack Of Survey Equipment", NA_character_, FALSE
+    "surveyEquipmentSpecify", "Lack of survey equipment", NA_character_, FALSE
 )
 counts_tech_gaps <- bind_rows(counts_tech_gaps, fun_build_other_counts(df, tech_gaps_other_field_map))
 tech_gaps_order <- c(tech_gaps_fixed_order, "Other", "None")
@@ -1329,8 +1322,7 @@ df_tech_gaps_plot <- df_tech_gaps_plot %>%
     )
 df_tech_gaps_plot <- df_tech_gaps_plot %>%
     mutate(category_label = paste0(
-        "<span style='font-size:", label_size_pt[as.character(depth)], "pt'>",
-        str_replace_all(fun_wrap_two_lines(category), "\n", "<br>"), "</span>"
+        "<span style='font-size:", label_size_pt[as.character(depth)], "pt'>", category, "</span>"
     ))
 result_plot_tech_gaps <- ggplot(df_tech_gaps_plot, aes(x = n, y = y_pos, width = width, fill = fill_group)) +
     geom_col(orientation = "y", color = "black") +
@@ -1398,16 +1390,16 @@ result_missing_software <- paste0(
 )
 # Examine technical/training skill gaps
 skill_gaps_fixed_order <- c(
-    "Limited Data Analysis Skills", "Limited Gis Access", "Limited Technical Support",
-    "High Staff Turnover Leading To Constant Retraining Needs",
-    "Limited Technical Report Writing Skills",
-    "Limited Skills For Publishing In Peer-Review Journals",
-    "Limited Project Development And Management Skills"
+    "Limited data analysis skills", "Limited GIS access", "Limited technical support",
+    "High staff turnover leading to constant retraining needs",
+    "Limited technical report writing skills",
+    "Limited skills for publishing in peer-review journals",
+    "Limited project development and management skills"
 )
 counts_skill_gaps <- df %>%
     select(skillGaps) %>%
     separate_rows(skillGaps, sep = ";\\s*") %>%
-    mutate(skillGaps = fun_clean_text(skillGaps)) %>%
+    mutate(skillGaps = na_if(str_trim(skillGaps), "")) %>%
     filter(!is.na(skillGaps)) %>%
     count(skillGaps, name = "n") %>%
     transmute(level1 = skillGaps, level2 = "", level3 = "", depth = 1, n, is_other = FALSE)
@@ -1476,9 +1468,9 @@ ggsave("outputs/result_plot_skill_gaps.jpeg", result_plot_skill_gaps,
 )
 # Investigate training by staff needed
 training_needs_fixed_order <- c(
-    "Technical Training", "Research And Monitoring Development", "Equipment Operation",
-    "Software", "Data Cleaning And Entering (For Existing Databases Or Systems)",
-    "Data Interpretation And Analysis", "Technical And Scientific Report Writing"
+    "Technical training", "Research and monitoring development", "Equipment operation",
+    "Software", "Data cleaning and entering",
+    "Data interpretation and analysis", "Technical and scientific report writing"
 )
 df_long_training_needs <- select(df, trainingNeeds) %>%
     separate_rows(trainingNeeds, sep = ";\\s*") %>%
@@ -1487,13 +1479,10 @@ df_long_training_needs <- select(df, trainingNeeds) %>%
 levels_split_training_needs <- str_split_fixed(df_long_training_needs$trainingNeeds, " - ", 2)
 df_long_training_needs <- df_long_training_needs %>%
     mutate(
-        level1 = str_trim(levels_split_training_needs[, 1]),
+        level1 = str_trim(str_remove(levels_split_training_needs[, 1], "\\(.*\\)")), # drop bracketed qualifier
         level2 = str_trim(levels_split_training_needs[, 2]),
         level3 = "",
-        depth  = 1 + (level2 != ""),
-        level1 = fun_clean_text(level1),
-        level2 = fun_clean_text(level2),
-        level3 = fun_clean_text(level3)
+        depth  = 1 + (level2 != "")
     )
 counts_training_needs <- df_long_training_needs %>%
     count(level1, level2, level3, depth, name = "n") %>%
@@ -1501,12 +1490,12 @@ counts_training_needs <- df_long_training_needs %>%
 training_needs_other_field_map <- tribble(
     ~column, ~level1, ~level2, ~is_new_taxon,
     "trainingNeedsOther", "Other", NA_character_, TRUE,
-    "technicalTrainingSpecify", "Technical Training", NA_character_, FALSE
+    "technicalTrainingSpecify", "Technical training", NA_character_, FALSE
 )
 counts_training_needs <- bind_rows(counts_training_needs, fun_build_other_counts(df, training_needs_other_field_map))
 subtaxon_order_software <- c(
-    "Data Processing Software", "Data Analysis Software",
-    "Geospatial Software", "Equipment Operation Software"
+    "Data processing software", "Data analysis software",
+    "Geospatial software", "Equipment operation software"
 )
 training_needs_order <- c(training_needs_fixed_order, "Other", "None")
 df_training_needs_plot <- fun_build_rows(
@@ -1533,8 +1522,7 @@ df_training_needs_plot <- df_training_needs_plot %>%
     )
 df_training_needs_plot <- df_training_needs_plot %>%
     mutate(category_label = paste0(
-        "<span style='font-size:", label_size_pt[as.character(depth)], "pt'>",
-        str_replace_all(fun_wrap_two_lines(category), "\n", "<br>"), "</span>"
+        "<span style='font-size:", label_size_pt[as.character(depth)], "pt'>", category, "</span>"
     ))
 result_plot_training_needs <- ggplot(df_training_needs_plot, aes(x = n, y = y_pos, width = width, fill = fill_group)) +
     geom_col(orientation = "y", color = "black") +
