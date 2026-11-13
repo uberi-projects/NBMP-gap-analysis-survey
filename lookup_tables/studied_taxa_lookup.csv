@@ -1,0 +1,114 @@
+species_text,raw_variants,mapped_level1,mapped_level2,match_type,needs_review,notes
+Active Forest Restoration,Active Forest Restoration,,,Unmapped,FALSE,Restoration activity not a taxon.
+Agouti,Agouti; Agoutis,Mammals,Other Medium-Sized Mammals,Broader Group,FALSE,
+Amphibians,Amphibians,Amphibians,,Exact,FALSE,Verbatim match to the checkbox category.
+Arachnids,Arachnids,Terrestrial Macroinvertebrates,,Broader Group,TRUE,No arachnid-specific subcategory exists; mapped to level-1 only.
+Bacteria,Bacteria,,,Unmapped,TRUE,No microbe/bacteria taxon exists anywhere in the survey's categories.
+Bats,Bats,Mammals,Bats,Exact,FALSE,Verbatim match to the checkbox category.
+Benthic Invertebrates,Benthic Invertebrates,Marine Invertebrates,,Broader Group,TRUE,Assumed marine/reef context; could include freshwater benthic taxa.
+Benthic Surveys,Benthic Surveys,,,Unmapped,FALSE,Survey method not a taxon.
+Bird Nesting Colonies,Bird Nesting Colonies,Birds,,Broader Group,FALSE,
+Birds,Birds,Birds,,Exact,FALSE,Verbatim match to the checkbox category.
+Birds (Summer Resident Passerine),Birds (Summer Resident Passerine),Birds,,Broader Group,FALSE,Qualified phrase not verbatim 'Birds'.
+Bottlenose Dolphin,Bottlenose Dolphin; Bottlenose Dolphins,Mammals,Marine Mammals,Broader Group,FALSE,
+Cave Fauna,Cave Fauna,,,Unmapped,TRUE,"Mixed taxa (originally 'insects, bats, crocodiles' in one entry); no single taxon fits."
+Coastal Ecosystems,Coastal Ecosystems,,,Unmapped,FALSE,Habitat type not a taxon.
+Commercial Fish Species,Commercial Fish Species; Commercial Fish (4 Species),Fish,Marine Fish,Broader Group,TRUE,Generic term; assumed marine given typical Belizean commercial fisheries context.
+Conch,Conch,Marine Invertebrates,Conch,Exact,FALSE,Verbatim match to the checkbox category.
+Corals,Corals,Marine Invertebrates,Corals,Exact,FALSE,Verbatim match to the checkbox category.
+Crocodiles,Crocodiles,Reptiles,Crocodiles,Exact,FALSE,Verbatim match to the checkbox category.
+Eukarya,Eukarya,,,Unmapped,TRUE,"Domain of life, not a specific taxon describable by the survey's categories."
+Finfish Catch Landings,Finfish Catch Landings,Fish,Marine Fish,Broader Group,FALSE,Fisheries catch-data framing of finfish; assumed marine.
+Fish,Fish,Fish,,Exact,FALSE,Verbatim match to the checkbox category.
+Fish Larvae And Egg,Fish Larvae And Egg; Fish Larvae and Eggs,Fish,,Broader Group,FALSE,
+Freshwater Crustaceans,Freshwater Crustaceans,Freshwater Macroinvertebrate,,Broader Group,TRUE,Consistent with the 'Crustaceans' (economicSpecies/monitoring gap) reading elsewhere -- mapped to Freshwater Macroinvertebrate rather than Marine Invertebrates > Crustaceans.
+Freshwater Fish,Freshwater Fish,Fish,Freshwater Fish,Exact,FALSE,Verbatim match to the checkbox category.
+Freshwater Macroinvertebrates,Freshwater Macroinvertebrates,Freshwater Macroinvertebrate,,Broader Group,TRUE,"The checkbox category is singular ('Freshwater Macroinvertebrate', inconsistent with every sibling category); this plural response is not verbatim identical, so kept as Broader Group rather than 'fixing' the response to match what looks like a survey label quirk. Flag if you'd rather treat it as Exact."
+Freshwater Systems,Freshwater Systems,,,Unmapped,FALSE,Habitat/system descriptor not a taxon.
+Freshwater Turtles,Freshwater Turtles,Reptiles,Turtles,Broader Group,FALSE,Qualified phrase not verbatim 'Turtles'.
+Fungi,Fungi,,,Unmapped,TRUE,No fungi taxon exists anywhere in the survey's categories.
+Game Species,Game species,,,Unmapped,FALSE,Spans mammals and birds; no single taxon fits.
+Grey Foxes,Grey Foxes,Mammals,Other Small Mammals,Broader Group,FALSE,
+Hicatees,Hicatees; Hicatee,Reptiles,Turtles,Broader Group,FALSE,Central American river turtle (Dermatemys mawii).
+Howler & Spider Monkeys,Howler & Spider Monkeys,Mammals,Primates,Broader Group,FALSE,Compound entry covering two species; mapped to their shared subcategory.
+Howler Monkeys,Howler Monkeys,Mammals,Primates,Broader Group,FALSE,
+Insects,Insects,Terrestrial Macroinvertebrates,,Broader Group,TRUE,Too generic to place in a specific insect subcategory (Agricultural Pest/Disease Vector/Butterflies/Bees).
+Jaguars,Jaguars; Jaguar,Mammals,Other Large Mammals,Broader Group,FALSE,
+Jaguar And Ocelot,Jaguar And Ocelot,Mammals,,Broader Group,TRUE,Compound entry spanning two different size subcategories (Other Large / Other Small); mapped to level-1 only.
+Jaguar And Puma,Jaguar And Puma,Mammals,Other Large Mammals,Broader Group,FALSE,Both species share the same subcategory.
+King Crab Mariculture,King Crab Mariculture; King Crabs,Marine Invertebrates,Crabs,Broader Group,TRUE,Unusual entry (king crab is not native to Belize); assumed aquaculture research on a crab species.
+Lionfish,Lionfish,Fish,Marine Fish,Broader Group,FALSE,Invasive marine species.
+Macaws,Macaws,Birds,,Broader Group,FALSE,
+Mammals,Mammals,Mammals,,Exact,FALSE,Verbatim match to the checkbox category.
+Manatees,Manatees,Mammals,Marine Mammals,Broader Group,FALSE,
+Mangroves,Mangroves,Plants,Mangroves,Exact,FALSE,Verbatim match to the checkbox category.
+Mexican Giant Musk Turtle,Mexican Giant Musk Turtle; Mexican Giant Musk Turtles,Reptiles,Turtles,Broader Group,FALSE,Standardized from scientific name Staurotypus triporcatus.
+Migratory Songbirds,Migratory Songbirds,Birds,,Broader Group,FALSE,
+Mollusks,Mollusks,Marine Invertebrates,Mollusks,Exact,FALSE,Verbatim match to the checkbox category.
+Nassau Grouper Spawning Aggregations,Nassau Grouper Spawning Aggregations; Nassau Grouper Spawning; Nassau Groupers,Fish,Marine Fish,Broader Group,FALSE,Nassau Grouper is a marine reef fish.
+Ocelots,Ocelots,Mammals,Other Small Mammals,Broader Group,FALSE,
+Parrots,Parrots,Birds,,Broader Group,FALSE,
+Passerines,Passerines,Birds,,Broader Group,FALSE,
+Peccaries,Peccaries,Mammals,Other Medium-Sized Mammals,Broader Group,FALSE,
+Plants,Plants,Plants,,Exact,FALSE,Verbatim match to the checkbox category.
+Puma And Ocelot,Puma And Ocelot,Mammals,,Broader Group,TRUE,Compound entry spanning two different size subcategories (Other Large / Other Small); mapped to level-1 only.
+Pumas,Pumas,Mammals,Other Large Mammals,Broader Group,FALSE,
+Queen Conch,Queen Conch,Marine Invertebrates,Conch,Broader Group,FALSE,Qualified phrase not verbatim 'Conch'.
+Rare Species,Rare Species,,,Unmapped,FALSE,Not a taxon at all.
+Ray-Finned Fish,Ray-Finned Fish,Fish,,Broader Group,FALSE,Too broad to assign to Freshwater vs Marine Fish specifically.
+Red Brocket Deer,Red Brocket Deer,Mammals,Other Medium-Sized Mammals,Broader Group,FALSE,
+Reef Fish,Reef Fish; Reef Fish Species,Fish,Marine Fish,Broader Group,FALSE,
+Reptiles,Reptiles,Reptiles,,Exact,FALSE,Verbatim match to the checkbox category.
+Sea Cucumbers,Sea Cucumbers,Marine Invertebrates,Sea Cucumbers,Exact,FALSE,Verbatim match to the checkbox category.
+Seagrass,Seagrass,Plants,Seaweed/Seagrass/Macroalgae,Exact,FALSE,Verbatim one of the three explicitly named terms in the compound checkbox label.
+Shark And Rays,Shark And Rays,Fish,Marine Fish,Broader Group,TRUE,Cartilaginous fish; no closer subcategory exists.
+Songbirds,Songbirds; Songbirds (Target Resident Species),Birds,,Broader Group,FALSE,
+Stony Coral Tissue Loss Disease,Stony Coral Tissue Loss Disease,Marine Invertebrates,Corals,Broader Group,FALSE,Coral disease monitoring; mapped to the Corals subcategory.
+Tapirs,Tapirs,Mammals,Other Large Mammals,Broader Group,FALSE,
+Terrestrial Vertebrates,Terrestrial Vertebrates,,,Unmapped,TRUE,Spans mammals/reptiles/amphibians/birds; no single taxon fits.
+Ticks,Ticks,Terrestrial Macroinvertebrates,,Broader Group,TRUE,"Standardized from Ixodidae. Ticks are arachnids not insects; 'Disease Vector Insects' is reserved for true insects, so mapped to level-1 only."
+Tree Diversity,Tree Diversity (Many Species),Plants,,Broader Group,FALSE,Generic tree diversity study; not necessarily commercial hardwood.
+Trees,Trees,Plants,,Broader Group,FALSE,
+Water Quality,Water Quality,,,Unmapped,FALSE,Ecosystem health metric not a taxon.
+White-Lipped Peccary,White-Lipped Peccary; White-Lipped Peccaries,Mammals,Other Medium-Sized Mammals,Broader Group,FALSE,
+White-Tailed Deer,White-Tailed Deer; White Tailed Deer,Mammals,Other Medium-Sized Mammals,Broader Group,FALSE,
+Wildlife,Wildlife,,,Unmapped,FALSE,Too generic to describe with any single taxon.
+Yellow-Headed Amazon,Yellow-Headed Amazon; Yellow-Head Amazons; Yellow-Headed Amazons,Birds,,Broader Group,FALSE,
+Amazon Parrots,Amazon Parrots,Birds,,Broader Group,FALSE,Added from Nov 2026 responses.
+American Crocodiles,American Crocodiles,Reptiles,Crocodiles,Broader Group,FALSE,Added from Nov 2026 responses.
+Bees,Bees,Terrestrial Macroinvertebrates,,Broader Group,FALSE,Added from Nov 2026 responses.
+Benthos,Benthos,,,Unmapped,FALSE,Added from Nov 2026 responses.
+Caribbean Spiny Lobsters,Caribbean Spiny Lobsters,Marine Invertebrates,Lobsters,Broader Group,FALSE,Added from Nov 2026 responses.
+Coral Reefs,Coral Reefs,Marine Invertebrates,Corals,Broader Group,FALSE,Added from Nov 2026 responses.
+Finfish,Finfish,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Forest Birds,Forest Birds,Birds,,Broader Group,FALSE,Added from Nov 2026 responses.
+Groupers,Groupers,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Grunts,Grunts,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Hard Corals,Hard Corals,Marine Invertebrates,Corals,Broader Group,FALSE,Added from Nov 2026 responses.
+Hardwood Trees,Hardwood Trees,Plants,Hardwood Trees,Exact,FALSE,Added from Nov 2026 responses.
+Honduran Rosewood,Honduran Rosewood,Plants,Hardwood Trees,Broader Group,FALSE,Added from Nov 2026 responses.
+Jacks,Jacks,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Jaguar Prey,Jaguar Prey,Mammals,,Broader Group,FALSE,Added from Nov 2026 responses.
+Juvenile Fish,Juvenile Fish,Fish,,Broader Group,FALSE,Added from Nov 2026 responses.
+Landbirds,Landbirds,Birds,,Broader Group,FALSE,Added from Nov 2026 responses.
+Lobsters,Lobsters,Marine Invertebrates,Lobsters,Exact,FALSE,Added from Nov 2026 responses.
+Macroalgae,Macroalgae,Plants,Seaweed/Seagrass/Macroalgae,Broader Group,FALSE,Added from Nov 2026 responses.
+Mahogany,Mahogany,Plants,Hardwood Trees,Broader Group,FALSE,Added from Nov 2026 responses.
+Medium and Large Mammals,Medium and Large Mammals,Mammals,,Broader Group,FALSE,Added from Nov 2026 responses.
+Migratory Birds,Migratory Birds,Birds,,Broader Group,FALSE,Added from Nov 2026 responses.
+Migratory and Resident Birds,Migratory and Resident Birds,Birds,,Broader Group,FALSE,Added from Nov 2026 responses.
+Parrotfish,Parrotfish,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Rays,Rays,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Sargassum,Sargassum,Plants,Seaweed/Seagrass/Macroalgae,Broader Group,FALSE,Added from Nov 2026 responses.
+Savanna,Savanna,,,Unmapped,FALSE,Added from Nov 2026 responses.
+Sea Turtles,Sea Turtles,Reptiles,Turtles,Broader Group,FALSE,Added from Nov 2026 responses.
+Seabirds,Seabirds,Birds,,Broader Group,FALSE,Added from Nov 2026 responses.
+Sharks,Sharks,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Snappers,Snappers,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Spider Monkeys,Spider Monkeys,Mammals,Primates,Broader Group,FALSE,Added from Nov 2026 responses.
+Surgeonfishes,Surgeonfishes,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Turtles,Turtles,Reptiles,Turtles,Exact,FALSE,Added from Nov 2026 responses.
+Vertebrates,Vertebrates,,,Unmapped,FALSE,Added from Nov 2026 responses.
+Waterbirds,Waterbirds,Birds,,Broader Group,FALSE,Added from Nov 2026 responses.
+Wood Thrushes,Wood Thrushes,Birds,,Broader Group,FALSE,Added from Nov 2026 responses.
+Yucatan Brown Deer,Yucatan Brown Deer,Mammals,Other Medium-Sized Mammals,Broader Group,FALSE,Added from Nov 2026 responses.

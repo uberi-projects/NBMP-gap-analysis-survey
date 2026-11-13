@@ -1,0 +1,116 @@
+species_text,raw_variants,source_categories,mapped_level1,mapped_level2,match_type,needs_review,notes
+Aedes & Anopheles Mosquitoes,Aedes & Anopheles Mosquitoes; Aedes and Anopheles Mosquitoes,Economically Significant; Community Concern,Terrestrial Macroinvertebrates,Disease Vector Insects,Broader Group,FALSE,True disease-vector insects but not verbatim 'Disease Vector Insects'; mapped as Broader Group.
+Lone Star Tick,A.americanum; Amblyomma Americanum,Economically Significant,Terrestrial Macroinvertebrates,,Broader Group,TRUE,"Tick (arachnid not insect); 'Disease Vector Insects' is reserved for true insects, so mapped to level-1 only."
+Amphibians,Amphibians,Monitoring Gap,Amphibians,,Exact,FALSE,Generic mention of the Amphibians taxon itself; verbatim match to the checkbox category.
+Aquatic and Wetland Species,Aquatic and Wetland Species,Monitoring Gap,,,Unmapped,TRUE,"Spans fish, amphibians, reptiles, birds and mammals; no single taxon fits. Grey out in heatmap."
+Arboreal Vertebrates,Arboreal Vertebrates,Monitoring Gap; Monitoring Importance,,,Unmapped,TRUE,"Spans mammals, reptiles, amphibians and birds; no single taxon fits. Grey out in heatmap."
+Armadillos,Armadillos; Armadillo,Monitoring Importance; Hunted / Illegally Extracted,Mammals,Other Small Mammals,Broader Group,FALSE,Not verbatim 'Other Small Mammals'; mapped as Broader Group.
+Balsamo,Balsamo,Culturally Significant,Plants,Hardwood Trees,Broader Group,FALSE,"Myroxylon balsamum; hardwood/resin tree, not verbatim 'Hardwood Trees'."
+Barracuda,Barracuda,Culturally Significant; Economically Significant,Fish,Marine Fish,Broader Group,FALSE,Not verbatim 'Marine Fish'; mapped as Broader Group.
+Bayleaf Palm,Bayleaf Palm,Economically Significant,Plants,Hardwood Trees,Broader Group,TRUE,It's a palm not a hardwood tree; closest available Plants subcategory (no Palms option exists).
+Black and White Hawk Eagle,Black and White Hawk Eagle,Monitoring Gap,Birds,,Broader Group,FALSE,Not verbatim 'Birds'; mapped as Broader Group since no species-level bird option exists.
+Black Howler Monkeys,Black Howler Monkeys,Culturally Significant; Economically Significant,Mammals,Primates,Broader Group,FALSE,Not verbatim 'Primates'; mapped as Broader Group.
+Carnivores,Carnivores,Monitoring Gap; Monitoring Importance,Mammals,,Broader Group,TRUE,Functional/ecological grouping not a checkbox category; mapped to level-1 Mammals per your guidance.
+Caye Mammals,Caye Mammals,Monitoring Gap,Mammals,,Broader Group,TRUE,Dropped the locational 'Caye' qualifier; mapped to level-1 Mammals.
+Cedar,Cedar,Economically Significant,Plants,Hardwood Trees,Broader Group,FALSE,Not verbatim 'Hardwood Trees'; mapped as Broader Group.
+Ceiba,Ceiba,Culturally Significant,Plants,Hardwood Trees,Broader Group,TRUE,"Sacred Maya tree, culturally significant, but softwood not a commercial hardwood; closest available Plants subcategory."
+Cichlids,Cichlids,Culturally Significant; Community Concern,Fish,Freshwater Fish,Broader Group,FALSE,Not verbatim 'Freshwater Fish'; mapped as Broader Group.
+Screwworm Fly,Cochliomyja hominivorax; Cochliomyia Hominivorax,Economically Significant,Terrestrial Macroinvertebrates,Agricultural Pest Insects,Broader Group,FALSE,"New World screwworm fly; classic livestock agricultural pest, but not verbatim 'Agricultural Pest Insects'."
+Cohune,Cohune,Culturally Significant,Plants,Hardwood Trees,Broader Group,TRUE,It's a palm not a hardwood tree; closest available Plants subcategory.
+Commercial Fish Species,Commercial fish species; Commericial fish species,Economically Significant,Fish,Marine Fish,Broader Group,TRUE,"Generic term, assumed marine given typical Belizean commercial fisheries context; could include freshwater species too."
+Conch,Conch,Culturally Significant; Economically Significant,Marine Invertebrates,Conch,Exact,FALSE,Verbatim match to the checkbox category.
+Copal,Copal,Culturally Significant; Economically Significant,Plants,Hardwood Trees,Broader Group,TRUE,Resin tree (Protium copal) rather than a hardwood timber species; closest available Plants subcategory.
+Corals,Corals,Economically Significant; Community Concern,Marine Invertebrates,Corals,Exact,FALSE,Verbatim match to the checkbox category.
+Crabs,Crabs,Economically Significant; Monitoring Gap,Marine Invertebrates,Crabs,Exact,FALSE,Verbatim match to the checkbox category.
+Crested Guan,Crested Guan,Hunted / Illegally Extracted,Birds,,Broader Group,FALSE,Not verbatim 'Birds'; mapped as Broader Group since no species-level bird option exists.
+Curassow,Curassow,Hunted / Illegally Extracted,Birds,,Broader Group,FALSE,"Great Curassow; large game bird, not verbatim 'Birds'."
+Crocodiles,Crocodiles,Culturally Significant; Monitoring Gap; Community Concern,Reptiles,Crocodiles,Exact,FALSE,Verbatim match to the checkbox category.
+Crustaceans,Crustaceans,Monitoring Gap; Monitoring Importance,Freshwater Macroinvertebrate,,Broader Group,TRUE,"Reported alongside 'Freshwater Fish' in the same response, so mapped to Freshwater Macroinvertebrate rather than Marine Invertebrates > Crustaceans -- please confirm this reading is right."
+Culicoides (Biting Midges),Culicoides,Monitoring Gap; Monitoring Importance,Terrestrial Macroinvertebrates,Disease Vector Insects,Broader Group,FALSE,Not verbatim 'Disease Vector Insects'; mapped as Broader Group.
+Deer,Deer,Culturally Significant; Economically Significant; Hunted / Illegally Extracted,Mammals,Other Medium-Sized Mammals,Broader Group,FALSE,Not verbatim 'Other Medium-Sized Mammals'; mapped as Broader Group.
+Dermacentor (Tick),Dermacentor,Economically Significant,Terrestrial Macroinvertebrates,,Broader Group,TRUE,"Tick genus (arachnid not insect); 'Disease Vector Insects' is reserved for true insects, so mapped to level-1 only."
+Dog Ticks,Dog Ticks,Community Concern,Terrestrial Macroinvertebrates,,Broader Group,TRUE,"Ticks are arachnids not insects; 'Disease Vector Insects' is reserved for true insects, so mapped to level-1 only."
+Finfish,Finfish,Economically Significant; Community Concern,Fish,Marine Fish,Broader Group,TRUE,"Generic term; assumed marine since reported alongside Conch, Lobsters and Sea Cucumbers by reef-focused organizations."
+Forest Species,Forest Species,Economically Significant; Monitoring Importance,,,Unmapped,TRUE,"Spans mammals, birds, reptiles and plants; no single taxon fits. Grey out in heatmap."
+Freshwater Fish,Freshwater Fish,Monitoring Gap; Monitoring Importance,Fish,Freshwater Fish,Exact,FALSE,Verbatim match to the checkbox category.
+Game Birds,Game Birds; Gamebirds,Economically Significant; Monitoring Gap; Monitoring Importance,Birds,,Broader Group,FALSE,Not verbatim 'Birds'; mapped as Broader Group since no species-level bird option exists.
+Game Species,Game species,Economically Significant; Community Concern,,,Unmapped,TRUE,Spans mammals and birds (deer/peccary/game birds); no single taxon fits. Grey out in heatmap.
+Gibnuts,Gibnuts; Gibnut,Culturally Significant; Economically Significant; Hunted / Illegally Extracted,Mammals,Other Medium-Sized Mammals,Broader Group,FALSE,Paca; not verbatim 'Other Medium-Sized Mammals'.
+Green Iguanas,Green Iguanas; Iguanas,Culturally Significant; Economically Significant; Community Concern,Reptiles,,Broader Group,TRUE,"No Lizards/Iguanas subcategory exists under Reptiles (only Snakes, Crocodiles, Turtles); mapped to level-1 Reptiles."
+Grey Fox,Grey Fox; Grey Foxes,Community Concern,Mammals,Other Small Mammals,Broader Group,FALSE,Not verbatim 'Other Small Mammals'; mapped as Broader Group.
+Grunts,Grunts,Economically Significant,Fish,Marine Fish,Broader Group,FALSE,Not verbatim 'Marine Fish'; mapped as Broader Group.
+Hardwood,Hardwood; Hardwoods,Culturally Significant; Economically Significant,Plants,Hardwood Trees,Broader Group,FALSE,Generic hardwood mention; not verbatim 'Hardwood Trees'.
+Hicatees,Hicatees; Hicatee; Hiactees,Culturally Significant; Economically Significant; Monitoring Gap; Community Concern,Reptiles,Turtles,Broader Group,FALSE,Central American river turtle (Dermatemys mawii); not verbatim 'Turtles'. Merged two misspellings.
+Deer Tick,I.scapularis; Ixodes Scapularis,Economically Significant,Terrestrial Macroinvertebrates,,Broader Group,TRUE,"Tick (arachnid not insect); 'Disease Vector Insects' is reserved for true insects, so mapped to level-1 only."
+Jaguars,Jaguars,Culturally Significant; Economically Significant; Monitoring Importance; Community Concern,Mammals,Other Large Mammals,Broader Group,FALSE,Not verbatim 'Other Large Mammals'; mapped as Broader Group.
+Jaguarundis,Jaguarundis,Culturally Significant,Mammals,Other Small Mammals,Broader Group,FALSE,Not verbatim 'Other Small Mammals'; mapped as Broader Group.
+Keel-billed Toucan,Keel-billed Toucan; Keel Billed Toucan,Economically Significant; Monitoring Importance,Birds,,Broader Group,TRUE,"'Keel Billed Motmots' (economicSpecies) is almost certainly a naming slip for Keel-billed Toucan, Belize's national bird; no motmot species by that name exists. Please confirm or correct. Not verbatim 'Birds' either way."
+Large Rodents,Large Rodents,Monitoring Gap; Monitoring Importance,Mammals,,Broader Group,TRUE,"Functional grouping (e.g. paca, agouti); mapped to level-1 Mammals since size class is ambiguous between Other Medium/Other Large."
+Lobsters,Lobsters,Culturally Significant; Economically Significant; Community Concern,Marine Invertebrates,Lobsters,Exact,FALSE,Verbatim match to the checkbox category.
+Luztomyia (Sand Fly),Luztomyia,Economically Significant,Terrestrial Macroinvertebrates,Disease Vector Insects,Broader Group,FALSE,"Scientific genus name for sand flies (Lutzomyia), not verbatim 'Disease Vector Insects'; kept separate from the 'Sand Flies' row since reported as a distinct token -- merge if you'd rather."
+Macaws,Macaws,Culturally Significant; Economically Significant,Birds,,Broader Group,FALSE,Not verbatim 'Birds'; mapped as Broader Group since no species-level bird option exists.
+Mahogany,Mahogany,Culturally Significant; Economically Significant,Plants,Hardwood Trees,Broader Group,FALSE,Not verbatim 'Hardwood Trees'; mapped as Broader Group.
+Mammals,Mammals,Monitoring Gap,Mammals,,Exact,FALSE,Generic mention of the Mammals taxon itself; verbatim match to the checkbox category.
+Manatees,Manatees,Monitoring Gap; Community Concern,Mammals,Marine Mammals,Broader Group,FALSE,Not verbatim 'Marine Mammals'; mapped as Broader Group.
+Mangroves,Mangroves,Monitoring Gap; Community Concern,Plants,Mangroves,Exact,FALSE,Verbatim match to the checkbox category.
+Margays,Margays,Culturally Significant,Mammals,Other Small Mammals,Broader Group,FALSE,Not verbatim 'Other Small Mammals'; mapped as Broader Group.
+Marine Species,Marine Species,Economically Significant,,,Unmapped,TRUE,Spans fish/marine invertebrates/marine mammals; no single taxon fits. Grey out in heatmap.
+Microbes,Microbes; Microbes and Fungi,Monitoring Gap; Monitoring Importance,,,Unmapped,TRUE,No microbe/fungi taxon exists anywhere in the survey's monitoring categories; genuinely outside current taxonomy scope. Grey out in heatmap.
+Monkeys,Monkeys,Economically Significant,Mammals,Primates,Broader Group,FALSE,"Generic mention, not verbatim 'Primates'; likely overlaps with Black Howler / Spider Monkeys."
+Nargusta,Nargusta,Culturally Significant,Plants,Hardwood Trees,Broader Group,FALSE,Not verbatim 'Hardwood Trees'; mapped as Broader Group.
+Neotropical River Otter,Neotropical River Otter,Monitoring Gap,Mammals,Other Small Mammals,Broader Group,TRUE,Semi-aquatic mammal; doesn't cleanly fit Bats/Marine Mammals/Primates. Placed by size in Other Small Mammals but could arguably be Other Medium-Sized.
+Ocellated Turkey,Ocellated Turkey,Hunted / Illegally Extracted,Birds,,Broader Group,FALSE,Not verbatim 'Birds'; mapped as Broader Group since no species-level bird option exists.
+Ocelots,Ocelots,Culturally Significant; Community Concern,Mammals,Other Small Mammals,Broader Group,TRUE,Sometimes considered a medium-sized cat; placed in Other Small Mammals but could arguably be Other Medium-Sized.
+Orange-breasted Falcon,Orange-breasted Falcon,Monitoring Gap,Birds,,Broader Group,FALSE,Not verbatim 'Birds'; mapped as Broader Group since no species-level bird option exists.
+Parrotfish,Parrotfish; Parrotfishes,Monitoring Gap; Economically Significant,Fish,Marine Fish,Broader Group,FALSE,Not verbatim 'Marine Fish'; mapped as Broader Group.
+Parrots,Parrots,Culturally Significant; Economically Significant; Monitoring Gap,Birds,,Broader Group,FALSE,Not verbatim 'Birds'; mapped as Broader Group since no species-level bird option exists.
+Peccaries,Peccaries,Culturally Significant; Community Concern,Mammals,Other Medium-Sized Mammals,Broader Group,FALSE,Not verbatim 'Other Medium-Sized Mammals'. Covers both White-lipped and Collared Peccary per raw community-concern text.
+Plants,Plants,Monitoring Gap,Plants,,Exact,FALSE,Generic mention of the Plants taxon itself; verbatim match to the checkbox category.
+Pumas,Pumas,Culturally Significant,Mammals,Other Large Mammals,Broader Group,FALSE,Not verbatim 'Other Large Mammals'; mapped as Broader Group.
+Raptors,Raptors,Monitoring Gap,Birds,,Broader Group,FALSE,Not verbatim 'Birds'; mapped as Broader Group since no species-level bird option exists.
+Reptiles,Reptiles,Monitoring Gap,Reptiles,,Exact,FALSE,Generic mention of the Reptiles taxon itself; verbatim match to the checkbox category.
+Brown Dog Tick,R.sanguinious; Rhipicephalus Sanguineus,Economically Significant,Terrestrial Macroinvertebrates,,Broader Group,TRUE,"Tick (arachnid not insect); 'Disease Vector Insects' is reserved for true insects, so mapped to level-1 only."
+Sand Flies,Sand Flies; Sandflies; Sandfly,Monitoring Gap; Monitoring Importance; Economically Significant,Terrestrial Macroinvertebrates,Disease Vector Insects,Broader Group,FALSE,Not verbatim 'Disease Vector Insects'; mapped as Broader Group.
+Santa Maria,Santa Maria,Economically Significant,Plants,Hardwood Trees,Broader Group,FALSE,"Calophyllum brasiliense; hardwood timber tree, not verbatim 'Hardwood Trees'."
+Sea Cucumbers,Sea Cucumbers,Economically Significant; Monitoring Gap,Marine Invertebrates,Sea Cucumbers,Exact,FALSE,Verbatim match to the checkbox category.
+Sea Turtles,Sea Turtles,Economically Significant,Reptiles,Turtles,Broader Group,FALSE,"Not verbatim 'Turtles' (reads as a qualified species, not the bare category name); mapped as Broader Group."
+Seagrass,Seagrass,Monitoring Gap; Community Concern,Plants,Seaweed/Seagrass/Macroalgae,Exact,FALSE,Verbatim one of the three explicitly named terms in the compound checkbox label 'Seaweed/Seagrass/Macroalgae'.
+Snappers,Snappers,Culturally Significant; Economically Significant; Community Concern,Fish,Marine Fish,Broader Group,FALSE,Not verbatim 'Marine Fish'; mapped as Broader Group.
+Snook,Snook; Bay Snook,Economically Significant,Fish,Freshwater Fish,Broader Group,FALSE,Not verbatim 'Freshwater Fish'. Merged Bay Snook and Snook -- split back out if you'd rather keep them separate.
+Spider Monkeys,Spider Monkeys,Culturally Significant; Monitoring Gap; Monitoring Importance,Mammals,Primates,Broader Group,FALSE,Not verbatim 'Primates'; mapped as Broader Group.
+Tapirs,Tapirs,Culturally Significant; Economically Significant,Mammals,Other Large Mammals,Broader Group,FALSE,Not verbatim 'Other Large Mammals'; mapped as Broader Group.
+Taxa Outside PAs,Taxa outside PAs,Monitoring Gap; Monitoring Importance,,,Unmapped,TRUE,Locational qualifier (outside protected areas) not a taxon at all. Grey out in heatmap.
+Cacao,Theobroma cacao; Theobroma Cacao,Culturally Significant; Economically Significant,Plants,Hardwood Trees,Broader Group,TRUE,Cacao is a small understory tree not a commercial hardwood timber species; closest available Plants subcategory.
+Tilapia,Tilapia,Economically Significant,Fish,Freshwater Fish,Broader Group,FALSE,Not verbatim 'Freshwater Fish'; mapped as Broader Group.
+Toucans,Toucans,Culturally Significant; Economically Significant,Birds,,Broader Group,FALSE,Not verbatim 'Birds'; mapped as Broader Group. Likely overlaps with the Keel-billed Toucan row.
+Triatome Bugs,Triatome Bug; Triatome Bugs,Monitoring Gap; Economically Significant; Monitoring Importance,Terrestrial Macroinvertebrates,Disease Vector Insects,Broader Group,FALSE,"Kissing bugs (Chagas disease vector); true insects, but not verbatim 'Disease Vector Insects'."
+Ungulates,Ungulates,Monitoring Gap; Monitoring Importance,Mammals,,Broader Group,TRUE,"Functional grouping (deer, peccary, tapir); mapped to level-1 Mammals."
+Urchins,Urchins,Monitoring Gap,Marine Invertebrates,Urchins,Exact,FALSE,Verbatim match to the checkbox category.
+Water Opossum,Water Opossum,Monitoring Gap,Mammals,Other Small Mammals,Broader Group,FALSE,Not verbatim 'Other Small Mammals'; mapped as Broader Group.
+White-Tailed Deer,White-Tailed Deer; White Tailed Deer,Community Concern,Mammals,Other Medium-Sized Mammals,Broader Group,FALSE,Not verbatim 'Other Medium-Sized Mammals'. Likely overlaps with generic 'Deer' mentions elsewhere; kept as its own row since named as a distinct species.
+Yellow-Headed Amazon,Yellow-Head Amazon; Yellow-headed Amazon; Yellow-Headed Amazons,Culturally Significant; Economically Significant; Monitoring Gap; Monitoring Importance,Birds,,Broader Group,FALSE,Not verbatim 'Birds'; mapped as Broader Group since no species-level bird option exists.
+Groupers,Groupers,Community Concern,Fish,Marine Fish,Broader Group,FALSE,Added from community concern answers.
+Sharks,Sharks; Shark,Community Concern,Fish,Marine Fish,Broader Group,FALSE,Added from community concern answers.
+Whale Sharks,Whale Sharks; Whale Shark,Community Concern,Fish,Marine Fish,Broader Group,FALSE,Added from community concern answers.
+Aquatic Invasive Species,Aquatic Invasive Species,,,,Unmapped,FALSE,"Spans taxa (e.g. armored catfish, tilapia). Added from Nov 2026 responses."
+Base of Food Chain,Base of Food Chain,,,,Unmapped,FALSE,"Spans taxa (plankton, microbes). Added from Nov 2026 responses."
+Birds,Birds,,Birds,,Exact,FALSE,Added from Nov 2026 responses.
+Bonefish,Bonefish,,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Deep Sea Species,Deep Sea Species,,,,Unmapped,FALSE,Spans taxa. Added from Nov 2026 responses.
+Freshwater Turtles,Freshwater Turtles,,Reptiles,Turtles,Broader Group,FALSE,Added from Nov 2026 responses.
+Fungi,Fungi,,,,Unmapped,FALSE,Not in the survey taxonomy. Added from Nov 2026 responses.
+Honduran Rosewood,Honduran Rosewood,,Plants,Hardwood Trees,Broader Group,FALSE,Added from Nov 2026 responses.
+Honeybees,Honeybees,,Terrestrial Macroinvertebrates,,Broader Group,FALSE,Added from Nov 2026 responses.
+Insects,Insects,,Terrestrial Macroinvertebrates,,Broader Group,FALSE,Added from Nov 2026 responses.
+Keel-billed Motmot,Keel-billed Motmot,,Birds,,Broader Group,FALSE,Added from Nov 2026 responses.
+Non-Timber Forest Products,Non-Timber Forest Products,,Plants,,Broader Group,FALSE,Mostly plant products. Added from Nov 2026 responses.
+Permit,Permit,,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Reef Fish,Reef Fish,,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Seaweed,Seaweed,,Plants,Seaweed/Seagrass/Macroalgae,Broader Group,FALSE,Added from Nov 2026 responses.
+Shellfish,Shellfish,,Marine Invertebrates,,Broader Group,FALSE,Added from Nov 2026 responses.
+Small Mammals,Small Mammals,,Mammals,,Broader Group,FALSE,Added from Nov 2026 responses.
+Sport Fish,Sport Fish,,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Stingless Bees,Stingless Bees,,Terrestrial Macroinvertebrates,,Broader Group,FALSE,Added from Nov 2026 responses.
+Tarpon,Tarpon,,Fish,Marine Fish,Broader Group,FALSE,Added from Nov 2026 responses.
+Threatened Trees,Threatened Trees,,Plants,,Broader Group,FALSE,Added from Nov 2026 responses.
+Wild Cats,Wild Cats,,Mammals,,Broader Group,FALSE,"Jaguar, puma, ocelot, margay, jaguarundi span large and small mammal groups; mapped to level-1 only. Added from Nov 2026 responses."

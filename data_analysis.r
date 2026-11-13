@@ -373,7 +373,7 @@ result_caption_plot_taxa <- paste0(
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_taxa.jpeg", result_plot_taxa,
-    units = "in", height = 23, width = 18
+    units = "in", height = 19, width = 18
 )
 
 ## Analyze Section 3: Ecosystems
@@ -409,7 +409,7 @@ result_caption_plot_ecosystems <- paste0(
     unique_organizations, ") survey each ecosystem."
 )
 ggsave("outputs/result_plot_ecosystems.jpeg", result_plot_ecosystems,
-    units = "in", height = 23, width = 18
+    units = "in", height = 19, width = 18
 )
 
 ## Analyze Section 4: Research Projects
@@ -551,7 +551,7 @@ result_plot_long_term_monitoring_orgs <- ggplot(df_org_timeline, aes(
     )
 fig_num <- fig_num + 1
 result_caption_plot_long_term_monitoring_orgs <- paste0(
-    "Figure ", fig_num, ". Timeline of biodiversity monitoring and research, by organization."
+    "Figure ", fig_num, ". Timeline of biodiversity monitoring and research over 5 years, by organization."
 )
 ggsave("outputs/result_plot_long_term_monitoring_orgs.jpeg", result_plot_long_term_monitoring_orgs,
     units = "in", height = 10, width = 12
@@ -568,11 +568,11 @@ fig_num <- fig_num + 1
 result_caption_plot_long_term_monitoring_locations <- paste0(
     "Figure ", fig_num, ". Timeline of long-term biodiversity monitoring, by location (n = ",
     n_long_term_monitoring_projects, " projects). Each bar spans that location's earliest reported ",
-    "project start year to its latest end year, and is colored by whether it has at least one still-ongoing ",
+    "project start year to its latest end year within the past 5 years, and is colored by whether it has at least one still-ongoing ",
     "project."
 )
 ggsave("outputs/result_plot_long_term_monitoring_locations.jpeg", result_plot_long_term_monitoring_locations,
-    units = "in", height = 16, width = 14
+    units = "in", height = 18, width = 14
 )
 ## Analyze Section 5: Ecosystem Health
 # Investigate types of data collected on ecosystem health
@@ -634,7 +634,7 @@ result_caption_plot_ecosystem_health <- paste0(
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_ecosystem_health.jpeg", result_plot_ecosystem_health,
-    units = "in", height = 23, width = 18
+    units = "in", height = 19, width = 18
 )
 # See how many organizations study degraded habitats
 num_does_habitat_restoration_studying <- round(sum(df$habitatRestoration == "Yes", na.rm = TRUE), 2)
@@ -701,7 +701,7 @@ result_caption_plot_pollution <- paste0(
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_pollution.jpeg", result_plot_pollution,
-    units = "in", height = 23, width = 18
+    units = "in", height = 19, width = 18
 )
 # See how many organizations study invasive species
 num_does_invasive_species_studying <- round(sum(df$invasiveSpecies == "Yes", na.rm = TRUE), 2)
@@ -777,7 +777,7 @@ result_caption_plot_ecosystem_services <- paste0(
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_ecosystem_services.jpeg", result_plot_ecosystem_services,
-    units = "in", height = 23, width = 18
+    units = "in", height = 17, width = 18
 )
 # See how many organizations study relationship between communities and ecosystem services
 num_does_comm_services_relations_studying <- round(sum(df$communityEcosystemServices == "Yes", na.rm = TRUE), 2)
@@ -912,7 +912,7 @@ result_caption_plot_enforcement_activities <- paste0(
     " Parent bars reflect the number of organizations selecting at least one child activity in that grouping."
 )
 ggsave("outputs/result_plot_enforcement_activities.jpeg", result_plot_enforcement_activities,
-    units = "in", height = 23, width = 18
+    units = "in", height = 17, width = 18
 )
 # Examine illegal activities encountered
 illegal_activities_order <- c(
@@ -1007,7 +1007,7 @@ result_caption_plot_illegal_activities <- paste0(
     " with parent groupings (e.g., Wildlife Extraction) attached to lower-level children groupings."
 )
 ggsave("outputs/result_plot_illegal_activities.jpeg", result_plot_illegal_activities,
-    units = "in", height = 23, width = 18
+    units = "in", height = 19, width = 18
 )
 # See how many organizations collect patrol data
 num_does_patrol_data <- round(sum(df$patrolDataTools != "No" & !is.na(df$patrolDataTools) & df$patrolDataTools != ""), 2)
@@ -1025,7 +1025,7 @@ df_patrol <- df %>%
 df_patrol_datatypes <- df %>%
     select(patrolDataTypes) %>%
     separate_rows(patrolDataTypes, sep = ";\\s*") %>%
-    mutate(patrolDataTypes = fun_clean_text(patrolDataTypes)) %>%
+    mutate(patrolDataTypes = na_if(str_trim(patrolDataTypes), "")) %>%
     filter(!is.na(patrolDataTypes), patrolDataTypes != "") %>%
     count(patrolDataTypes, name = "n") %>%
     arrange(-n) %>%
@@ -1091,20 +1091,20 @@ ggsave("outputs/result_plot_engagement_network.jpeg", result_plot_engagement_net
 )
 # Investigate types of community engagement most often done
 engagement_types_fixed_order <- c(
-    "Education On Fire Management", "Illegal Wildlife Trade",
-    "Protected Areas And Ecosystem Benefits", "Community Governance And Participation",
-    "Project Development And Implementation"
+    "Education on fire management", "Illegal wildlife trade",
+    "Protected areas and ecosystem benefits", "Community governance and participation",
+    "Project development and implementation"
 )
 df_engagement_types <- df %>%
     select(engagementTypes) %>%
     separate_rows(engagementTypes, sep = ";\\s*") %>%
-    mutate(engagementTypes = fun_clean_text(engagementTypes)) %>%
+    mutate(engagementTypes = na_if(str_trim(engagementTypes), "")) %>%
     filter(!is.na(engagementTypes), engagementTypes != "Other") %>%
     group_by(engagementTypes) %>%
     summarise(n = n(), .groups = "drop") %>%
     mutate(is_other = FALSE)
-engagement_types_other <- fun_clean_text(df$engagementTypesOther)
-engagement_types_other <- engagement_types_other[!is.na(engagement_types_other)]
+engagement_types_other <- str_trim(unlist(str_split(df$engagementTypesOther, ",")))
+engagement_types_other <- engagement_types_other[!is.na(engagement_types_other) & engagement_types_other != ""]
 df_engagement_types_other <- tibble(engagementTypes = engagement_types_other) %>%
     count(engagementTypes, name = "n") %>%
     mutate(is_other = TRUE)
@@ -1141,7 +1141,7 @@ result_caption_plot_engagement_types <- paste0(
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_engagement_types.jpeg", result_plot_engagement_types,
-    units = "in", height = 23, width = 18
+    units = "in", height = 19, width = 18
 )
 
 ## Analyze Section 8: Collaboration & Challenges
@@ -1220,7 +1220,7 @@ result_caption_plot_challenges <- paste0(
     length(organizations_report_challenges), ")."
 )
 ggsave("outputs/result_plot_challenges.jpeg", result_plot_challenges,
-    units = "in", height = 23, width = 18
+    units = "in", height = 19, width = 18
 )
 
 ## Analyze Section 9: Technology & Skill Gaps
@@ -1280,7 +1280,7 @@ result_caption_plot_data_tools <- paste0(
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_data_tools.jpeg", result_plot_data_tools,
-    units = "in", height = 23, width = 18
+    units = "in", height = 19, width = 18
 )
 # Investigate technological gaps
 tech_gaps_fixed_order <- c(
@@ -1351,11 +1351,11 @@ fig_num <- fig_num + 1
 result_caption_plot_tech_gaps <- paste0(
     "Figure ", fig_num, ". Bar chart of how many surveyed organizations (n = ",
     num_sees_section10,
-    ") report different technological gaps, with taxon-specific free-text responses nested under their related gap and general write-in gaps shown as their own standalone bars. ",
+    ") report different technological gaps, with equipment-specific free-text responses nested under their related gap and general write-in gaps shown as their own standalone bars. ",
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_tech_gaps.jpeg", result_plot_tech_gaps,
-    units = "in", height = 23, width = 18
+    units = "in", height = 19, width = 18
 )
 # Examine data processing software
 df_complementary_software <- df %>%
@@ -1464,7 +1464,7 @@ result_caption_plot_skill_gaps <- paste0(
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_skill_gaps.jpeg", result_plot_skill_gaps,
-    units = "in", height = 23, width = 18
+    units = "in", height = 17, width = 18
 )
 # Investigate training by staff needed
 training_needs_fixed_order <- c(
@@ -1555,7 +1555,7 @@ result_caption_plot_training_needs <- paste0(
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_training_needs.jpeg", result_plot_training_needs,
-    units = "in", height = 23, width = 18
+    units = "in", height = 19, width = 18
 )
 
 ## Analyze Section 10: Data Management
@@ -1640,7 +1640,7 @@ result_caption_plot_digitization <- paste0(
     " Indigo bars are selected options from the survey, and green are custom responses supplied by the surveyed organization."
 )
 ggsave("outputs/result_plot_digitization.jpeg", result_plot_digitization,
-    units = "in", height = 23, width = 18
+    units = "in", height = 19, width = 18
 )
 # Explore whether data is still undigitized
 undigitized_data_responses <- df %>%
@@ -1991,7 +1991,7 @@ result_caption_plot_concern_matrix <- paste0(
     "blank cells indicate no reported concern for that combination."
 )
 ggsave("outputs/result_plot_concern_matrix.jpeg", result_plot_concern_matrix,
-    units = "in", height = 23, width = 18
+    units = "in", height = 17, width = 18
 )
 # List species of future interest
 df_species_future_interest <- df %>%
@@ -2021,23 +2021,14 @@ result_list_species_monitoring_gap <- paste0(
     ", with reported species by number of responses including: ",
     combine_words(df_species_monitoring_gap$speciesMonitoringGapCount), "."
 )
-# List species of monitoring importance
-num_species_monitoring_importance <- round(sum(
-    df$speciesMonitoringImportance != "No" & !is.na(df$speciesMonitoringImportance) & df$speciesMonitoringImportance != ""
-), 2)
 df_species_monitoring_importance <- df %>%
-    select(speciesMonitoringImportance) %>%
-    separate_rows(speciesMonitoringImportance, sep = "[;,]\\s*") %>%
-    mutate(speciesMonitoringImportance = na_if(str_trim(speciesMonitoringImportance), "")) %>%
-    filter(!is.na(speciesMonitoringImportance), str_to_lower(speciesMonitoringImportance) != "no") %>%
-    count(speciesMonitoringImportance, name = "n") %>%
-    arrange(-n) %>%
-    mutate(speciesMonitoringImportanceCount = paste0(speciesMonitoringImportance, " (", n, ")"))
+    select(organizationName, speciesMonitoringImportance) %>%
+    mutate(speciesMonitoringImportance = na_if(str_squish(speciesMonitoringImportance), "")) %>%
+    filter(!is.na(speciesMonitoringImportance), !str_to_lower(speciesMonitoringImportance) %in% c("no", "none")) %>%
+    mutate(quote = paste0(organizationName, ': "', speciesMonitoringImportance, '"'))
 result_list_species_monitoring_importance <- paste0(
-    "The number of organizations reporting a significant species monitoring importance is ",
-    num_species_monitoring_importance,
-    ", with reported species by number of responses including: ",
-    combine_words(df_species_monitoring_importance$speciesMonitoringImportanceCount), "."
+    "Organizations explained the importance of monitoring these species/taxa as follows: ",
+    combine_words(df_species_monitoring_importance$quote), "."
 )
 # List area of monitoring gap
 num_area_monitoring_gap <- round(sum(
@@ -2057,23 +2048,14 @@ result_list_area_monitoring_gap <- paste0(
     ", with reported areas by number of responses including: ",
     combine_words(df_area_monitoring_gap$areaMonitoringGapCount), "."
 )
-# List area of monitoring importance
-num_area_monitoring_importance <- round(sum(
-    df$areaMonitoringImportance != "No" & !is.na(df$areaMonitoringImportance) & df$areaMonitoringImportance != ""
-), 2)
 df_area_monitoring_importance <- df %>%
-    select(areaMonitoringImportance) %>%
-    separate_rows(areaMonitoringImportance, sep = "[;,]\\s*") %>%
-    mutate(areaMonitoringImportance = na_if(str_trim(areaMonitoringImportance), "")) %>%
-    filter(!is.na(areaMonitoringImportance), str_to_lower(areaMonitoringImportance) != "no") %>%
-    count(areaMonitoringImportance, name = "n") %>%
-    arrange(-n) %>%
-    mutate(areaMonitoringImportanceCount = paste0(areaMonitoringImportance, " (", n, ")"))
+    select(organizationName, areaMonitoringImportance) %>%
+    mutate(areaMonitoringImportance = na_if(str_squish(areaMonitoringImportance), "")) %>%
+    filter(!is.na(areaMonitoringImportance), !str_to_lower(areaMonitoringImportance) %in% c("no", "none")) %>%
+    mutate(quote = paste0(organizationName, ': "', areaMonitoringImportance, '"'))
 result_list_area_monitoring_importance <- paste0(
-    "The number of organizations reporting a significant area monitoring importance is ",
-    num_area_monitoring_importance,
-    ", with reported areas by number of responses including: ",
-    combine_words(df_area_monitoring_importance$areaMonitoringImportanceCount), "."
+    "Organizations explained the importance of monitoring these areas as follows: ",
+    combine_words(df_area_monitoring_importance$quote), "."
 )
 
 ## Final Section: Overall Analysis ---------------------------------------------------
@@ -2217,7 +2199,7 @@ df_studied_checkbox <- df_studied_checkbox %>%
         mapped_level1 = level1,
         mapped_level2 = coalesce(level2, "")
     )
-df_studied_lookup <- read.csv("data_deposit/studied_taxa_lookup.csv")
+df_studied_lookup <- read.csv("lookup_tables/studied_taxa_lookup.csv")
 df_studied_variant_map <- fun_build_variant_map(df_studied_lookup)
 df_studied_projects <- bind_rows(
     df_long_term_monitoring %>% transmute(organizationName, speciesTaxa),
@@ -2238,7 +2220,7 @@ df_studied_projects <- df_studied_projects %>%
     transmute(organizationName, text, mapped_level1, mapped_level2 = coalesce(mapped_level2, ""))
 df_studied_other <- fun_build_other_studied(df, other_field_map)
 df_studied_all <- bind_rows(df_studied_checkbox, df_studied_projects, df_studied_other)
-df_species_lookup <- read.csv("data_deposit/species_taxa_lookup.csv")
+df_species_lookup <- read.csv("lookup_tables/species_taxa_lookup.csv")
 important_field_map <- c(
     "Culturally Significant" = "^culturalSpecies$", "Economically Significant" = "^economicSpecies$",
     "Community Concern" = "^ccSpecies_\\d+$", "Monitoring Gap" = "^speciesMonitoringGap$"

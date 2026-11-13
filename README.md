@@ -9,19 +9,20 @@ The code for the HTML survey was written with support from Codex and Claude Code
 ## Files
 - code.gs includes the Google Apps Script that receives submissions and appends them to the response spreadsheet. It must be bound to that Google Sheet and deployed as a Web App. It writes to the tab named in its `SHEET_NAME` constant (default `Responses`), falling back to the first tab, and uses `LockService` so simultaneous submissions are written one at a time. Opening the deployment URL in a browser (a GET) returns `{"status":"ok"}` as a quick liveness check.
 - default_headers.csv lists the recommended headers to use in the target response Google Sheet. These should be added to the Google Sheet before collecting responses so that the order of response columns is logical. Though any additional columns needed will be automatically appending as surveys come through.
-- data_analysis.r stores R code to analyze any response data export found in the data_deposit folder with the name "UB-ERI Gap Analysis – Responses - Cleaned.csv" and produce outputs in the outputs folder. It also optionally uses two lookup tables from data_deposit/ (see "Species/Taxa Lookup Tables" below).
+- data_analysis.r stores R code to analyze any response data export found in the data_deposit folder with the name "UB-ERI Gap Analysis – Responses - Cleaned.csv" and produce outputs in the outputs folder. It also uses the lookup tables in lookup_tables/ (see "Species/Taxa Lookup Tables" below).
 - index.html is the survey HTML. The deployment URL for the Google Apps Script on the response spreadsheet must be set in one place: the `SUBMIT_URL` constant just above the submit handler in `index.html`.
 - wireframe.md contains a shareable wireframe for the survey, including survey question order and options, and skip logic. This is shareable with partners to communicate survey methods.
 
 ## Folders
 - assets/ — image assets referenced by index.html
-- data_deposit/ — this is the location that response data exports to be used for analysis should be manually placed prior to running data_analysis.r. It also holds the optional `studied_taxa_lookup.csv` and `species_taxa_lookup.csv` lookup tables described below.
+- data_deposit/ — this is the location that response data exports to be used for analysis should be manually placed prior to running data_analysis.r.
+- lookup_tables/ — git-tracked mapping tables used by data_analysis.r to standardize organizations, sites, communities and species/taxa.
 - outputs/ — this is the location that any analysis products will be created and stored.
 
 
 ## Species/Taxa Lookup Tables (Optional)
 
-`data_analysis.r` optionally reads two more files from `data_deposit/`: `studied_taxa_lookup.csv` and `species_taxa_lookup.csv`. Like the response export, these are not committed (`data_deposit/` is gitignored). They are manually-curated mapping tables that must be created locally. They're only used for the final figure comparing species/taxa of interest against what's actually studied; without them the script errors out at that step, but every other output will already have been produced by then.
+`data_analysis.r` optionally reads two more files from `lookup_tables/`: `studied_taxa_lookup.csv` and `species_taxa_lookup.csv`. They are manually-curated mapping tables committed alongside the code. They're only used for the final figure comparing species/taxa of interest against what's actually studied; without them the script errors out at that step, but every other output will already have been produced by then.
 
 They exist because respondents describe species/taxa in free text (monitoring/research project tables, cultural/economic significance, community concern, monitoring gaps), which rarely matches a survey checkbox option verbatim. Each row maps one free-text variant onto the survey's fixed checkbox taxonomy (e.g. `Mammals` > `Bats`). Columns:
 
