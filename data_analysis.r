@@ -1949,7 +1949,7 @@ df_concern_matrix <- df_community_concerns %>%
     separate_rows(district, sep = "[;,]\\s*") %>%
     separate_rows(speciesConcern, sep = "[;,]\\s*") %>%
     mutate(
-        speciesConcern = fun_clean_text(speciesConcern),
+        speciesConcern = na_if(str_trim(speciesConcern), ""),
         district = fun_clean_text(district)
     ) %>%
     filter(!is.na(speciesConcern), !is.na(district)) %>%
@@ -1972,7 +1972,6 @@ df_concern_matrix <- df_concern_matrix %>%
 result_plot_concern_matrix <- ggplot(df_concern_matrix, aes(x = district, y = speciesConcern, fill = n)) +
     geom_tile(color = "black") +
     scale_fill_gradient(low = "#b1abd1", high = "#382e6b", name = "Number of\nResponses") +
-    scale_y_discrete(labels = fun_wrap_two_lines) +
     labs(
         x = "District", y = "Species / Taxon of Concern"
     ) +
@@ -2129,7 +2128,7 @@ result_plot_domain_coverage <- ggplot(df_domain_coverage, aes(x = organizationNa
         values = c("Yes" = "#382e6b", "No" = "#d9d6ea", "Not Asked" = "#f2f2f2"),
         name = "Reported?"
     ) +
-    scale_x_discrete(labels = fun_wrap_two_lines) +
+    scale_x_discrete(labels = function(x) coalesce(org_acronyms[x], x)) +
     labs(x = "Organization", y = "Domain") +
     theme_pubclean() +
     theme(
@@ -2154,7 +2153,7 @@ ggsave("outputs/result_plot_domain_coverage.jpeg", result_plot_domain_coverage,
 # Compare species/taxa of interest to species/taxa actually studied
 important_categories <- c(
     "Culturally Significant", "Economically Significant", "Community Concern",
-    "Monitoring Gap", "Monitoring Importance"
+    "Monitoring Gap"
 )
 fun_build_variant_map <- function(df_lookup) {
     df_lookup %>%
@@ -2229,17 +2228,47 @@ df_studied_projects <- bind_rows(
     mutate(text = str_to_upper(fun_clean_text(speciesTaxa))) %>%
     filter(!is.na(text)) %>%
     distinct(organizationName, text) %>%
-    left_join(df_studied_variant_map, by = c("text" = "variant")) %>%
+    left_join(df_studied_variant_map, by = c("text" = "variant"))
+studied_unmatched <- unique(filter(df_studied_projects, is.na(mapped_level1))$text)
+if (length(studied_unmatched) > 0) {
+    warning("Project species not in studied_taxa_lookup.csv: ", paste(studied_unmatched, collapse = "; "))
+}
+df_studied_projects <- df_studied_projects %>%
     filter(!is.na(mapped_level1)) %>%
     transmute(organizationName, text, mapped_level1, mapped_level2 = coalesce(mapped_level2, ""))
 df_studied_other <- fun_build_other_studied(df, other_field_map)
 df_studied_all <- bind_rows(df_studied_checkbox, df_studied_projects, df_studied_other)
 df_species_lookup <- read.csv("data_deposit/species_taxa_lookup.csv")
-df_important_species <- df_species_lookup %>%
-    separate_rows(source_categories, sep = ";\\s*") %>%
-    mutate(source_categories = str_trim(source_categories)) %>%
-    filter(source_categories %in% important_categories) %>%
-    distinct(species_text, source_categories, mapped_level1, mapped_level2, match_type, raw_variants)
+important_field_map <- c(
+    "Culturally Significant" = "^culturalSpecies$", "Economically Significant" = "^economicSpecies$",
+    "Community Concern" = "^ccSpecies_\\d+$", "Monitoring Gap" = "^speciesMonitoringGap$"
+)
+df_species_names <- df_species_lookup %>%
+    mutate(raw_variants = paste(species_text, raw_variants, sep = ";")) %>%
+    separate_rows(raw_variants, sep = ";\\s*") %>%
+    transmute(variant = str_to_upper(str_trim(raw_variants)), species_text) %>%
+    filter(variant != "") %>%
+    distinct()
+df_important_responses <- imap_dfr(important_field_map, ~ df %>%
+    select(matches(.x)) %>%
+    mutate(across(everything(), as.character)) %>%
+    pivot_longer(everything(), values_to = "response") %>%
+    transmute(source_categories = .y, response)) %>%
+    separate_rows(response, sep = ",\\s*") %>%
+    mutate(variant = str_to_upper(str_trim(response))) %>%
+    filter(variant != "") %>%
+    left_join(df_species_names, by = "variant")
+important_unmatched <- unique(filter(df_important_responses, is.na(species_text))$response)
+if (length(important_unmatched) > 0) {
+    warning("Important species not in species_taxa_lookup.csv: ", paste(important_unmatched, collapse = "; "))
+}
+df_important_species <- df_important_responses %>%
+    filter(!is.na(species_text)) %>%
+    distinct(species_text, source_categories) %>%
+    left_join(
+        select(df_species_lookup, species_text, mapped_level1, mapped_level2, match_type, raw_variants),
+        by = "species_text"
+    )
 df_important_species <- df_important_species %>%
     mutate(
         counts = pmap(
